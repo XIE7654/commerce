@@ -354,3 +354,16 @@ yudao:
       type: redis # 消息总线的类型
 
 debug: false
+
+# Temu OpenAPI 区域应用配置
+temu:
+  regions:
+    US:
+      app_key: 4ebbc9190ae410443d65b4c2faca981f
+      app_secret: 4782d2d827276688bf4758bed55dbdd4bbe79a79
+    GLOBAL:
+      app_key: 4ebbc9190ae410443d65b4c2faca981f
+      app_secret: 4782d2d827276688bf4758bed55dbdd4bbe79a79
+    EU:
+      app_key: f860e759073f9d1e5c8bbeb7baac1dbf
+      app_secret: 121eac72693c6e587f7e15ce4721b42da5df2def
