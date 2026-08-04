@@ -32,4 +32,11 @@ public class AuthApi extends TemuApiService {
     /** 无业务参数调用 bg.open.accesstoken.create。 */
     public JsonNode createAccessTokenInfo() { return createAccessTokenInfo(Collections.emptyMap()); }
 
+    /**
+     * 调用 temu.local.mall.tags.get，查询店铺当前绑定的本地店铺标签。
+     *
+     * @return Temu JSON 响应，标签列表位于 {@code result.tags}
+     */
+    public JsonNode getLocalMallTags() { return call("temu.local.mall.tags.get", Collections.emptyMap()); }
+
 }

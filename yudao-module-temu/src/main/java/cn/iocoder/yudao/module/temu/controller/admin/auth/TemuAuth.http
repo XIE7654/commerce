@@ -1,9 +1,33 @@
 ### Temu 管理后台接口测试
 
 @temuAccessToken = replace-with-temu-access-token
+@temuAuthCode = replace-with-temu-auth-code
 
 ### 查询 Temu access_token 权限信息
 POST {{baseUrl}}/temu/auth/access-token-info
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}"
+}
+
+### 使用 Temu 授权码创建 access_token
+POST {{baseUrl}}/temu/auth/access-token/create
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "code": "{{temuAuthCode}}"
+}
+
+### 查询 Temu 本地店铺标签
+POST {{baseUrl}}/temu/auth/local-mall-tags
 Content-Type: application/json
 Authorization: Bearer {{token}}
 tenant-id: {{adminTenantId}}
