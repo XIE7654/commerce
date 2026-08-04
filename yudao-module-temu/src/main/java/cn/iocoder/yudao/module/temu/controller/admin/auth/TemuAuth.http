@@ -1,0 +1,14 @@
+### Temu 管理后台接口测试
+
+@temuAccessToken = replace-with-temu-access-token
+
+### 查询 Temu access_token 权限信息
+POST {{baseUrl}}/temu/auth/access-token-info
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}"
+}
