@@ -3,7 +3,7 @@ package cn.iocoder.yudao.module.temu.controller.admin.auth;
 import cn.iocoder.yudao.module.temu.controller.admin.auth.vo.TemuAccessTokenCreateReqVO;
 import cn.iocoder.yudao.module.temu.controller.admin.auth.vo.TemuAuthInfoReqVO;
 import cn.iocoder.yudao.module.temu.service.auth.TemuAuthService;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
