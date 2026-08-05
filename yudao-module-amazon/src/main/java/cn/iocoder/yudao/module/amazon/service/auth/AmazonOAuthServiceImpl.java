@@ -46,7 +46,7 @@ public class AmazonOAuthServiceImpl implements AmazonOAuthService {
     @Resource
     private AwsProperties properties;
     @Resource
-    private AmazonShopMapper shopMapper;
+    private AmazonShopMapper amazonShopMapper;
     @Resource
     private StringRedisTemplate stringRedisTemplate;
     @Resource
@@ -73,7 +73,7 @@ public class AmazonOAuthServiceImpl implements AmazonOAuthService {
         StateData state = decryptState(request.getState());
         String tokenUrl = "ads".equalsIgnoreCase(state.type()) ? properties.getAdTokenUrl() : properties.getStoreTokenUrl();
         Map<String, Object> token = requestToken(tokenUrl, request.getSpapiOauthCode(), null, state.type());
-        AmazonShopDO shop = shopMapper.selectBySellerId(request.getSellingPartnerId());
+        AmazonShopDO shop = amazonShopMapper.selectBySellerId(request.getSellingPartnerId());
         if (shop == null) {
             shop = new AmazonShopDO();
             shop.setSellerId(request.getSellingPartnerId());
@@ -90,8 +90,8 @@ public class AmazonOAuthServiceImpl implements AmazonOAuthService {
             shop.setSellerAccessToken(stringValue(token, "access_token"));
             shop.setSellerAccessTokenExpiresAt(expireAt(token));
         }
-        if (shop.getId() == null) shopMapper.insert(shop);
-        else shopMapper.updateById(shop);
+        if (shop.getId() == null) amazonShopMapper.insert(shop);
+        else amazonShopMapper.updateById(shop);
         return shop.getId();
     }
 
@@ -113,7 +113,7 @@ public class AmazonOAuthServiceImpl implements AmazonOAuthService {
                     shop.getSellerRefreshToken(), "seller");
             shop.setSellerAccessToken(stringValue(token, "access_token"));
             shop.setSellerAccessTokenExpiresAt(expireAt(token));
-            shopMapper.updateById(shop);
+            amazonShopMapper.updateById(shop);
             return shop.getSellerAccessToken();
         } finally {
             if (lock.isHeldByCurrentThread()) {
@@ -135,7 +135,7 @@ public class AmazonOAuthServiceImpl implements AmazonOAuthService {
             Map<String, Object> token = requestToken(properties.getAdTokenUrl(), null, shop.getAdRefreshToken(), "ads");
             shop.setAdAccessToken(stringValue(token, "access_token"));
             shop.setAdAccessTokenExpiresAt(expireAt(token));
-            shopMapper.updateById(shop);
+            amazonShopMapper.updateById(shop);
             return shop.getAdAccessToken();
         } finally {
             if (lock.isHeldByCurrentThread()) lock.unlock();
@@ -215,7 +215,7 @@ public class AmazonOAuthServiceImpl implements AmazonOAuthService {
     }
 
     private AmazonShopDO requireShop(Long shopId) {
-        AmazonShopDO shop = shopMapper.selectById(shopId);
+        AmazonShopDO shop = amazonShopMapper.selectById(shopId);
         if (shop == null) throw new IllegalArgumentException("Amazon 店铺不存在: " + shopId);
         return shop;
     }
