@@ -9,9 +9,9 @@ import cn.iocoder.yudao.module.temu.sdk.api.OrderApi;
 import cn.iocoder.yudao.module.temu.sdk.api.PriceApi;
 import cn.iocoder.yudao.module.temu.sdk.api.ProductApi;
 import cn.iocoder.yudao.module.temu.sdk.api.PromotionApi;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -155,7 +155,7 @@ public class TemuClient {
                         new HttpEntity<>(params, headers), String.class);
             }
             return objectMapper.readTree(response.getBody());
-        } catch (RestClientException | JsonProcessingException ex) {
+        } catch (RestClientException | JacksonException ex) {
             throw new TemuApiException("调用 Temu OpenAPI 失败: " + apiType, ex);
         }
     }
@@ -183,7 +183,7 @@ public class TemuClient {
         if (value == null) return "";
         if (value instanceof Map || value instanceof List) {
             try { return objectMapper.writeValueAsString(value); }
-            catch (JsonProcessingException ex) { throw new TemuApiException("Temu 参数序列化失败", ex); }
+            catch (JacksonException ex) { throw new TemuApiException("Temu 参数序列化失败", ex); }
         }
         return String.valueOf(value).replace(" ", "");
     }

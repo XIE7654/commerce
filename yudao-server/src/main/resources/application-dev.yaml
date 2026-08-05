@@ -1,6 +1,21 @@
 server:
   port: 48080
 
+# Amazon Seller / Ads OAuth 配置（开发环境留空）
+aws:
+  appId:
+  clientId:
+  clientSecret:
+  adClientId:
+  adClientSecret:
+  sellerAuthLoginUri:
+  adAuthLoginUri:
+  stateExpires:
+  cryptoKey:
+  refreshTokenExpires:
+  storeTokenUrl:
+  adTokenUrl:
+
 --- #################### 数据库相关配置 ####################
 
 spring:

@@ -2,14 +2,14 @@
 
 ## 修改范围
 
-- 任务只允许修改 `yudao-module-temu/`, `db` 目录及其子目录中的文件。
+- 任务只允许修改 `yudao-module-temu/`、`yudao-module-amazon/`、`db` 目录及其子目录中的文件；其中 `yudao-module-amazon/` 下的所有内容均可修改。
 - 不得修改仓库其他目录、根目录配置、公共模块或前端代码。
 - 如需求必须涉及模块外文件，应先停止并向用户确认，不得自行扩大修改范围。
 
 ## SQL 文件规范
 
 - 所有新增或修改的 `.sql` 文件必须放在仓库根目录的 `db/` 目录及其子目录中。
-- 不得在 `yudao-module-temu/` 或其他目录新增 SQL 文件；如 SQL 属于该模块，统一归档到 `db/`。
+- 不得在 `yudao-module-temu/`、`yudao-module-amazon/` 或其他目录新增 SQL 文件；如 SQL 属于上述模块，统一归档到 `db/`。
 - 所有业务表都必须包含 `tenant_id` 租户编号字段，并建立对应索引；实体类必须使用项目的租户基类或显式声明租户字段，确保租户隔离链路完整。
 
 ## 注释要求
@@ -24,3 +24,9 @@
 
 - `.http` 请求文件必须与对应的 `Controller` 使用一致的业务名称。
 - 命名格式为 `<业务名称>.http` 对应 `<业务名称>Controller`，例如 `TemuAuth.http` 对应 `TemuAuthController`。
+
+## Controller 与 Service 分层
+
+- Controller 只负责请求参数绑定、参数校验、权限声明和调用 Service，不得编写业务规则、配置解析、数据转换、客户端创建或第三方 API 调用逻辑。
+- 所有业务处理必须放入对应的 Service 接口及实现类，由 Controller 只调用对应的 Service 方法并返回结果。
+- Service 的新增或修改方法必须添加必要的 Javadoc，复杂业务分支和外部接口调用必须补充原因及关键约束注释。

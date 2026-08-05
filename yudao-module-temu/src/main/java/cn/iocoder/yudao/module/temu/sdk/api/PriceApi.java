@@ -1,7 +1,7 @@
 package cn.iocoder.yudao.module.temu.sdk.api;
 
 import cn.iocoder.yudao.module.temu.sdk.TemuClient;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 import java.util.Collections;
 import java.util.Map;
