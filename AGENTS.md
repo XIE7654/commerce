@@ -24,3 +24,9 @@
 
 - `.http` 请求文件必须与对应的 `Controller` 使用一致的业务名称。
 - 命名格式为 `<业务名称>.http` 对应 `<业务名称>Controller`，例如 `TemuAuth.http` 对应 `TemuAuthController`。
+
+## Controller 与 Service 分层
+
+- Controller 只负责请求参数绑定、参数校验、权限声明和调用 Service，不得编写业务规则、配置解析、数据转换、客户端创建或第三方 API 调用逻辑。
+- 所有业务处理必须放入对应的 Service 接口及实现类，由 Controller 只调用对应的 Service 方法并返回结果。
+- Service 的新增或修改方法必须添加必要的 Javadoc，复杂业务分支和外部接口调用必须补充原因及关键约束注释。
