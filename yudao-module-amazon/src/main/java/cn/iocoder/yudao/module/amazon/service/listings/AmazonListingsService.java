@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.amazon.service.listings;
 
 import cn.iocoder.yudao.module.amazon.controller.admin.listings.vo.AmazonListingsSearchReqVO;
+import cn.iocoder.yudao.module.amazon.controller.admin.listings.vo.AmazonListingsItemGetReqVO;
 
 import java.util.Map;
 
@@ -16,4 +17,12 @@ public interface AmazonListingsService {
      * @return Amazon Listings Items 原始响应
      */
     Map<String, Object> searchListingsItems(AmazonListingsSearchReqVO request);
+
+    /**
+     * 查询店铺在指定站点的单个 Listings Item。
+     *
+     * @param request 店铺、国家代码、SKU 及返回数据集
+     * @return Amazon Listings Item 原始响应
+     */
+    Map<String, Object> getListingsItem(AmazonListingsItemGetReqVO request);
 }

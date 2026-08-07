@@ -29,8 +29,31 @@ public class AmazonSellingPartnerClient {
      * @param accessToken 店铺的 Seller LWA access token
      * @return Amazon Listings Items JSON 响应；空响应返回空 Map
      */
-    @SuppressWarnings("unchecked")
     public Map<String, Object> getListingsItems(URI uri, String accessToken) {
+        return getListings(uri, accessToken, "listings-items");
+    }
+
+    /**
+     * 查询单个 Listings Item 并保存 Amazon 返回的 JSON 数据。
+     *
+     * @param uri 单个 Listings Item 请求地址
+     * @param accessToken 店铺的 Seller LWA access token
+     * @return Amazon Listings Item JSON 响应；空响应返回空 Map
+     */
+    public Map<String, Object> getListingsItem(URI uri, String accessToken) {
+        return getListings(uri, accessToken, "listings-item");
+    }
+
+    /**
+     * 执行 Listings API 的 GET 请求并持久化响应，以保留 Amazon 返回字段供后续排查。
+     *
+     * @param uri Listings 请求地址
+     * @param accessToken 店铺的 Seller LWA access token
+     * @param storageName JSON 存储名称
+     * @return Amazon Listings JSON 响应；空响应返回空 Map
+     */
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> getListings(URI uri, String accessToken, String storageName) {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
         headers.set("x-amz-access-token", accessToken);
@@ -39,7 +62,7 @@ public class AmazonSellingPartnerClient {
             return Map.of();
         }
         Map<String, Object> body = (Map<String, Object>) response.getBody();
-        amazonJsonStorageService.persist(AmazonApiCategory.LISTINGS, "listings-items", body);
+        amazonJsonStorageService.persist(AmazonApiCategory.LISTINGS, storageName, body);
         return body;
     }
 

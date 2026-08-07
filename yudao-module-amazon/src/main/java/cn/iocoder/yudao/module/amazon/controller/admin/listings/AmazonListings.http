@@ -12,6 +12,20 @@ tenant-id: {{adminTenantId}}
   "pageSize": 10
 }
 
+### 按 SKU 获取 Amazon Listings Item 详情
+POST {{baseUrl}}/amazon/listings/item
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{
+  "shopId": 1,
+  "countryCode": "US",
+  "sku": "J80US-LDY-5.14",
+  "includedData": ["summaries", "attributes", "issues", "offers", "fulfillmentAvailability"],
+  "issueLocale": "en_US"
+}
+
 ### 按 SKU 查询 Amazon Listings Items
 POST {{baseUrl}}/amazon/listings/search
 Authorization: Bearer {{token}}

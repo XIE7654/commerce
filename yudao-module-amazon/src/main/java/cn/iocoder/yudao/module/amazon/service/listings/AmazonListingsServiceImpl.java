@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.amazon.service.listings;
 
 import cn.iocoder.yudao.module.amazon.controller.admin.listings.vo.AmazonListingsSearchReqVO;
+import cn.iocoder.yudao.module.amazon.controller.admin.listings.vo.AmazonListingsItemGetReqVO;
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
@@ -42,6 +43,16 @@ public class AmazonListingsServiceImpl implements AmazonListingsService {
         String accessToken = amazonOAuthService.getSellerAccessToken(shop.getId());
         URI uri = buildRequestUri(marketplace, shop.getSellerId(), request);
         return amazonSellingPartnerClient.getListingsItems(uri, accessToken);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Map<String, Object> getListingsItem(AmazonListingsItemGetReqVO request) {
+        AmazonShopDO shop = requireShop(request.getShopId());
+        AmazonMarketplaceEnum marketplace = requireMarketplace(request.getCountryCode());
+        String accessToken = amazonOAuthService.getSellerAccessToken(shop.getId());
+        URI uri = buildItemRequestUri(marketplace, shop.getSellerId(), request);
+        return amazonSellingPartnerClient.getListingsItem(uri, accessToken);
     }
 
     /**
@@ -95,6 +106,29 @@ public class AmazonListingsServiceImpl implements AmazonListingsService {
         put(query, "issueLocale", request.getIssueLocale());
 
         String path = "/listings/2021-08-01/items/" + UriUtils.encodePathSegment(sellerId, StandardCharsets.UTF_8);
+        return URI.create(marketplace.getEndpoint() + path + "?" + buildQuery(query));
+    }
+
+    /**
+     * 构造单个 Listings Item 查询 URI；SKU 必须作为路径段编码，避免其中的斜杠等字符改变 Amazon 路由。
+     *
+     * @param marketplace 目标站点配置
+     * @param sellerId 店铺 Seller ID
+     * @param request 单商品查询参数
+     * @return 可直接发起请求的 URI
+     */
+    private URI buildItemRequestUri(AmazonMarketplaceEnum marketplace, String sellerId, AmazonListingsItemGetReqVO request) {
+        if (isBlank(sellerId)) {
+            throw new IllegalArgumentException("店铺未配置 Amazon sellerId");
+        }
+        Map<String, String> query = new TreeMap<>();
+        query.put("marketplaceIds", marketplace.getMarketplaceId());
+        query.put("includedData", joinOrDefault(request.getIncludedData(), "summaries"));
+        put(query, "issueLocale", request.getIssueLocale());
+
+        String path = "/listings/2021-08-01/items/"
+                + UriUtils.encodePathSegment(sellerId, StandardCharsets.UTF_8) + "/"
+                + UriUtils.encodePathSegment(request.getSku(), StandardCharsets.UTF_8);
         return URI.create(marketplace.getEndpoint() + path + "?" + buildQuery(query));
     }
 

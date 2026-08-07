@@ -24,6 +24,7 @@
 
 - `.http` 请求文件必须与对应的 `Controller` 使用一致的业务名称。
 - 命名格式为 `<业务名称>.http` 对应 `<业务名称>Controller`，例如 `TemuAuth.http` 对应 `TemuAuthController`。
+- 每新增一个 API 接口，必须在对应的 `.http` 文件中新增可执行的测试案例，覆盖请求方法、路径、鉴权信息及必要的请求参数或请求体。
 
 ## Controller 与 Service 分层
 
