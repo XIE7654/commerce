@@ -3,6 +3,8 @@ package cn.iocoder.yudao.module.amazon.controller.admin.auth;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.module.amazon.controller.admin.auth.vo.AmazonAuthorizeReqVO;
 import cn.iocoder.yudao.module.amazon.controller.admin.auth.vo.AmazonCallbackReqVO;
+import cn.iocoder.yudao.module.amazon.controller.admin.auth.vo.AmazonTokenReqVO;
+import cn.iocoder.yudao.module.amazon.controller.admin.auth.vo.AmazonTokenRespVO;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -53,5 +55,31 @@ public class AmazonAuthController {
     @PreAuthorize("@ss.hasPermission('amazon:auth:query')")
     public CommonResult<String> adToken(@RequestParam Long shopId) {
         return CommonResult.success(amazonOAuthService.getAdAccessToken(shopId));
+    }
+
+    /**
+     * 使用 Seller 授权码测试换取 Amazon Token，不会保存店铺授权信息。
+     *
+     * @param request 授权码和对应的国家代码
+     * @return Amazon 返回的 Token 信息
+     */
+    @PostMapping("/test-token")
+    @Operation(summary = "测试使用授权码获取 Amazon Token")
+    @PreAuthorize("@ss.hasPermission('amazon:auth:query')")
+    public CommonResult<AmazonTokenRespVO> testToken(@Valid @RequestBody AmazonTokenReqVO request) {
+        return CommonResult.success(amazonOAuthService.exchangeAuthorizationCode(request));
+    }
+
+    /**
+     * 使用 Seller refresh token 测试刷新 Amazon access token，不会更新店铺授权信息。
+     *
+     * @param request refresh token 和对应的国家代码
+     * @return Amazon 返回的 Token 信息
+     */
+    @PostMapping("/refresh-token")
+    @Operation(summary = "测试刷新 Amazon Token")
+    @PreAuthorize("@ss.hasPermission('amazon:auth:query')")
+    public CommonResult<AmazonTokenRespVO> refreshToken(@Valid @RequestBody AmazonTokenReqVO request) {
+        return CommonResult.success(amazonOAuthService.refreshAccessToken(request));
     }
 }

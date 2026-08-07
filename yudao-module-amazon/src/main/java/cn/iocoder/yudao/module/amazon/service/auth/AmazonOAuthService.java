@@ -2,6 +2,8 @@ package cn.iocoder.yudao.module.amazon.service.auth;
 
 import cn.iocoder.yudao.module.amazon.controller.admin.auth.vo.AmazonAuthorizeReqVO;
 import cn.iocoder.yudao.module.amazon.controller.admin.auth.vo.AmazonCallbackReqVO;
+import cn.iocoder.yudao.module.amazon.controller.admin.auth.vo.AmazonTokenReqVO;
+import cn.iocoder.yudao.module.amazon.controller.admin.auth.vo.AmazonTokenRespVO;
 
 /**
  * Amazon OAuth 授权与店铺 Token 服务。
@@ -39,4 +41,20 @@ public interface AmazonOAuthService {
      * @return 有效 Ads access token
      */
     String getAdAccessToken(Long shopId);
+
+    /**
+     * 根据国家所属 SP-API 端点，使用授权码换取 Token；仅用于测试，不保存授权信息。
+     *
+     * @param request 授权码和国家代码
+     * @return Amazon 返回的 Token 信息
+     */
+    AmazonTokenRespVO exchangeAuthorizationCode(AmazonTokenReqVO request);
+
+    /**
+     * 根据国家所属 SP-API 端点刷新 access token；仅用于测试，不保存授权信息。
+     *
+     * @param request refresh token 和国家代码
+     * @return Amazon 返回的 Token 信息
+     */
+    AmazonTokenRespVO refreshAccessToken(AmazonTokenReqVO request);
 }

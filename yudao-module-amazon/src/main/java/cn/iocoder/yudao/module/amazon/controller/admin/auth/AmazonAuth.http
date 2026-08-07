@@ -1,0 +1,21 @@
+### 使用授权码获取 Amazon Token（不会保存店铺授权信息）
+POST {{baseUrl}}/amazon/auth/test-token
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{
+  "code": "{{amazonAuthorizationCode}}",
+  "countryCode": "US"
+}
+
+### 使用 refresh token 刷新 Amazon Token（不会保存店铺授权信息）
+POST {{baseUrl}}/amazon/auth/refresh-token
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{
+  "refreshToken": "{{amazonRefreshToken}}",
+  "countryCode": "US"
+}
