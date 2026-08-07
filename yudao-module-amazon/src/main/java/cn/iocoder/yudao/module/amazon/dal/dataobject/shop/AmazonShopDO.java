@@ -27,6 +27,10 @@ public class AmazonShopDO extends TenantBaseDO {
     private String shopName;
     /** Amazon 区域。 */
     private String region;
+    /** 授权时间。 */
+    private LocalDateTime authorizeTime;
+    /** 授权过期时间。 */
+    private LocalDateTime authorizeExpireTime;
     /** Seller refresh token。 */
     private String sellerRefreshToken;
     /** Seller access token。 */
@@ -35,6 +39,10 @@ public class AmazonShopDO extends TenantBaseDO {
     private LocalDateTime sellerAccessTokenExpiresAt;
     /** Ads refresh token。 */
     private String adRefreshToken;
+    /** 广告授权时间。 */
+    private LocalDateTime adAuthorizeTime;
+    /** 广告授权过期时间。 */
+    private LocalDateTime adAuthorizeExpireTime;
     /** Ads access token。 */
     private String adAccessToken;
     /** Ads access token 过期时间。 */
