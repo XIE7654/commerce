@@ -75,7 +75,8 @@ public class AmazonOAuthServiceImpl implements AmazonOAuthService {
     @Override
     public Long handleCallback(AmazonCallbackReqVO request) {
         StateData state = decryptState(request.getState());
-        String tokenUrl = "ads".equalsIgnoreCase(state.type()) ? properties.getAdTokenUrl() : properties.getStoreTokenUrl();
+        // Seller OAuth 固定使用 LWA 全局端点；Ads OAuth 保持使用其独立的配置端点。
+        String tokenUrl = "ads".equalsIgnoreCase(state.type()) ? properties.getAdTokenUrl() : LOGIN_WITH_AMAZON_TOKEN_URL;
         Map<String, Object> token = requestToken(tokenUrl, request.getSpapiOauthCode(), null, state.type());
         AmazonShopDO shop = amazonShopMapper.selectBySellerId(request.getSellingPartnerId());
         if (shop == null) {
@@ -120,7 +121,7 @@ public class AmazonOAuthServiceImpl implements AmazonOAuthService {
             if (isUsable(shop.getSellerAccessToken(), shop.getSellerAccessTokenExpiresAt())) {
                 return shop.getSellerAccessToken();
             }
-            Map<String, Object> token = requestToken(properties.getStoreTokenUrl(), null,
+            Map<String, Object> token = requestToken(LOGIN_WITH_AMAZON_TOKEN_URL, null,
                     shop.getSellerRefreshToken(), "seller");
             shop.setSellerAccessToken(stringValue(token, "access_token"));
             shop.setSellerAccessTokenExpiresAt(expireAt(token));

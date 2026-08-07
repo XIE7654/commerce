@@ -19,3 +19,8 @@ tenant-id: {{adminTenantId}}
   "refreshToken": "{{amazonRefreshToken}}",
   "countryCode": "US"
 }
+
+### 获取 Amazon Seller access token
+GET {{baseUrl}}/amazon/auth/seller-token?shopId=1
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
