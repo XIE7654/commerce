@@ -1,0 +1,116 @@
+### Temu Ads 管理后台接口测试
+
+@temuAccessToken = replace-with-temu-access-token
+@goodsId = 123456789
+@startTs = 1767225600000
+@endTs = 1767311999999
+
+### 查询推荐 ROAS
+POST {{baseUrl}}/temu/ads/roas/predict
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "goodsInfoList": [{ "goodsId": {{goodsId}} }]
+}
+
+### 查询店铺广告报表
+POST {{baseUrl}}/temu/ads/reports/mall
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "startTs": {{startTs}},
+  "endTs": {{endTs}}
+}
+
+### 查询商品广告报表
+POST {{baseUrl}}/temu/ads/reports/goods
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "goodsId": {{goodsId}},
+  "startTs": {{startTs}},
+  "endTs": {{endTs}}
+}
+
+### 创建广告
+POST {{baseUrl}}/temu/ads/create
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "createAdReqs": [{
+    "goodsId": {{goodsId}},
+    "roas": 3.5,
+    "roasType": 1,
+    "budget": 20
+  }]
+}
+
+### 查询广告详情
+POST {{baseUrl}}/temu/ads/details
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "goodsIds": [{{goodsId}}]
+}
+
+### 查询广告日志
+POST {{baseUrl}}/temu/ads/logs
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "goodsId": {{goodsId}},
+  "startTime": {{startTs}},
+  "endTime": {{endTs}}
+}
+
+### 查询商品是否可创建广告
+POST {{baseUrl}}/temu/ads/goods/creatable
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "goodsIds": [{{goodsId}}]
+}
+
+### 修改广告预算
+POST {{baseUrl}}/temu/ads/modify
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "status": 4,
+  "modifyAdDTO": {
+    "goodsId": {{goodsId}},
+    "budget": 30
+  }
+}

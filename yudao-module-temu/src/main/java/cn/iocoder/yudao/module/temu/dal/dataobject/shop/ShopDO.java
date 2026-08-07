@@ -3,7 +3,6 @@ package cn.iocoder.yudao.module.temu.dal.dataobject.shop;
 import lombok.*;
 import java.util.*;
 import java.time.LocalDateTime;
-import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.*;
 import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
 
@@ -43,6 +42,16 @@ public class ShopDO extends BaseDO {
      * Temu 授权 Token
      */
     private String authToken;
+
+    /**
+     * Temu 授权生效时间。
+     */
+    private LocalDateTime authorizeTime;
+
+    /**
+     * Temu 授权过期时间，用于提示店铺重新授权。
+     */
+    private LocalDateTime authorizeExpireTime;
 
 
 }

@@ -22,6 +22,12 @@
             <artifactId>yudao-module-system</artifactId>
             <version>${revision}</version>
         </dependency>
+        <!-- 文件 API，根据当前主文件配置将 Temu JSON 响应归档到本地或对象存储。 -->
+        <dependency>
+            <groupId>cn.iocoder.boot</groupId>
+            <artifactId>yudao-module-infra</artifactId>
+            <version>${revision}</version>
+        </dependency>
 
         <!-- Web、安全和数据访问基础设施。 -->
         <dependency>

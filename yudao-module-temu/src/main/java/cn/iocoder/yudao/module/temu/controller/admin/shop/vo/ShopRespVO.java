@@ -32,6 +32,14 @@ public class ShopRespVO {
     @ExcelProperty("Temu 授权 Token")
     private String authToken;
 
+    @Schema(description = "Temu 授权时间")
+    @ExcelProperty("授权时间")
+    private LocalDateTime authorizeTime;
+
+    @Schema(description = "Temu 授权过期时间")
+    @ExcelProperty("授权过期时间")
+    private LocalDateTime authorizeExpireTime;
+
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;

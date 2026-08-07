@@ -48,6 +48,7 @@ public class TemuClient {
     private final String baseUrl;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    private final TemuJsonStorageService jsonStorageService;
     private final int connectTimeoutMillis;
     private final int readTimeoutMillis;
 
@@ -71,7 +72,22 @@ public class TemuClient {
      */
     public TemuClient(String appKey, String appSecret, String accessToken, String baseUrl) {
         this(appKey, appSecret, accessToken, baseUrl,
-                new RestTemplate(createRequestFactory(10000, 30000)), new ObjectMapper(), 10000, 30000);
+                new RestTemplate(createRequestFactory(10000, 30000)), new ObjectMapper(), 10000, 30000, null);
+    }
+
+    /**
+     * 使用默认 HTTP 客户端创建 SDK，并归档每次成功调用的响应。
+     *
+     * @param appKey 应用 Key
+     * @param appSecret 应用 Secret
+     * @param accessToken 店铺授权 Token
+     * @param baseUrl Temu OpenAPI 区域域名
+     * @param jsonStorageService 响应归档服务
+     */
+    public TemuClient(String appKey, String appSecret, String accessToken, String baseUrl,
+                      TemuJsonStorageService jsonStorageService) {
+        this(appKey, appSecret, accessToken, baseUrl,
+                new RestTemplate(createRequestFactory(10000, 30000)), new ObjectMapper(), 10000, 30000, jsonStorageService);
     }
 
     /**
@@ -89,6 +105,26 @@ public class TemuClient {
     public TemuClient(String appKey, String appSecret, String accessToken, String baseUrl,
                       RestTemplate restTemplate, ObjectMapper objectMapper,
                       int connectTimeoutMillis, int readTimeoutMillis) {
+        this(appKey, appSecret, accessToken, baseUrl, restTemplate, objectMapper,
+                connectTimeoutMillis, readTimeoutMillis, null);
+    }
+
+    /**
+     * 使用调用方提供的 HTTP 客户端和响应归档服务创建 SDK。
+     *
+     * @param appKey 应用 Key
+     * @param appSecret 应用 Secret
+     * @param accessToken 店铺授权 Token
+     * @param baseUrl Temu OpenAPI 区域域名
+     * @param restTemplate HTTP 客户端
+     * @param objectMapper JSON 转换器
+     * @param connectTimeoutMillis 连接超时时间，仅作为客户端配置说明
+     * @param readTimeoutMillis 读取超时时间，仅作为客户端配置说明
+     * @param jsonStorageService 响应归档服务；为 {@code null} 时不归档，兼容 SDK 独立使用
+     */
+    public TemuClient(String appKey, String appSecret, String accessToken, String baseUrl,
+                      RestTemplate restTemplate, ObjectMapper objectMapper,
+                      int connectTimeoutMillis, int readTimeoutMillis, TemuJsonStorageService jsonStorageService) {
         if (isBlank(appKey) || isBlank(appSecret) || isBlank(baseUrl)) {
             throw new IllegalArgumentException("Temu appKey、appSecret、baseUrl 不能为空");
         }
@@ -98,6 +134,7 @@ public class TemuClient {
         this.baseUrl = normalizeBaseUrl(baseUrl);
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
+        this.jsonStorageService = jsonStorageService;
         this.connectTimeoutMillis = connectTimeoutMillis;
         this.readTimeoutMillis = readTimeoutMillis;
     }
@@ -154,9 +191,23 @@ public class TemuClient {
                 response = restTemplate.exchange(baseUrl + ROUTER_PATH, HttpMethod.POST,
                         new HttpEntity<>(params, headers), String.class);
             }
-            return objectMapper.readTree(response.getBody());
+            JsonNode responseBody = objectMapper.readTree(response.getBody());
+            persistResponse(apiType, responseBody);
+            return responseBody;
         } catch (RestClientException | JacksonException ex) {
             throw new TemuApiException("调用 Temu OpenAPI 失败: " + apiType, ex);
+        }
+    }
+
+    /**
+     * 归档成功调用的 Temu 原始响应。
+     *
+     * @param apiType Temu OpenAPI 接口 type
+     * @param responseBody 已解析的响应 JSON
+     */
+    private void persistResponse(String apiType, JsonNode responseBody) {
+        if (jsonStorageService != null) {
+            jsonStorageService.persist(apiType, responseBody);
         }
     }
 

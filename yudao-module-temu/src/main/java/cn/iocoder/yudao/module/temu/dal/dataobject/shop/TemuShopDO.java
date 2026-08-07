@@ -10,6 +10,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.time.LocalDateTime;
+
 /**
  * Temu 店铺 DO。
  *
@@ -50,5 +52,15 @@ public class TemuShopDO extends TenantBaseDO {
      * Temu 授权 Token。
      */
     private String authToken;
+
+    /**
+     * Temu 授权生效时间。
+     */
+    private LocalDateTime authorizeTime;
+
+    /**
+     * Temu 授权过期时间，用于提示店铺重新授权。
+     */
+    private LocalDateTime authorizeExpireTime;
 
 }
