@@ -5,14 +5,9 @@ import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
+import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import jakarta.annotation.Resource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriUtils;
 
 import java.net.URI;
@@ -35,7 +30,8 @@ public class AmazonListingsServiceImpl implements AmazonListingsService {
     private AmazonOAuthService amazonOAuthService;
     @Resource
     private AmazonShopMapper amazonShopMapper;
-    private final RestTemplate restTemplate = new RestTemplate();
+    @Resource
+    private AmazonSellingPartnerClient amazonSellingPartnerClient;
 
     /** {@inheritDoc} */
     @Override
@@ -45,9 +41,7 @@ public class AmazonListingsServiceImpl implements AmazonListingsService {
         AmazonMarketplaceEnum marketplace = requireMarketplace(request.getCountryCode());
         String accessToken = amazonOAuthService.getSellerAccessToken(shop.getId());
         URI uri = buildRequestUri(marketplace, shop.getSellerId(), request);
-        HttpHeaders headers = createAccessTokenHeaders(accessToken);
-        ResponseEntity<Map> response = restTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(headers), Map.class);
-        return response.getBody() == null ? Map.of() : (Map<String, Object>) response.getBody();
+        return amazonSellingPartnerClient.getListingsItems(uri, accessToken);
     }
 
     /**
@@ -102,19 +96,6 @@ public class AmazonListingsServiceImpl implements AmazonListingsService {
 
         String path = "/listings/2021-08-01/items/" + UriUtils.encodePathSegment(sellerId, StandardCharsets.UTF_8);
         return URI.create(marketplace.getEndpoint() + path + "?" + buildQuery(query));
-    }
-
-    /**
-     * 创建 Listings Items API 所需的 LWA access token 请求头。
-     *
-     * @param accessToken 店铺有效 Seller access token
-     * @return 包含 LWA access token 的请求头
-     */
-    private HttpHeaders createAccessTokenHeaders(String accessToken) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
-        headers.set("x-amz-access-token", accessToken);
-        return headers;
     }
 
     /** 按 RFC 3986 编码并排序查询参数。 */

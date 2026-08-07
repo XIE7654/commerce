@@ -9,17 +9,12 @@ import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
 import cn.iocoder.yudao.module.amazon.framework.config.AwsProperties;
+import cn.iocoder.yudao.module.amazon.sdk.AmazonOAuthClient;
 import jakarta.annotation.Resource;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
@@ -55,8 +50,9 @@ public class AmazonOAuthServiceImpl implements AmazonOAuthService {
     private StringRedisTemplate stringRedisTemplate;
     @Resource
     private RedissonClient redissonClient;
+    @Resource
+    private AmazonOAuthClient amazonOAuthClient;
 
-    private final RestTemplate restTemplate = new RestTemplate();
     private final SecureRandom secureRandom = new SecureRandom();
 
     /** {@inheritDoc} */
@@ -176,24 +172,16 @@ public class AmazonOAuthServiceImpl implements AmazonOAuthService {
     }
 
     /**
-     * 请求 Amazon OAuth token endpoint。授权码交换和 refresh_token 刷新共用此逻辑。
+     * 通过 SDK 请求 Amazon OAuth Token，避免业务服务直接处理外部 HTTP 调用。
+     *
+     * @param url OAuth Token 端点
+     * @param code 授权码；刷新 Token 时传 {@code null}
+     * @param refreshToken refresh token；授权码换取时传 {@code null}
+     * @param type 授权类型
+     * @return Amazon 原始 Token 响应
      */
     private Map<String, Object> requestToken(String url, String code, String refreshToken, String type) {
-        if (isBlank(url)) {
-            throw new IllegalArgumentException("Amazon token endpoint 未配置");
-        }
-        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
-        form.add("grant_type", refreshToken == null ? "authorization_code" : "refresh_token");
-        form.add(refreshToken == null ? "code" : "refresh_token", refreshToken == null ? code : refreshToken);
-        form.add("client_id", "ads".equalsIgnoreCase(type) ? properties.getAdClientId() : properties.getClientId());
-        form.add("client_secret", "ads".equalsIgnoreCase(type) ? properties.getAdClientSecret() : properties.getClientSecret());
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        Map<?, ?> result = restTemplate.postForObject(url, new HttpEntity<>(form, headers), Map.class);
-        if (result == null || result.get("access_token") == null) {
-            throw new IllegalStateException("Amazon OAuth token 响应缺少 access_token");
-        }
-        return (Map<String, Object>) result;
+        return amazonOAuthClient.requestToken(url, code, refreshToken, type);
     }
 
     /**
