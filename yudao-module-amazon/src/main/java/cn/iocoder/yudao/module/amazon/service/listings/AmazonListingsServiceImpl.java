@@ -1,18 +1,14 @@
 package cn.iocoder.yudao.module.amazon.service.listings;
 
 import cn.iocoder.yudao.module.amazon.controller.admin.listings.vo.AmazonListingsSearchReqVO;
+import cn.iocoder.yudao.module.amazon.controller.admin.listings.vo.AmazonListingsItemGetReqVO;
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
+import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import jakarta.annotation.Resource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriUtils;
 
 import java.net.URI;
@@ -35,7 +31,8 @@ public class AmazonListingsServiceImpl implements AmazonListingsService {
     private AmazonOAuthService amazonOAuthService;
     @Resource
     private AmazonShopMapper amazonShopMapper;
-    private final RestTemplate restTemplate = new RestTemplate();
+    @Resource
+    private AmazonSellingPartnerClient amazonSellingPartnerClient;
 
     /** {@inheritDoc} */
     @Override
@@ -45,9 +42,17 @@ public class AmazonListingsServiceImpl implements AmazonListingsService {
         AmazonMarketplaceEnum marketplace = requireMarketplace(request.getCountryCode());
         String accessToken = amazonOAuthService.getSellerAccessToken(shop.getId());
         URI uri = buildRequestUri(marketplace, shop.getSellerId(), request);
-        HttpHeaders headers = createAccessTokenHeaders(accessToken);
-        ResponseEntity<Map> response = restTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(headers), Map.class);
-        return response.getBody() == null ? Map.of() : (Map<String, Object>) response.getBody();
+        return amazonSellingPartnerClient.getListingsItems(uri, accessToken);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Map<String, Object> getListingsItem(AmazonListingsItemGetReqVO request) {
+        AmazonShopDO shop = requireShop(request.getShopId());
+        AmazonMarketplaceEnum marketplace = requireMarketplace(request.getCountryCode());
+        String accessToken = amazonOAuthService.getSellerAccessToken(shop.getId());
+        URI uri = buildItemRequestUri(marketplace, shop.getSellerId(), request);
+        return amazonSellingPartnerClient.getListingsItem(uri, accessToken);
     }
 
     /**
@@ -105,16 +110,26 @@ public class AmazonListingsServiceImpl implements AmazonListingsService {
     }
 
     /**
-     * 创建 Listings Items API 所需的 LWA access token 请求头。
+     * 构造单个 Listings Item 查询 URI；SKU 必须作为路径段编码，避免其中的斜杠等字符改变 Amazon 路由。
      *
-     * @param accessToken 店铺有效 Seller access token
-     * @return 包含 LWA access token 的请求头
+     * @param marketplace 目标站点配置
+     * @param sellerId 店铺 Seller ID
+     * @param request 单商品查询参数
+     * @return 可直接发起请求的 URI
      */
-    private HttpHeaders createAccessTokenHeaders(String accessToken) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
-        headers.set("x-amz-access-token", accessToken);
-        return headers;
+    private URI buildItemRequestUri(AmazonMarketplaceEnum marketplace, String sellerId, AmazonListingsItemGetReqVO request) {
+        if (isBlank(sellerId)) {
+            throw new IllegalArgumentException("店铺未配置 Amazon sellerId");
+        }
+        Map<String, String> query = new TreeMap<>();
+        query.put("marketplaceIds", marketplace.getMarketplaceId());
+        query.put("includedData", joinOrDefault(request.getIncludedData(), "summaries"));
+        put(query, "issueLocale", request.getIssueLocale());
+
+        String path = "/listings/2021-08-01/items/"
+                + UriUtils.encodePathSegment(sellerId, StandardCharsets.UTF_8) + "/"
+                + UriUtils.encodePathSegment(request.getSku(), StandardCharsets.UTF_8);
+        return URI.create(marketplace.getEndpoint() + path + "?" + buildQuery(query));
     }
 
     /** 按 RFC 3986 编码并排序查询参数。 */

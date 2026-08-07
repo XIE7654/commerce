@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.amazon.controller.admin.listings;
 
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.module.amazon.controller.admin.listings.vo.AmazonListingsSearchReqVO;
+import cn.iocoder.yudao.module.amazon.controller.admin.listings.vo.AmazonListingsItemGetReqVO;
 import cn.iocoder.yudao.module.amazon.service.listings.AmazonListingsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -39,5 +40,18 @@ public class AmazonListingsController {
     @PreAuthorize("@ss.hasPermission('amazon:listings:query')")
     public CommonResult<Map<String, Object>> search(@Valid @RequestBody AmazonListingsSearchReqVO request) {
         return CommonResult.success(amazonListingsService.searchListingsItems(request));
+    }
+
+    /**
+     * 根据 SKU 查询指定店铺在目标国家站点的单个 Listings Item，不保存业务数据。
+     *
+     * @param request 店铺、国家代码、SKU 及返回数据集
+     * @return Amazon Listings Item 原始响应
+     */
+    @PostMapping("/item")
+    @Operation(summary = "按 SKU 查询 Amazon Listings Item")
+    @PreAuthorize("@ss.hasPermission('amazon:listings:query')")
+    public CommonResult<Map<String, Object>> getItem(@Valid @RequestBody AmazonListingsItemGetReqVO request) {
+        return CommonResult.success(amazonListingsService.getListingsItem(request));
     }
 }
