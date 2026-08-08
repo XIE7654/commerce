@@ -9,6 +9,7 @@ import cn.iocoder.yudao.module.temu.sdk.api.OrderApi;
 import cn.iocoder.yudao.module.temu.sdk.api.PriceApi;
 import cn.iocoder.yudao.module.temu.sdk.api.ProductApi;
 import cn.iocoder.yudao.module.temu.sdk.api.PromotionApi;
+import cn.iocoder.yudao.module.temu.sdk.api.WebhookApi;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -61,6 +62,7 @@ public class TemuClient {
     private final PriceApi price = new PriceApi(this);
     private final ProductApi product = new ProductApi(this);
     private final FulfillmentApi fulfillment = new FulfillmentApi(this);
+    private final WebhookApi webhook = new WebhookApi(this);
 
     /**
      * 使用默认 HTTP 客户端创建 SDK。
@@ -159,6 +161,8 @@ public class TemuClient {
     public ProductApi getProduct() { return product; }
     /** @return 履约接口服务 */
     public FulfillmentApi getFulfillment() { return fulfillment; }
+    /** @return Webhook 事件订阅接口服务 */
+    public WebhookApi getWebhook() { return webhook; }
 
     /**
      * 调用 Temu Router 接口。

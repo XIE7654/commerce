@@ -1,0 +1,69 @@
+### Order Management 订单管理接口测试
+
+@temuAccessToken = replace-with-temu-access-token
+@regionId = 211
+@parentOrderSn = PO-211-08979834258470637
+@orderSn = 211-08979834258470637
+
+### 查询订单列表
+POST {{baseUrl}}/temu/order-management/orders/list
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "parentOrderStatus": 4,
+  "regionId": {{regionId}},
+  "pageNumber": 1,
+  "pageSize": 5
+}
+
+### 查询父订单详情
+POST {{baseUrl}}/temu/order-management/orders/detail
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "parentOrderSn": "{{parentOrderSn}}"
+}
+
+### 查询定制订单详情
+POST {{baseUrl}}/temu/order-management/orders/customization/detail
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "orderSnList": ["{{orderSn}}"]
+}
+
+### 查询订单收货信息
+POST {{baseUrl}}/temu/order-management/orders/shipping-info
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "parentOrderSn": "{{parentOrderSn}}"
+}
+
+### 查询订单承运商列表
+POST {{baseUrl}}/temu/order-management/shipping-companies/list
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "regionId": "{{regionId}}"
+}

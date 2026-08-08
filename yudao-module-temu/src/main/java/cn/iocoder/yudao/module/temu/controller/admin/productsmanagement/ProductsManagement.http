@@ -1,0 +1,115 @@
+### Products Management 商品管理接口测试
+
+@temuAccessToken = replace-with-temu-access-token
+
+### 查询商品列表
+POST {{baseUrl}}/temu/products-management/goods/list
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "goodsSearchType": 1,
+  "orderType": 1,
+  "pageNo": 1,
+  "pageSize": 100
+}
+
+### 查询 SKU 列表
+POST {{baseUrl}}/temu/products-management/skus/list
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "skuStatusFilterType": 2,
+  "pageNo": 1,
+  "pageSize": 25
+}
+
+### 查询商品详情
+POST {{baseUrl}}/temu/products-management/goods/detail
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "goodsId": 602771461874681
+}
+
+### 查询商品规格详情
+POST {{baseUrl}}/temu/products-management/goods/specs/detail
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "specIdList": [76177975]
+}
+
+### 完整更新商品
+POST {{baseUrl}}/temu/products-management/goods/update
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "goodsId": 602300089208955,
+  "goodsProperty": {"goodsProperties": [{"templatePid": 1389546, "refPid": 1456, "vid": 35623, "value": "CD", "pid": 1379}]},
+  "goodsBasic": {"catId": 4, "goodsName": "Dewalt DWD210G 120V Drill"},
+  "goodsServicePromise": {"costTemplateId": "LFT-1092101837701122414", "fulfillmentType": 1, "shipmentLimitDay": 1},
+  "skuList": [{"skuId": 38880191475137, "height": "1.0", "length": "1.0", "width": "1.0", "weight": "1.0", "weightUnit": "lb", "volumeUnit": "in", "images": ["https://img.kwcdn.com/local-goods-image/example.jpeg"], "quantity": 0, "specIdList": [96261077], "externalProductId": "9782266286810", "externalProductType": 3, "price": {"basePrice": {"amount": "1.99", "currency": "USD"}}}]
+}
+
+### 部分更新商品
+POST {{baseUrl}}/temu/products-management/goods/partial-update
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "goodsId": 602448802507894,
+  "bulletPoints": ["Update"],
+  "catId": 1179,
+  "goodsDesc": "Update",
+  "goodsName": "Esellerpro Executive Pen Update",
+  "goodsProperties": [{"pid": 1, "refPid": 1920, "templatePid": 988850, "value": "Silicone", "vid": 56}],
+  "goodsServicePromise": {"shipmentLimitDay": 1, "costTemplateId": "LFT-1092101837701122414", "fulfillmentType": 1}
+}
+
+### 查询商品上架状态
+POST {{baseUrl}}/temu/products-management/goods/sale-status
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "goodsId": 602771461874681
+}
+
+### 更新商品上架状态
+POST {{baseUrl}}/temu/products-management/goods/sale-status/update
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "goodsId": 602771461874681,
+  "onsale": 1
+}

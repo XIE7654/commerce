@@ -1,0 +1,48 @@
+### Refund And Return 退款退货接口测试
+
+@temuAccessToken = replace-with-temu-access-token
+@parentAfterSalesSn = PO-211-06792196915752890-D01
+@afterSalesSn = PO-211-06792196915752890
+
+### 查询父售后单列表
+POST {{baseUrl}}/temu/refund-and-return/parent-aftersales-orders/list
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "pageNo": 1,
+  "pageSize": 10,
+  "afterSalesStatusGroup": 7,
+  "createAtStart": 1747187481,
+  "createAtEnd": 1747387481
+}
+
+### 查询售后单列表
+POST {{baseUrl}}/temu/refund-and-return/aftersales-orders/list
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "pageNo": 1,
+  "pageSize": 10,
+  "parentAfterSalesSnList": []
+}
+
+### 查询退货单信息
+POST {{baseUrl}}/temu/refund-and-return/return-orders/list
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "parentAfterSalesSn": "{{parentAfterSalesSn}}",
+  "afterSalesSn": "{{afterSalesSn}}"
+}

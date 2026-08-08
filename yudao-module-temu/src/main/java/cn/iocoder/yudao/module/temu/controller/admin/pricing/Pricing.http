@@ -1,0 +1,92 @@
+### Temu Pricing 管理后台接口测试
+@temuAccessToken = replace-with-temu-access-token
+@goodsId = 602859038941039
+@skuId = 48098265035528
+
+### 查询商品 SKU 供货价
+POST {{baseUrl}}/temu/pricing/goods/prices
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{"site":"US","accessToken":"{{temuAccessToken}}","querySupplierPriceBaseList":[{"goodsId":{{goodsId}},"skuIdList":[{{skuId}}]}]}
+
+### 修改商品 SKU 供货价
+POST {{baseUrl}}/temu/pricing/goods/prices/update
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{"site":"US","accessToken":"{{temuAccessToken}}","goodsId":{{goodsId}},"changeSkuPriceDTOList":[{"reason":"11","skuChangePriceBaseDTOList":[{"skuId":{{skuId}},"newSupplierPrice":{"amount":11,"currency":"USD"}}]}]}
+
+### 查询调价单
+POST {{baseUrl}}/temu/pricing/price-orders/page
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{"site":"US","accessToken":"{{temuAccessToken}}","page":1,"size":5,"priceOrderType":2,"goodsId":{{goodsId}}}
+
+### 接受调价单
+POST {{baseUrl}}/temu/pricing/price-orders/accept
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{"site":"US","accessToken":"{{temuAccessToken}}","priceOrderInfoList":[{"priceOrderId":720125043038883104,"goodsId":{{goodsId}},"priceCommitVersion":0}]}
+
+### 议价调价单
+POST {{baseUrl}}/temu/pricing/price-orders/negotiate
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{"site":"US","accessToken":"{{temuAccessToken}}","priceOrderId":711240924547164,"goodsId":{{goodsId}},"priceCommitVersion":1,"priceCommitId":202096051,"negotiatedPriceSkuList":[{"reason":"1","skuId":{{skuId}},"newSupplierPrice":{"amount":21,"currency":"USD"}}]}
+
+### 拒绝调价单
+POST {{baseUrl}}/temu/pricing/price-orders/reject
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{"site":"US","accessToken":"{{temuAccessToken}}","rejectDelist":false,"priceOrderBaseList":[{"goodsId":{{goodsId}},"priceOrderSn":"720125052045812206","priceCommitVersion":0}]}
+
+### 创建价格申诉单
+POST {{baseUrl}}/temu/pricing/appeal-orders/create
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{"site":"US","accessToken":"{{temuAccessToken}}","goodsId":{{goodsId}},"merchantAppealReasonCodeList":["IP_LICENSED_PRODUCT"],"skuInfoList":[{"skuId":{{skuId}},"supplyPrice":{"amount":500,"currency":"USD"},"recommendedSupplyPrice":{"amount":1.23,"currency":"USD"},"targetSupplyPrice":{"amount":20,"currency":"USD"}}]}
+
+### 查询价格申诉单
+POST {{baseUrl}}/temu/pricing/appeal-orders/query
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{"site":"US","accessToken":"{{temuAccessToken}}","goodsId":{{goodsId}},"tabCode":10}
+
+### 查询价格申诉记录
+POST {{baseUrl}}/temu/pricing/appeal-orders/records
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{"site":"US","accessToken":"{{temuAccessToken}}","skuId":{{skuId}}}
+
+### 查询商品推荐价
+POST {{baseUrl}}/temu/pricing/recommended-prices/query
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{"site":"US","accessToken":"{{temuAccessToken}}","recommendedPriceType":10,"goodsIdList":[{{goodsId}}],"language":"en"}
+
+### 查询订单金额
+POST {{baseUrl}}/temu/pricing/orders/amount
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{"site":"US","accessToken":"{{temuAccessToken}}","parentOrderSn":"PO-076-06583510520870550"}

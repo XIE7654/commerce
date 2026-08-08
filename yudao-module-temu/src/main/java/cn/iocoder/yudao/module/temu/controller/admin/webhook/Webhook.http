@@ -1,0 +1,21 @@
+### Temu Webhook 接口测试
+
+@temuAccessToken = replace-with-temu-access-token
+
+### 更新 Webhook 事件订阅
+POST {{baseUrl}}/temu/webhook/events/subscribe
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "permitEventCodeList": [
+    "bg_order_status_change_event",
+    "bg_trade_logistics_address_changed",
+    "bg_aftersales_status_change",
+    "bg_cancel_order_status_change"
+  ],
+  "cancelEventCodeList": []
+}

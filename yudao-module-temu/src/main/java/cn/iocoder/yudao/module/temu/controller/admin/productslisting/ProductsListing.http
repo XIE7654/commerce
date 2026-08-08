@@ -1,0 +1,91 @@
+### Products Listing 商品刊登接口测试
+
+@temuAccessToken = replace-with-temu-access-token
+
+### 查询商品分类
+POST {{baseUrl}}/temu/products-listing/goods/categories
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{"site":"US","accessToken":"{{temuAccessToken}}","parentCatId":0}
+
+### 查询分类商品模板
+POST {{baseUrl}}/temu/products-listing/goods/template
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{"site":"US","accessToken":"{{temuAccessToken}}","catId":4}
+
+### 查询可用品牌与商标
+POST {{baseUrl}}/temu/products-listing/goods/brand-trademarks
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{"site":"US","accessToken":"{{temuAccessToken}}","brandId":4,"page":1,"size":25}
+
+### 查询签名信息
+POST {{baseUrl}}/temu/products-listing/goods/signature
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{"site":"US","accessToken":"{{temuAccessToken}}","brandId":4,"page":1,"size":25}
+
+### 查询运费模板
+POST {{baseUrl}}/temu/products-listing/shipping-templates
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{"site":"US","accessToken":"{{temuAccessToken}}"}
+
+### 查询尺码元素
+POST {{baseUrl}}/temu/products-listing/goods/size-elements
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{"site":"US","accessToken":"{{temuAccessToken}}","catId":4}
+
+### 上传并自动处理商品图片
+POST {{baseUrl}}/temu/products-listing/images/auto-transform
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{"site":"US","accessToken":"{{temuAccessToken}}","fileUrl":"https://example.com/image.jpg","formatConversionType":1,"scalingType":1,"compressionType":0}
+
+### 创建规格 ID
+POST {{baseUrl}}/temu/products-listing/specs
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{"site":"US","accessToken":"{{temuAccessToken}}","catId":4,"parentSpecId":1,"childSpecName":"spec name"}
+
+### 创建商品
+POST {{baseUrl}}/temu/products-listing/goods
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{"site":"US","accessToken":"{{temuAccessToken}}","goodsBasic":{"catId":30093,"goodsName":"Example goods"},"goodsDesc":"Example description","goodsProperty":{"goodsProperties":[]},"goodsServicePromise":{"costTemplateId":"LFT-example","fulfillmentType":1,"shipmentLimitDay":1},"goodsTrademark":{"brandId":110016314656,"trademarkId":211000162002},"skuList":[{"height":"1.0","length":"1.0","width":"1.0","weight":"1.0","weightUnit":"g","volumeUnit":"cm","images":["https://example.com/image.jpg"],"quantity":1,"specIdList":[]}]}
+
+### 推荐商品分类
+POST {{baseUrl}}/temu/products-listing/goods/category-recommendations
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{"site":"US","accessToken":"{{temuAccessToken}}","goodsName":"REX Commuter"}
+
+### 推荐商品属性
+POST {{baseUrl}}/temu/products-listing/goods/property-recommendations
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{"site":"US","accessToken":"{{temuAccessToken}}","catId":40023,"goodsName":"Dewalt DWD210G 120V Drill","goodsPropList":[{"propName":"color","values":["White"]}]}
