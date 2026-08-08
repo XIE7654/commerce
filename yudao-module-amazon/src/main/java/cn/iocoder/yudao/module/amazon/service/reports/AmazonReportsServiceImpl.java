@@ -2,14 +2,19 @@ package cn.iocoder.yudao.module.amazon.service.reports;
 
 import cn.iocoder.yudao.module.amazon.controller.admin.reports.vo.AmazonReportCreateReqVO;
 import cn.iocoder.yudao.module.amazon.controller.admin.reports.vo.AmazonReportIdReqVO;
+import cn.iocoder.yudao.module.amazon.controller.admin.reports.vo.AmazonReportScheduleCreateReqVO;
+import cn.iocoder.yudao.module.amazon.controller.admin.reports.vo.AmazonReportScheduleIdReqVO;
+import cn.iocoder.yudao.module.amazon.controller.admin.reports.vo.AmazonReportSchedulesListReqVO;
 import cn.iocoder.yudao.module.amazon.controller.admin.reports.vo.AmazonReportsListReqVO;
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
 import cn.iocoder.yudao.module.amazon.enums.AmazonReportTypeEnum;
+import cn.iocoder.yudao.module.amazon.sdk.AmazonApiCategory;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
 import jakarta.annotation.Resource;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriUtils;
 
@@ -22,6 +27,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -33,6 +39,10 @@ import java.util.TreeMap;
 public class AmazonReportsServiceImpl implements AmazonReportsService {
 
     private static final String REPORTS_PATH = "/reports/2021-06-30";
+    /** Reports API 支持创建计划的 ISO 8601 周期。 */
+    private static final Set<String> REPORT_SCHEDULE_PERIODS = Set.of(
+            "PT5M", "PT15M", "PT30M", "PT1H", "PT2H", "PT4H", "PT8H", "PT12H", "P1D", "P2D", "P3D", "PT84H",
+            "P7D", "P14D", "P15D", "P18D", "P30D", "P1M");
 
     @Resource
     private AmazonOAuthService amazonOAuthService;
@@ -88,6 +98,57 @@ public class AmazonReportsServiceImpl implements AmazonReportsService {
     @Override
     public Map<String, Object> getReportDocument(AmazonReportIdReqVO request) {
         return getReportResource(request, "/documents/", "getReportDocument", "report-document");
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Map<String, Object> getReportSchedules(AmazonReportSchedulesListReqVO request) {
+        validateScheduleListRequest(request);
+        return execute(request.getShopId(), request.getCountryCode(), (shop, marketplace, accessToken) -> {
+            Map<String, String> query = Map.of("reportTypes", joinReportTypes(request.getReportTypes()));
+            URI uri = URI.create(marketplace.getEndpoint() + REPORTS_PATH + "/schedules?" + buildQuery(query));
+            return amazonSellingPartnerClient.getReports(uri, accessToken, "getReportSchedules", "report-schedules", shop.getId(),
+                    request.getCountryCode(), marketplace.getMarketplaceId());
+        });
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Map<String, Object> createReportSchedule(AmazonReportScheduleCreateReqVO request) {
+        validateScheduleRequest(request);
+        return execute(request.getShopId(), request.getCountryCode(), (shop, marketplace, accessToken) -> {
+            Map<String, Object> body = new LinkedHashMap<>();
+            body.put("reportType", request.getReportType().getAvailableReport());
+            body.put("marketplaceIds", List.of(marketplace.getMarketplaceId()));
+            body.put("period", request.getPeriod());
+            putBodyValue(body, "nextReportCreationTime", request.getNextReportCreationTime());
+            if (request.getReportOptions() != null && !request.getReportOptions().isEmpty()) {
+                body.put("reportOptions", request.getReportOptions());
+            }
+            return amazonSellingPartnerClient.mutateByCategory(URI.create(marketplace.getEndpoint() + REPORTS_PATH + "/schedules"),
+                    accessToken, HttpMethod.POST, body, AmazonApiCategory.REPORTS, "createReportSchedule", "report-schedule",
+                    shop.getId(), request.getCountryCode(), marketplace.getMarketplaceId());
+        });
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Map<String, Object> getReportSchedule(AmazonReportScheduleIdReqVO request) {
+        return execute(request.getShopId(), request.getCountryCode(), (shop, marketplace, accessToken) ->
+                amazonSellingPartnerClient.getReports(buildIdUri(marketplace, "/schedules/", request.getReportScheduleId()), accessToken,
+                        "getReportSchedule", "report-schedule", shop.getId(), request.getCountryCode(), marketplace.getMarketplaceId()));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void cancelReportSchedule(AmazonReportScheduleIdReqVO request) {
+        execute(request.getShopId(), request.getCountryCode(), (shop, marketplace, accessToken) -> {
+            // Amazon 该操作成功时通常不返回正文，使用支持空响应的调用路径保留请求审计。
+            amazonSellingPartnerClient.mutateByCategoryOptional(buildIdUri(marketplace, "/schedules/", request.getReportScheduleId()),
+                    accessToken, HttpMethod.DELETE, null, AmazonApiCategory.REPORTS, "cancelReportSchedule", "report-schedule",
+                    shop.getId(), request.getCountryCode(), marketplace.getMarketplaceId());
+            return null;
+        });
     }
 
     /**
@@ -172,6 +233,29 @@ public class AmazonReportsServiceImpl implements AmazonReportsService {
             throw new IllegalArgumentException("reportTypes 与 nextToken 必须传入一个");
         }
         validateDateRange(request.getCreatedSince(), request.getCreatedUntil(), "createdSince", "createdUntil");
+    }
+
+    /**
+     * 验证计划周期和可选的首次生成时间，避免请求到达 Amazon 后才因格式错误被拒绝。
+     *
+     * @param request 创建报表计划请求
+     */
+    private void validateScheduleRequest(AmazonReportScheduleCreateReqVO request) {
+        if (!REPORT_SCHEDULE_PERIODS.contains(request.getPeriod())) {
+            throw new IllegalArgumentException("period 必须为 Amazon 支持的 ISO 8601 周期");
+        }
+        parseDateTime(request.getNextReportCreationTime(), "nextReportCreationTime");
+    }
+
+    /**
+     * 验证计划列表的必填报表类型，保证非 Web 调用同样遵守 Amazon 的筛选约束。
+     *
+     * @param request 报表计划列表查询请求
+     */
+    private void validateScheduleListRequest(AmazonReportSchedulesListReqVO request) {
+        if (isEmpty(request.getReportTypes())) {
+            throw new IllegalArgumentException("reportTypes 不能为空");
+        }
     }
 
     /**

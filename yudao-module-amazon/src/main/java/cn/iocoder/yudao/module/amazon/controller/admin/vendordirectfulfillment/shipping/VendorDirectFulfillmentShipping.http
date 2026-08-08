@@ -1,0 +1,159 @@
+### 查询 V1 发货标签
+POST {{baseUrl}}/amazon/vendor-direct-fulfillment/shipping/v1/shipping-labels
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","query":{"createdAfter":"2026-08-01T00:00:00Z"}}
+
+### 提交 V1 发货标签请求
+POST {{baseUrl}}/amazon/vendor-direct-fulfillment/shipping/v1/shipping-labels/submit
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","body":{"shippingLabelRequests":[]}}
+
+### 查询 V1 发货标签详情
+POST {{baseUrl}}/amazon/vendor-direct-fulfillment/shipping/v1/shipping-labels/get
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","pathParams":{"purchaseOrderNumber":"PO-1"}}
+
+### 提交 V1 发货确认
+POST {{baseUrl}}/amazon/vendor-direct-fulfillment/shipping/v1/shipment-confirmations
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","body":{"shipmentConfirmations":[]}}
+
+### 提交 V1 发货状态更新
+POST {{baseUrl}}/amazon/vendor-direct-fulfillment/shipping/v1/shipment-status-updates
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","body":{"shipmentStatusUpdates":[]}}
+
+### 查询 V1 客户发票
+POST {{baseUrl}}/amazon/vendor-direct-fulfillment/shipping/v1/customer-invoices
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","query":{"createdAfter":"2026-08-01T00:00:00Z"}}
+
+### 查询 V1 客户发票详情
+POST {{baseUrl}}/amazon/vendor-direct-fulfillment/shipping/v1/customer-invoices/get
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","pathParams":{"purchaseOrderNumber":"PO-1"}}
+
+### 查询 V1 装箱单
+POST {{baseUrl}}/amazon/vendor-direct-fulfillment/shipping/v1/packing-slips
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","query":{"createdAfter":"2026-08-01T00:00:00Z"}}
+
+### 查询 V1 装箱单详情
+POST {{baseUrl}}/amazon/vendor-direct-fulfillment/shipping/v1/packing-slips/get
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","pathParams":{"purchaseOrderNumber":"PO-1"}}
+
+### 查询 2021-12-28 发货标签
+POST {{baseUrl}}/amazon/vendor-direct-fulfillment/shipping/2021-12-28/shipping-labels
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","query":{"createdAfter":"2026-08-01T00:00:00Z"}}
+
+### 提交 2021-12-28 发货标签请求
+POST {{baseUrl}}/amazon/vendor-direct-fulfillment/shipping/2021-12-28/shipping-labels/submit
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","body":{"shippingLabelRequests":[]}}
+
+### 查询 2021-12-28 发货标签详情
+POST {{baseUrl}}/amazon/vendor-direct-fulfillment/shipping/2021-12-28/shipping-labels/get
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","pathParams":{"purchaseOrderNumber":"PO-1"}}
+
+### 创建 2021-12-28 发货标签
+POST {{baseUrl}}/amazon/vendor-direct-fulfillment/shipping/2021-12-28/shipping-labels/create
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","pathParams":{"purchaseOrderNumber":"PO-1"},"body":{"shippingLabelRequest":{}}}
+
+### 提交 2021-12-28 发货确认
+POST {{baseUrl}}/amazon/vendor-direct-fulfillment/shipping/2021-12-28/shipment-confirmations
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","body":{"shipmentConfirmations":[]}}
+
+### 提交 2021-12-28 发货状态更新
+POST {{baseUrl}}/amazon/vendor-direct-fulfillment/shipping/2021-12-28/shipment-status-updates
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","body":{"shipmentStatusUpdates":[]}}
+
+### 查询 2021-12-28 客户发票
+POST {{baseUrl}}/amazon/vendor-direct-fulfillment/shipping/2021-12-28/customer-invoices
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","query":{"createdAfter":"2026-08-01T00:00:00Z"}}
+
+### 查询 2021-12-28 客户发票详情
+POST {{baseUrl}}/amazon/vendor-direct-fulfillment/shipping/2021-12-28/customer-invoices/get
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","pathParams":{"purchaseOrderNumber":"PO-1"}}
+
+### 查询 2021-12-28 装箱单
+POST {{baseUrl}}/amazon/vendor-direct-fulfillment/shipping/2021-12-28/packing-slips
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","query":{"createdAfter":"2026-08-01T00:00:00Z"}}
+
+### 查询 2021-12-28 装箱单详情
+POST {{baseUrl}}/amazon/vendor-direct-fulfillment/shipping/2021-12-28/packing-slips/get
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","pathParams":{"purchaseOrderNumber":"PO-1"}}
+
+### 创建 2021-12-28 容器标签
+POST {{baseUrl}}/amazon/vendor-direct-fulfillment/shipping/2021-12-28/container-label
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","body":{"sellingParty":{"partyId":"VENDOR-1"},"shipFromParty":{"partyId":"WAREHOUSE-1"},"packages":[]}}

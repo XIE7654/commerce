@@ -265,6 +265,45 @@ public class AmazonSellingPartnerClient {
     }
 
     /**
+     * 创建受限数据令牌（RDT）。
+     *
+     * <p>RDT 可用于读取买家 PII，不能像普通 API 响应一样归档至文件；仅记录脱敏后的请求审计信息。</p>
+     *
+     * @param uri Tokens API 请求地址
+     * @param accessToken 店铺的 Seller LWA access token
+     * @param body 创建 RDT 的请求体
+     * @param shopId 店铺编号
+     * @param countryCode 站点国家代码
+     * @param marketplaceId 请求关联的 Marketplace ID
+     * @return Amazon Tokens API 原始 JSON 响应
+     */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> createRestrictedDataToken(URI uri, String accessToken, Object body, Long shopId,
+                                                          String countryCode, String marketplaceId) {
+        HttpHeaders headers = buildHeaders(accessToken, true);
+        AmazonApiRequestLogContext context = new AmazonApiRequestLogContext("createRestrictedDataToken",
+                AmazonApiCategory.TOKENS.getDirectoryName(), HttpMethod.POST.name(), uri, shopId, countryCode,
+                List.of(marketplaceId), body, headers, LocalDateTime.now(), null);
+        ResponseEntity<Map> response;
+        try {
+            response = restTemplate.exchange(uri, HttpMethod.POST, new HttpEntity<>(body, headers), Map.class);
+        } catch (RestClientResponseException exception) {
+            amazonApiRequestLogService.log(context, exception.getStatusCode().value(), exception.getResponseHeaders(), exception);
+            throw exception;
+        } catch (RuntimeException exception) {
+            amazonApiRequestLogService.log(context, null, null, exception);
+            throw exception;
+        }
+        if (response.getBody() == null) {
+            IllegalStateException exception = new IllegalStateException("Amazon Tokens API 响应为空");
+            amazonApiRequestLogService.log(context, response.getStatusCode().value(), response.getHeaders(), exception);
+            throw exception;
+        }
+        amazonApiRequestLogService.log(context, response.getStatusCode().value(), response.getHeaders(), null);
+        return (Map<String, Object>) response.getBody();
+    }
+
+    /**
      * 调用带业务请求头的 SP-API 接口并归档 JSON 响应。
      *
      * @param uri SP-API 请求地址

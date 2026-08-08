@@ -1,0 +1,7 @@
+### 查询 Vendor 异步交易状态
+POST {{baseUrl}}/amazon/vendor-transaction-status/get
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","transactionId":"3b6d6a83-9a61-4f15-a4d4-4d3e3e3a4de5"}

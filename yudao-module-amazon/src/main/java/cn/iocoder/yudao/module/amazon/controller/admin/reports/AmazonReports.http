@@ -73,3 +73,53 @@ tenant-id: {{adminTenantId}}
   "countryCode": "US",
   "id": "{{amazonReportDocumentId}}"
 }
+
+### 查询 Amazon 报表计划列表
+POST {{baseUrl}}/amazon/reports/schedule/list
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{
+  "shopId": 1,
+  "countryCode": "US",
+  "reportTypes": ["GET_MERCHANT_LISTINGS_ALL_DATA"]
+}
+
+### 创建 Amazon 报表计划
+POST {{baseUrl}}/amazon/reports/schedule/create
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{
+  "shopId": 1,
+  "countryCode": "US",
+  "reportType": "GET_MERCHANT_LISTINGS_ALL_DATA",
+  "period": "P1D",
+  "nextReportCreationTime": "2026-08-09T00:00:00Z"
+}
+
+### 查询 Amazon 报表计划详情
+POST {{baseUrl}}/amazon/reports/schedule/detail
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{
+  "shopId": 1,
+  "countryCode": "US",
+  "reportScheduleId": "{{amazonReportScheduleId}}"
+}
+
+### 取消 Amazon 报表计划
+POST {{baseUrl}}/amazon/reports/schedule/cancel
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{
+  "shopId": 1,
+  "countryCode": "US",
+  "reportScheduleId": "{{amazonReportScheduleId}}"
+}

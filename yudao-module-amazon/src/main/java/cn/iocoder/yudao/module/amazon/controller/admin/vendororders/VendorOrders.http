@@ -1,0 +1,31 @@
+### 查询 Vendor 采购订单
+POST {{baseUrl}}/amazon/vendor-orders/purchase-orders/list
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","query":{"createdAfter":"2026-08-01T00:00:00Z","limit":"20","includeDetails":"true"}}
+
+### 查询 Vendor 采购订单详情
+POST {{baseUrl}}/amazon/vendor-orders/purchase-orders/get
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","purchaseOrderNumber":"058-1234567-1234567"}
+
+### 提交 Vendor 采购订单确认
+POST {{baseUrl}}/amazon/vendor-orders/acknowledgements/submit
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","body":{"acknowledgements":[{"purchaseOrderNumber":"058-1234567-1234567","acknowledgementDate":"2026-08-08T08:00:00Z","sellingParty":{"partyId":"VENDOR_CODE"},"items":[]}]}}
+
+### 查询 Vendor 采购订单状态
+POST {{baseUrl}}/amazon/vendor-orders/purchase-orders/status
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","query":{"createdAfter":"2026-08-01T00:00:00Z","limit":"20"}}

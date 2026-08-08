@@ -1,0 +1,7 @@
+### 查询货件物流轨迹
+POST {{baseUrl}}/amazon/tracking/shipments/track
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","aftn":"AFTN987654321","acceptLanguage":"en-US"}

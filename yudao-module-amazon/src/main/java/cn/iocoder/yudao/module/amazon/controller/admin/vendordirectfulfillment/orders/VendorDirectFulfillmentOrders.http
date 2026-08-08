@@ -1,0 +1,47 @@
+### 查询 V1 采购订单
+POST {{baseUrl}}/amazon/vendor-direct-fulfillment/orders/v1/purchase-orders
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","query":{"createdAfter":"2026-08-01T00:00:00Z"}}
+
+### 查询 V1 采购订单详情
+POST {{baseUrl}}/amazon/vendor-direct-fulfillment/orders/v1/purchase-orders/get
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","pathParams":{"purchaseOrderNumber":"PO-1"}}
+
+### 提交 V1 订单确认
+POST {{baseUrl}}/amazon/vendor-direct-fulfillment/orders/v1/acknowledgements
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","body":{"acknowledgements":[]}}
+
+### 查询 2021-12-28 采购订单
+POST {{baseUrl}}/amazon/vendor-direct-fulfillment/orders/2021-12-28/purchase-orders
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","query":{"createdAfter":"2026-08-01T00:00:00Z"}}
+
+### 查询 2021-12-28 采购订单详情
+POST {{baseUrl}}/amazon/vendor-direct-fulfillment/orders/2021-12-28/purchase-orders/get
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","pathParams":{"purchaseOrderNumber":"PO-1"}}
+
+### 提交 2021-12-28 订单确认
+POST {{baseUrl}}/amazon/vendor-direct-fulfillment/orders/2021-12-28/acknowledgements
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","body":{"acknowledgements":[]}}
