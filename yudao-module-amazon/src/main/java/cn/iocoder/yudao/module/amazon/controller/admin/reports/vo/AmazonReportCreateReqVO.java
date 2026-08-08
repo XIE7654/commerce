@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.amazon.controller.admin.reports.vo;
 
+import cn.iocoder.yudao.module.amazon.enums.AmazonReportTypeEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -22,8 +23,8 @@ public class AmazonReportCreateReqVO {
     private String countryCode;
 
     @Schema(description = "Amazon 报表类型", requiredMode = Schema.RequiredMode.REQUIRED, example = "GET_MERCHANT_LISTINGS_ALL_DATA")
-    @NotBlank(message = "报表类型不能为空")
-    private String reportType;
+    @NotNull(message = "报表类型不能为空")
+    private AmazonReportTypeEnum reportType;
 
     @Schema(description = "报表数据开始时间，ISO 8601 格式", example = "2026-08-01T00:00:00Z")
     private String dataStartTime;

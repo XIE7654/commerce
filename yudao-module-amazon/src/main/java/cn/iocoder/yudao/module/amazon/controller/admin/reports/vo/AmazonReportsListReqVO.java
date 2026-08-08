@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.amazon.controller.admin.reports.vo;
 
+import cn.iocoder.yudao.module.amazon.enums.AmazonReportTypeEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -26,7 +27,7 @@ public class AmazonReportsListReqVO {
 
     @Schema(description = "报表类型，最多 10 个；与 nextToken 二选一", example = "GET_MERCHANT_LISTINGS_ALL_DATA")
     @Size(max = 10, message = "报表类型最多 10 个")
-    private List<String> reportTypes;
+    private List<AmazonReportTypeEnum> reportTypes;
 
     @Schema(description = "报表处理状态筛选", example = "DONE,IN_PROGRESS")
     private List<String> processingStatuses;

@@ -6,6 +6,7 @@ import cn.iocoder.yudao.module.amazon.controller.admin.reports.vo.AmazonReportsL
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
+import cn.iocoder.yudao.module.amazon.enums.AmazonReportTypeEnum;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
 import jakarta.annotation.Resource;
@@ -46,7 +47,7 @@ public class AmazonReportsServiceImpl implements AmazonReportsService {
         validateDateRange(request.getDataStartTime(), request.getDataEndTime(), "dataStartTime", "dataEndTime");
         return execute(request.getShopId(), request.getCountryCode(), (shop, marketplace, accessToken) -> {
             Map<String, Object> body = new LinkedHashMap<>();
-            body.put("reportType", request.getReportType());
+            body.put("reportType", request.getReportType().getAvailableReport());
             body.put("marketplaceIds", List.of(marketplace.getMarketplaceId()));
             putBodyValue(body, "dataStartTime", request.getDataStartTime());
             putBodyValue(body, "dataEndTime", request.getDataEndTime());
@@ -131,7 +132,7 @@ public class AmazonReportsServiceImpl implements AmazonReportsService {
         if (!isBlank(request.getNextToken())) {
             query.put("nextToken", request.getNextToken());
         } else {
-            query.put("reportTypes", join(request.getReportTypes()));
+            query.put("reportTypes", joinReportTypes(request.getReportTypes()));
             query.put("marketplaceIds", marketplace.getMarketplaceId());
             put(query, "processingStatuses", join(request.getProcessingStatuses()));
             put(query, "pageSize", request.getPageSize() == null ? null : request.getPageSize().toString());
@@ -281,6 +282,17 @@ public class AmazonReportsServiceImpl implements AmazonReportsService {
         if (!isBlank(value)) {
             query.put(key, value);
         }
+    }
+
+    /**
+     * 将报表类型枚举转换为 Amazon 要求的逗号分隔参数。
+     *
+     * @param values 参数值列表
+     * @return 逗号分隔值；空列表返回 {@code null}
+     */
+    private String joinReportTypes(List<AmazonReportTypeEnum> values) {
+        return isEmpty(values) ? null : values.stream().map(AmazonReportTypeEnum::getAvailableReport)
+                .collect(java.util.stream.Collectors.joining(","));
     }
 
     /**
