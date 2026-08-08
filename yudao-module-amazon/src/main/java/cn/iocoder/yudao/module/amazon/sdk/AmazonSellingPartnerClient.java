@@ -127,6 +127,36 @@ public class AmazonSellingPartnerClient {
         return get(uri, accessToken, AmazonApiCategory.REPORTS, operationName, storageName, shopId, countryCode, marketplaceId);
     }
 
+    /** 调用 Feeds API 查询或创建资源并归档 JSON 响应。 */
+    public Map<String, Object> getFeeds(URI uri, String accessToken, String operationName, String storageName,
+                                        Long shopId, String countryCode, String marketplaceId) {
+        return get(uri, accessToken, AmazonApiCategory.FEEDS, operationName, storageName, shopId, countryCode, marketplaceId);
+    }
+
+    /** 创建 Feeds API 资源并归档 Amazon 返回的 JSON 响应。 */
+    public Map<String, Object> createFeed(URI uri, String accessToken, Object body, String operationName,
+                                          String storageName, Long shopId, String countryCode, String marketplaceId) {
+        return exchangeForBody(uri, accessToken, HttpMethod.POST, body, AmazonApiCategory.FEEDS, operationName,
+                storageName, shopId, countryCode, marketplaceId);
+    }
+
+    /** 取消尚未开始处理的 Feed；Amazon 成功时返回 204。 */
+    public void cancelFeed(URI uri, String accessToken, Long shopId, String countryCode, String marketplaceId) {
+        HttpHeaders headers = buildHeaders(accessToken, false);
+        AmazonApiRequestLogContext context = new AmazonApiRequestLogContext("cancelFeed", AmazonApiCategory.FEEDS.getDirectoryName(),
+                HttpMethod.DELETE.name(), uri, shopId, countryCode, List.of(marketplaceId), queryParams(uri), headers, LocalDateTime.now(), null);
+        try {
+            ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.DELETE, new HttpEntity<>(headers), Void.class);
+            amazonApiRequestLogService.log(context, response.getStatusCode().value(), response.getHeaders(), null);
+        } catch (RestClientResponseException exception) {
+            amazonApiRequestLogService.log(context, exception.getStatusCode().value(), exception.getResponseHeaders(), exception);
+            throw exception;
+        } catch (RuntimeException exception) {
+            amazonApiRequestLogService.log(context, null, null, exception);
+            throw exception;
+        }
+    }
+
     /**
      * 创建报表任务并保存 Amazon 返回的 JSON 数据。
      *
@@ -184,6 +214,67 @@ public class AmazonSellingPartnerClient {
     public Map<String, Object> getOrders(URI uri, String accessToken, String operationName, String storageName,
                                          Long shopId, String countryCode, String marketplaceId) {
         return get(uri, accessToken, AmazonApiCategory.ORDERS, operationName, storageName, shopId, countryCode, marketplaceId);
+    }
+
+    /**
+     * 调用指定分类的只读接口并归档 JSON 响应。
+     *
+     * @param uri SP-API 请求地址
+     * @param accessToken 店铺的 Seller LWA access token
+     * @param category 请求所属 API 分类
+     * @param operationName Amazon API 操作名称
+     * @param storageName JSON 存储名称
+     * @param shopId 店铺编号
+     * @param countryCode 站点国家代码
+     * @param marketplaceId 请求关联的 Marketplace ID
+     * @return Amazon JSON 响应；空响应返回空 Map
+     */
+    public Map<String, Object> getByCategory(URI uri, String accessToken, AmazonApiCategory category, String operationName,
+                                             String storageName, Long shopId, String countryCode, String marketplaceId) {
+        return get(uri, accessToken, category, operationName, storageName, shopId, countryCode, marketplaceId);
+    }
+
+    /**
+     * 调用指定分类的写接口并归档 JSON 响应。
+     *
+     * @param uri SP-API 请求地址
+     * @param accessToken 店铺的 Seller LWA access token
+     * @param method HTTP 请求方式
+     * @param body SP-API 请求体
+     * @param category 请求所属 API 分类
+     * @param operationName Amazon API 操作名称
+     * @param storageName JSON 存储名称
+     * @param shopId 店铺编号
+     * @param countryCode 站点国家代码
+     * @param marketplaceId 请求关联的 Marketplace ID
+     * @return Amazon JSON 响应
+     */
+    public Map<String, Object> mutateByCategory(URI uri, String accessToken, HttpMethod method, Object body,
+                                                AmazonApiCategory category, String operationName, String storageName,
+                                                Long shopId, String countryCode, String marketplaceId) {
+        return exchangeForBody(uri, accessToken, method, body, category, operationName, storageName, shopId,
+                countryCode, marketplaceId);
+    }
+
+    /**
+     * 调用 Seller Wallet 写接口并透传 Amazon 要求的数字签名请求头。
+     *
+     * @param uri Seller Wallet 请求地址
+     * @param accessToken 店铺的 Seller LWA access token
+     * @param method HTTP 请求方式
+     * @param body 请求体
+     * @param requestHeaders 业务接口要求的附加请求头
+     * @param operationName Amazon API 操作名称
+     * @param shopId 店铺编号
+     * @param countryCode 站点国家代码
+     * @param marketplaceId 请求关联的 Marketplace ID
+     * @return Amazon JSON 响应；允许空响应时返回空 Map
+     */
+    public Map<String, Object> mutateSellerWallet(URI uri, String accessToken, HttpMethod method, Object body,
+                                                  Map<String, String> requestHeaders, String operationName, Long shopId,
+                                                  String countryCode, String marketplaceId) {
+        return exchangeForBody(uri, accessToken, method, body, AmazonApiCategory.SELLER_WALLET, operationName,
+                "seller-wallet-mutation", shopId, countryCode, marketplaceId, true, requestHeaders);
     }
 
     /**
@@ -302,7 +393,23 @@ public class AmazonSellingPartnerClient {
     private Map<String, Object> exchangeForBody(URI uri, String accessToken, HttpMethod method, Object body,
                                                 AmazonApiCategory category, String operationName, String storageName,
                                                 Long shopId, String countryCode, String marketplaceId, boolean allowEmptyResponse) {
+        return exchangeForBody(uri, accessToken, method, body, category, operationName, storageName, shopId, countryCode,
+                marketplaceId, allowEmptyResponse, Map.of());
+    }
+
+    /**
+     * 执行 SP-API 请求并合并业务接口要求的附加请求头。
+     *
+     * @param requestHeaders 业务接口要求的附加请求头；用于 Seller Wallet 数字签名等受限字段
+     * @return Amazon JSON 响应；允许空响应时返回空 Map
+     */
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> exchangeForBody(URI uri, String accessToken, HttpMethod method, Object body,
+                                                AmazonApiCategory category, String operationName, String storageName,
+                                                Long shopId, String countryCode, String marketplaceId, boolean allowEmptyResponse,
+                                                Map<String, String> requestHeaders) {
         HttpHeaders headers = buildHeaders(accessToken, body != null);
+        requestHeaders.forEach(headers::set);
         AmazonApiRequestLogContext context = new AmazonApiRequestLogContext(operationName, category.getDirectoryName(),
                 method.name(), uri, shopId, countryCode, List.of(marketplaceId), body == null ? queryParams(uri) : body,
                 headers, LocalDateTime.now(), null);

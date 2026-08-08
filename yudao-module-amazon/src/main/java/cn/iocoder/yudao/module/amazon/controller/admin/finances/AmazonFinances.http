@@ -1,0 +1,103 @@
+### 查询 2024 财务交易
+POST {{baseUrl}}/amazon/finances/transactions/list
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","postedAfter":"2026-08-01T00:00:00Z","postedBefore":"2026-08-02T00:00:00Z","marketplaceId":"ATVPDKIKX0DER"}
+
+### 查询账户余额
+POST {{baseUrl}}/amazon/finances/balances/list
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","marketplaceIds":["ATVPDKIKX0DER"],"balanceType":"TOTAL"}
+
+### 查询财务汇总
+POST {{baseUrl}}/amazon/finances/summary/list
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","marketplaceIds":["ATVPDKIKX0DER"],"periodStart":"2026-08-01","periodEnd":"2026-08-07"}
+
+### 查询财务事件组
+POST {{baseUrl}}/amazon/finances/financial-event-groups/list
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","financialEventGroupStartedAfter":"2026-08-01T00:00:00Z","financialEventGroupStartedBefore":"2026-08-02T00:00:00Z"}
+
+### 按事件组查询财务事件
+POST {{baseUrl}}/amazon/finances/financial-events/by-group
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","eventGroupId":"1234567890","postedAfter":"2026-08-01T00:00:00Z"}
+
+### 按订单查询财务事件
+POST {{baseUrl}}/amazon/finances/financial-events/by-order
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","orderId":"123-1234567-1234567"}
+
+### 查询财务事件
+POST {{baseUrl}}/amazon/finances/financial-events/list
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","postedAfter":"2026-08-01T00:00:00Z"}
+
+### 发起按需付款
+POST {{baseUrl}}/amazon/finances/payouts/initiate
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"DE","payoutBody":{"marketplaceId":"A1PA6795UKMFR9","accountType":"Standard Orders"}}
+
+### 查询付款记录
+POST {{baseUrl}}/amazon/finances/payouts/list
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","marketplaceIds":["ATVPDKIKX0DER"],"createdAfter":"2026-08-01T00:00:00Z"}
+
+### 查询付款方式
+POST {{baseUrl}}/amazon/finances/payment-methods/list
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","marketplaceId":"ATVPDKIKX0DER","paymentMethodTypes":["BANK_ACCOUNT"]}
+
+### 查询预计付款
+POST {{baseUrl}}/amazon/finances/payouts/expected
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","marketplaceIds":["ATVPDKIKX0DER"]}
+
+### 查询发票头
+POST {{baseUrl}}/amazon/finances/invoices/list
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","marketplaceId":"ATVPDKIKX0DER","fromIssueDate":"2026-08-01","toIssueDate":"2026-08-07"}
+
+### 查询发票详情
+POST {{baseUrl}}/amazon/finances/invoices/get
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","marketplaceId":"ATVPDKIKX0DER","invoiceIdentifier":"INV-202505001~ABCDEF"}

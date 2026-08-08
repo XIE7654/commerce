@@ -27,6 +27,7 @@ public enum AmazonApiCategory {
     ORDERS("orders"),
     PRODUCT_FEES("product_fees"),
     PRODUCT_PRICING("product_pricing"),
+    PRODUCT_TYPE_DEFINITIONS("product_type_definitions"),
     REPLENISHMENT("replenishment"),
     REPORTS("reports"),
     SALES("sales"),

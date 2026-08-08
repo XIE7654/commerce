@@ -1,0 +1,95 @@
+### 查询 Seller Wallet 账户列表
+POST {{baseUrl}}/amazon/seller-wallet/accounts/list
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId": 1, "countryCode": "GB"}
+
+### 查询 Seller Wallet 单个账户
+POST {{baseUrl}}/amazon/seller-wallet/accounts/get
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId": 1, "countryCode": "GB", "accountId": "amzn1.account.example"}
+
+### 查询 Seller Wallet 账户余额
+POST {{baseUrl}}/amazon/seller-wallet/accounts/balances
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId": 1, "countryCode": "GB", "accountId": "amzn1.account.example"}
+
+### 查询 Seller Wallet 转账预览
+POST {{baseUrl}}/amazon/seller-wallet/transfer-preview
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId": 1, "countryCode": "GB", "sourceCountryCode": "GB", "sourceCurrencyCode": "GBP", "destinationCountryCode": "CN", "destinationCurrencyCode": "CNY", "baseAmount": "100.00"}
+
+### 查询 Seller Wallet 交易记录
+POST {{baseUrl}}/amazon/seller-wallet/transactions/list
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId": 1, "countryCode": "GB", "accountId": "amzn1.account.example"}
+
+### 创建 Seller Wallet 转账交易
+POST {{baseUrl}}/amazon/seller-wallet/transactions/create
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId": 1, "countryCode": "GB", "destAccountDigitalSignature": "signature", "amountDigitalSignature": "signature", "body": {"sourceAccountId": "amzn1.account.source", "destinationTransactionInstrument": {}, "sourceAmount": {"amount": 100, "currency": "GBP"}, "requestTime": "2026-08-08T00:00:00Z"}}
+
+### 查询 Seller Wallet 交易详情
+POST {{baseUrl}}/amazon/seller-wallet/transactions/get
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId": 1, "countryCode": "GB", "transactionId": "amzn1.transaction.example"}
+
+### 查询 Seller Wallet 定时转账
+POST {{baseUrl}}/amazon/seller-wallet/transfer-schedules/list
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId": 1, "countryCode": "GB", "accountId": "amzn1.account.example"}
+
+### 创建 Seller Wallet 定时转账
+POST {{baseUrl}}/amazon/seller-wallet/transfer-schedules/create
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId": 1, "countryCode": "GB", "destAccountDigitalSignature": "signature", "amountDigitalSignature": "signature", "body": {"sourceAccountId": "amzn1.account.source", "sourceCurrencyCode": "GBP", "destinationAccountId": "amzn1.account.destination", "destinationTransactionInstrument": {}, "transactionType": "DEBIT", "transferScheduleInformation": {}, "paymentPreference": {}}}
+
+### 更新、查询和删除 Seller Wallet 定时转账
+POST {{baseUrl}}/amazon/seller-wallet/transfer-schedules/update
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId": 1, "countryCode": "GB", "destAccountDigitalSignature": "signature", "amountDigitalSignature": "signature", "body": {"transferScheduleId": "amzn1.transferschedule.example", "transactionType": "DEBIT", "transactionDestinationAccount": {}, "transferScheduleStatus": "ENABLED", "transferScheduleInformation": {}, "transferScheduleFailures": []}}
+
+### 查询定时转账详情
+POST {{baseUrl}}/amazon/seller-wallet/transfer-schedules/get
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId": 1, "countryCode": "GB", "transferScheduleId": "amzn1.transferschedule.example"}
+
+### 删除定时转账
+POST {{baseUrl}}/amazon/seller-wallet/transfer-schedules/delete
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId": 1, "countryCode": "GB", "transferScheduleId": "amzn1.transferschedule.example"}

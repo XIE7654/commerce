@@ -1,0 +1,47 @@
+### 查询 Feed 列表
+POST {{baseUrl}}/amazon/feeds/list
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","feedTypes":["POST_PRODUCT_DATA"],"processingStatuses":["DONE"],"pageSize":10}
+
+### 创建 Feed Document
+POST {{baseUrl}}/amazon/feeds/document/create
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","contentType":"text/tab-separated-values; charset=UTF-8"}
+
+### 创建 Feed
+POST {{baseUrl}}/amazon/feeds/create
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","feedType":"POST_PRODUCT_DATA","marketplaceIds":["ATVPDKIKX0DER"],"inputFeedDocumentId":"{{feedDocumentId}}"}
+
+### 查询 Feed 详情
+POST {{baseUrl}}/amazon/feeds/detail
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","id":"{{feedId}}"}
+
+### 取消 Feed
+POST {{baseUrl}}/amazon/feeds/cancel
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","id":"{{feedId}}"}
+
+### 查询 Feed Document
+POST {{baseUrl}}/amazon/feeds/document/detail
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","id":"{{feedDocumentId}}"}

@@ -1,0 +1,6 @@
+### Featured Offer 预期价格
+POST {{baseUrl}}/amazon/product-pricing/featured-offer-expected-price
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+{"shopId":1,"countryCode":"US","body":{}}
