@@ -1,0 +1,41 @@
+### 创建 Seller Central 通知
+POST {{baseUrl}}/amazon/app-integrations/notification/create
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{
+  "shopId": 1,
+  "countryCode": "US",
+  "templateId": "PRICE_CHANGE",
+  "marketplaceId": "ATVPDKIKX0DER",
+  "notificationParameters": {
+    "priceValue": "200"
+  }
+}
+
+### 删除应用通知
+POST {{baseUrl}}/amazon/app-integrations/notification/delete
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{
+  "shopId": 1,
+  "countryCode": "US",
+  "templateId": "PRICE_CHANGE",
+  "deletionReason": "INCORRECT_CONTENT"
+}
+
+### 记录卖家通知反馈
+POST {{baseUrl}}/amazon/app-integrations/notification/feedback
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{
+  "shopId": 1,
+  "countryCode": "US",
+  "notificationId": "0cf25616-f68c-4eba-a5d3-6823b61506c0",
+  "feedbackActionCode": "SELLER_ACTION_COMPLETED"
+}

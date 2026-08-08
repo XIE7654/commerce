@@ -34,6 +34,8 @@ public enum AmazonApiCategory {
     SELLER_WALLET("seller_wallet"),
     SELLERS("sellers"),
     SERVICES("services"),
+    SHIPPING("shipping"),
+    SHIPMENT_INVOICING("shipment_invoicing"),
     SOLICITATIONS("solicitations"),
     SUPPLY_SOURCES("supply_sources"),
     TOKENS("tokens"),

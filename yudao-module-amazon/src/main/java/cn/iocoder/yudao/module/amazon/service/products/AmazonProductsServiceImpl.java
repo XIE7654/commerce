@@ -26,6 +26,7 @@ import java.util.Map;
 public class AmazonProductsServiceImpl implements AmazonProductsService {
 
     private static final String CATALOG_PATH = "/catalog/2022-04-01/items";
+    private static final String CATALOG_V0_CATEGORIES_PATH = "/catalog/v0/categories";
     private static final String PRICING_PATH = "/batches/products/pricing/2022-05-01";
     private static final String FEES_PATH = "/products/fees/v0";
     private static final String PRODUCT_TYPES_PATH = "/definitions/2020-09-01/productTypes";
@@ -59,6 +60,23 @@ public class AmazonProductsServiceImpl implements AmazonProductsService {
         String asin = requireText(request.getAsin(), "asin");
         return get(request, CATALOG_PATH + "/" + encodePath(asin), catalogQuery(request), AmazonApiCategory.CATALOG_ITEMS,
                 "getCatalogItem", "catalog-item");
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Map<String, Object> listCatalogCategories(AmazonProductsReqVO request) {
+        boolean hasAsin = !isBlank(request.getAsin());
+        boolean hasSellerSku = !isBlank(request.getSellerSku());
+        if (hasAsin == hasSellerSku) {
+            throw new IllegalArgumentException("asin 和 sellerSku 必须且只能传入一项");
+        }
+        Map<String, String> query = new LinkedHashMap<>();
+        // v0 API 的查询键采用单数 MarketplaceId，不能复用 2022-04-01 的 marketplaceIds。
+        query.put("MarketplaceId", requireMarketplace(request.getCountryCode()).getMarketplaceId());
+        put(query, "ASIN", request.getAsin());
+        put(query, "SellerSKU", request.getSellerSku());
+        return get(request, CATALOG_V0_CATEGORIES_PATH, query, AmazonApiCategory.CATALOG_ITEMS,
+                "listCatalogCategories", "catalog-categories");
     }
 
     /** {@inheritDoc} */

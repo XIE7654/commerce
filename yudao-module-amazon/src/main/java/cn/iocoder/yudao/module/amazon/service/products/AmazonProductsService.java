@@ -24,6 +24,14 @@ public interface AmazonProductsService {
     Map<String, Object> getCatalogItem(AmazonProductsReqVO request);
 
     /**
+     * 查询商品所属的 Catalog 分类层级。
+     *
+     * @param request 店铺、站点，以及二选一的 ASIN 或卖家 SKU
+     * @return Amazon 返回的商品分类列表
+     */
+    Map<String, Object> listCatalogCategories(AmazonProductsReqVO request);
+
+    /**
      * 批量查询 Featured Offer 预期价格。
      *
      * @param request 店铺、站点和官方批量请求体

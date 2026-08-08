@@ -5,4 +5,27 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import java.util.Map;
 /** Catalog Items API 服务实现。 */
-@Service public class AmazonCatalogItemsServiceImpl implements AmazonCatalogItemsService { @Resource private AmazonProductsService delegate; public Map<String,Object> search(AmazonProductsReqVO r){return delegate.searchCatalogItems(r);} public Map<String,Object> get(AmazonProductsReqVO r){return delegate.getCatalogItem(r);} }
+@Service
+public class AmazonCatalogItemsServiceImpl implements AmazonCatalogItemsService {
+
+    @Resource
+    private AmazonProductsService delegate;
+
+    /** {@inheritDoc} */
+    @Override
+    public Map<String, Object> search(AmazonProductsReqVO request) {
+        return delegate.searchCatalogItems(request);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Map<String, Object> get(AmazonProductsReqVO request) {
+        return delegate.getCatalogItem(request);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Map<String, Object> listCategories(AmazonProductsReqVO request) {
+        return delegate.listCatalogCategories(request);
+    }
+}

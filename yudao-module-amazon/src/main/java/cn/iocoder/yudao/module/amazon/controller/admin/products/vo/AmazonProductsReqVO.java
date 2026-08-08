@@ -25,10 +25,10 @@ public class AmazonProductsReqVO {
     @NotBlank(message = "国家代码不能为空")
     private String countryCode;
 
-    @Schema(description = "ASIN；查询 Catalog Item 或按 ASIN 预估费用时必填", example = "B000000000")
+    @Schema(description = "ASIN；查询 Catalog Item、Catalog 分类或按 ASIN 预估费用时必填", example = "B000000000")
     private String asin;
 
-    @Schema(description = "卖家 SKU；按 SKU 预估费用时必填", example = "SKU-001")
+    @Schema(description = "卖家 SKU；查询 Catalog 分类或按 SKU 预估费用时必填", example = "SKU-001")
     private String sellerSku;
 
     @Schema(description = "Catalog 商品标识符，最多 20 个；须与 identifiersType 配对", example = "B000000000,B000000001")

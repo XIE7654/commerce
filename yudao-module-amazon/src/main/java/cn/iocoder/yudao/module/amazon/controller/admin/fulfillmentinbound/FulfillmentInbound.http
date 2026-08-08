@@ -1,0 +1,23 @@
+### 创建入库计划（createInboundPlan）
+POST {{baseUrl}}/amazon/fulfillment-inbound/operations/createInboundPlan
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","body":{"name":"Inbound plan","sourceAddress":{"name":"Warehouse","addressLine1":"1 Main St","city":"Seattle","stateOrProvinceCode":"WA","postalCode":"98101","countryCode":"US"},"items":[]}}
+
+### 查询入库计划（getInboundPlan）
+POST {{baseUrl}}/amazon/fulfillment-inbound/operations/getInboundPlan
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","pathParams":{"inboundPlanId":"PLAN_ID"}}
+
+### 查询 v0 货件标签（getLabels）
+POST {{baseUrl}}/amazon/fulfillment-inbound/operations/getLabels
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","pathParams":{"shipmentId":"SHIPMENT_ID"},"query":{"PageType":"PackageLabel_Letter_2"}}

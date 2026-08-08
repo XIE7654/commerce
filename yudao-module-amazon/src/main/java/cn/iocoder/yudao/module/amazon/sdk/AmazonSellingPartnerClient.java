@@ -256,6 +256,38 @@ public class AmazonSellingPartnerClient {
                 countryCode, marketplaceId);
     }
 
+    /** 调用允许 HTTP 204 空响应的分类写接口，例如 AWD 确认与取消操作。 */
+    public Map<String, Object> mutateByCategoryOptional(URI uri, String accessToken, HttpMethod method, Object body,
+                                                        AmazonApiCategory category, String operationName, String storageName,
+                                                        Long shopId, String countryCode, String marketplaceId) {
+        return exchangeForOptionalBody(uri, accessToken, method, body, category, operationName, storageName, shopId,
+                countryCode, marketplaceId);
+    }
+
+    /**
+     * 调用带业务请求头的 SP-API 接口并归档 JSON 响应。
+     *
+     * @param uri SP-API 请求地址
+     * @param accessToken 店铺的 Seller LWA access token
+     * @param method HTTP 请求方式
+     * @param body 请求体；GET 请求可为 {@code null}
+     * @param requestHeaders API 要求的附加请求头，例如 Shipping business id
+     * @param category 请求所属 API 分类
+     * @param operationName Amazon API 操作名称
+     * @param storageName JSON 存储名称
+     * @param shopId 店铺编号
+     * @param countryCode 站点国家代码
+     * @param marketplaceId 请求关联的 Marketplace ID
+     * @return Amazon JSON 响应；成功的空响应返回空 Map
+     */
+    public Map<String, Object> executeByCategory(URI uri, String accessToken, HttpMethod method, Object body,
+                                                 Map<String, String> requestHeaders, AmazonApiCategory category,
+                                                 String operationName, String storageName, Long shopId,
+                                                 String countryCode, String marketplaceId) {
+        return exchangeForBody(uri, accessToken, method, body, category, operationName, storageName, shopId,
+                countryCode, marketplaceId, true, requestHeaders);
+    }
+
     /**
      * 调用 Seller Wallet 写接口并透传 Amazon 要求的数字签名请求头。
      *

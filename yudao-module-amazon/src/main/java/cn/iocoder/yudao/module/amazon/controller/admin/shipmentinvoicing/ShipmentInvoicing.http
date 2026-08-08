@@ -1,0 +1,23 @@
+### 查询货件发票信息
+POST {{baseUrl}}/amazon/shipment-invoicing/shipments/detail
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"BR","shipmentId":"F4385943758"}
+
+### 提交货件发票
+POST {{baseUrl}}/amazon/shipment-invoicing/invoices/submit
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"BR","shipmentId":"F4385943758","invoiceBody":{"ContentMD5Value":"base64-md5-checksum","InvoiceContent":"base64-encoded-invoice-content","MarketplaceId":"A2Q3Y263D00KWC"}}
+
+### 查询货件发票状态
+POST {{baseUrl}}/amazon/shipment-invoicing/invoices/status
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"BR","shipmentId":"F4385943758"}
