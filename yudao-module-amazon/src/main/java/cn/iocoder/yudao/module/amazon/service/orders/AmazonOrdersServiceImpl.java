@@ -1,7 +1,13 @@
 package cn.iocoder.yudao.module.amazon.service.orders;
 
 import cn.iocoder.yudao.module.amazon.controller.admin.orders.vo.AmazonOrderGetReqVO;
+import cn.iocoder.yudao.module.amazon.controller.admin.orders.vo.AmazonOrderItemsReqVO;
+import cn.iocoder.yudao.module.amazon.controller.admin.orders.vo.AmazonOrderShipmentConfirmationReqVO;
+import cn.iocoder.yudao.module.amazon.controller.admin.orders.vo.AmazonOrderShipmentReqVO;
+import cn.iocoder.yudao.module.amazon.controller.admin.orders.vo.AmazonOrderRegulatedInfoUpdateReqVO;
+import cn.iocoder.yudao.module.amazon.controller.admin.orders.vo.AmazonOrder2026GetReqVO;
 import cn.iocoder.yudao.module.amazon.controller.admin.orders.vo.AmazonOrdersListReqVO;
+import cn.iocoder.yudao.module.amazon.controller.admin.orders.vo.AmazonOrders2026ListReqVO;
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
@@ -9,6 +15,7 @@ import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.util.UriUtils;
 
 import java.net.URI;
@@ -30,6 +37,7 @@ import java.util.TreeMap;
 public class AmazonOrdersServiceImpl implements AmazonOrdersService {
 
     private static final String ORDERS_PATH = "/orders/v0/orders";
+    private static final String ORDERS_2026_PATH = "/orders/2026-01-01/orders";
 
     @Resource
     private AmazonOAuthService amazonOAuthService;
@@ -53,14 +61,14 @@ public class AmazonOrdersServiceImpl implements AmazonOrdersService {
 
     /** {@inheritDoc} */
     @Override
-    public Map<String, Object> getOrderItems(AmazonOrderGetReqVO request) {
-        return executeOrderRequest(request, "/orderItems", "getOrderItems", "order-items");
+    public Map<String, Object> getOrderItems(AmazonOrderItemsReqVO request) {
+        return executeOrderItemsRequest(request, "/orderItems", "getOrderItems", "order-items");
     }
 
     /** {@inheritDoc} */
     @Override
-    public Map<String, Object> getOrderItemsBuyerInfo(AmazonOrderGetReqVO request) {
-        return executeOrderRequest(request, "/orderItems/buyerInfo", "getOrderItemsBuyerInfo", "order-items-buyer-info");
+    public Map<String, Object> getOrderItemsBuyerInfo(AmazonOrderItemsReqVO request) {
+        return executeOrderItemsRequest(request, "/orderItems/buyerInfo", "getOrderItemsBuyerInfo", "order-items-buyer-info");
     }
 
     /** {@inheritDoc} */
@@ -81,6 +89,68 @@ public class AmazonOrdersServiceImpl implements AmazonOrdersService {
         return executeOrderRequest(request, "/regulatedInfo", "getOrderRegulatedInfo", "order-regulated-info");
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public Map<String, Object> updateShipmentStatus(AmazonOrderShipmentReqVO request) {
+        Map<String, Object> body = new TreeMap<>();
+        body.put("marketplaceId", requireMarketplace(request.getCountryCode()).getMarketplaceId());
+        body.put("shipmentStatus", request.getShipmentStatus());
+        if (!isEmpty(request.getOrderItems())) {
+            body.put("orderItems", request.getOrderItems());
+        }
+        return executeMutation(request, "/shipment", HttpMethod.POST, body, "updateShipmentStatus");
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Map<String, Object> confirmShipment(AmazonOrderShipmentConfirmationReqVO request) {
+        Map<String, Object> body = new TreeMap<>();
+        body.put("marketplaceId", requireMarketplace(request.getCountryCode()).getMarketplaceId());
+        body.put("packageDetail", request.getPackageDetail());
+        if (!isBlank(request.getCodCollectionMethod())) {
+            body.put("codCollectionMethod", request.getCodCollectionMethod());
+        }
+        return executeMutation(request, "/shipmentConfirmation", HttpMethod.POST, body, "confirmShipment");
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Map<String, Object> updateOrderRegulatedInfo(AmazonOrderRegulatedInfoUpdateReqVO request) {
+        return executeMutation(request, "/regulatedInfo", HttpMethod.PATCH,
+                Map.of("regulatedOrderVerificationStatus", request.getRegulatedOrderVerificationStatus()),
+                "updateVerificationStatus");
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Map<String, Object> getOrders2026(AmazonOrders2026ListReqVO request) {
+        AmazonMarketplaceEnum marketplace = requireMarketplace(request.getCountryCode());
+        Map<String, String> query = new TreeMap<>();
+        put(query, "createdAfter", request.getCreatedAfter());
+        put(query, "createdBefore", request.getCreatedBefore());
+        put(query, "lastUpdatedAfter", request.getLastUpdatedAfter());
+        put(query, "lastUpdatedBefore", request.getLastUpdatedBefore());
+        put(query, "fulfillmentStatuses", join(request.getFulfillmentStatuses()));
+        put(query, "marketplaceIds", marketplace.getMarketplaceId());
+        put(query, "fulfilledBy", join(request.getFulfilledBy()));
+        put(query, "maxResultsPerPage", request.getMaxResultsPerPage() == null ? null : request.getMaxResultsPerPage().toString());
+        put(query, "paginationToken", request.getPaginationToken());
+        put(query, "includedData", join(request.getIncludedData()));
+        URI uri = URI.create(marketplace.getEndpoint() + ORDERS_2026_PATH + "?" + buildQuery(query));
+        return execute(request.getShopId(), request.getCountryCode(), uri, "getOrders2026", "orders-2026");
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Map<String, Object> getOrder2026(AmazonOrder2026GetReqVO request) {
+        AmazonMarketplaceEnum marketplace = requireMarketplace(request.getCountryCode());
+        String orderId = UriUtils.encodePathSegment(request.getOrderId(), StandardCharsets.UTF_8);
+        Map<String, String> query = new TreeMap<>();
+        put(query, "includedData", join(request.getIncludedData()));
+        URI uri = URI.create(marketplace.getEndpoint() + ORDERS_2026_PATH + "/" + orderId + "?" + buildQuery(query));
+        return execute(request.getShopId(), request.getCountryCode(), uri, "getOrder2026", "order-2026");
+    }
+
     /**
      * 调用指定订单子资源，确保所有订单详情接口使用相同的店铺授权和站点解析规则。
      *
@@ -96,6 +166,47 @@ public class AmazonOrdersServiceImpl implements AmazonOrdersService {
         String orderId = UriUtils.encodePathSegment(request.getOrderId(), StandardCharsets.UTF_8);
         URI uri = URI.create(marketplace.getEndpoint() + ORDERS_PATH + "/" + orderId + suffix);
         return execute(request.getShopId(), request.getCountryCode(), uri, operationName, storageName);
+    }
+
+    /**
+     * 调用订单商品资源并传递 Amazon 返回的分页令牌。
+     *
+     * @param request 订单商品查询参数
+     * @param suffix 订单资源路径后缀
+     * @param operationName Amazon 操作名称
+     * @param storageName 响应归档文件名称
+     * @return Amazon 原始 JSON 响应
+     */
+    private Map<String, Object> executeOrderItemsRequest(AmazonOrderItemsReqVO request, String suffix, String operationName,
+                                                         String storageName) {
+        AmazonMarketplaceEnum marketplace = requireMarketplace(request.getCountryCode());
+        String orderId = UriUtils.encodePathSegment(request.getOrderId(), StandardCharsets.UTF_8);
+        Map<String, String> query = new TreeMap<>();
+        put(query, "NextToken", request.getNextToken());
+        String queryString = query.isEmpty() ? "" : "?" + buildQuery(query);
+        URI uri = URI.create(marketplace.getEndpoint() + ORDERS_PATH + "/" + orderId + suffix + queryString);
+        return execute(request.getShopId(), request.getCountryCode(), uri, operationName, storageName);
+    }
+
+    /**
+     * 调用指定订单写接口，并复用店铺授权、站点解析和审计归档链路。
+     *
+     * @param request 订单及站点定位参数
+     * @param suffix 订单资源路径后缀
+     * @param method HTTP 请求方式
+     * @param body Amazon 请求体
+     * @param operationName Amazon 操作名称
+     * @return Amazon 原始 JSON 响应
+     */
+    private Map<String, Object> executeMutation(AmazonOrderGetReqVO request, String suffix, HttpMethod method,
+                                                Map<String, Object> body, String operationName) {
+        AmazonShopDO shop = requireShop(request.getShopId());
+        AmazonMarketplaceEnum marketplace = requireMarketplace(request.getCountryCode());
+        String orderId = UriUtils.encodePathSegment(request.getOrderId(), StandardCharsets.UTF_8);
+        URI uri = URI.create(marketplace.getEndpoint() + ORDERS_PATH + "/" + orderId + suffix);
+        String accessToken = amazonOAuthService.getSellerAccessToken(shop.getId());
+        return amazonSellingPartnerClient.mutateOrders(uri, accessToken, method, body, operationName, shop.getId(),
+                request.getCountryCode(), marketplace.getMarketplaceId());
     }
 
     /**

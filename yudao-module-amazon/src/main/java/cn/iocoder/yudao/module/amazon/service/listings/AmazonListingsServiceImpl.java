@@ -2,6 +2,9 @@ package cn.iocoder.yudao.module.amazon.service.listings;
 
 import cn.iocoder.yudao.module.amazon.controller.admin.listings.vo.AmazonListingsSearchReqVO;
 import cn.iocoder.yudao.module.amazon.controller.admin.listings.vo.AmazonListingsItemGetReqVO;
+import cn.iocoder.yudao.module.amazon.controller.admin.listings.vo.AmazonListingsItemPatchReqVO;
+import cn.iocoder.yudao.module.amazon.controller.admin.listings.vo.AmazonListingsItemPutReqVO;
+import cn.iocoder.yudao.module.amazon.controller.admin.listings.vo.AmazonListingsRestrictionsReqVO;
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
@@ -9,6 +12,7 @@ import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.util.UriUtils;
 
 import java.net.URI;
@@ -54,6 +58,52 @@ public class AmazonListingsServiceImpl implements AmazonListingsService {
         String accessToken = amazonOAuthService.getSellerAccessToken(shop.getId());
         URI uri = buildItemRequestUri(marketplace, shop.getSellerId(), request);
         return amazonSellingPartnerClient.getListingsItem(uri, accessToken, shop.getId(), request.getCountryCode(),
+                marketplace.getMarketplaceId());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Map<String, Object> putListingsItem(AmazonListingsItemPutReqVO request) {
+        Map<String, Object> body = new TreeMap<>();
+        body.put("productType", request.getProductType());
+        body.put("attributes", request.getAttributes());
+        if (!isBlank(request.getRequirements())) {
+            body.put("requirements", request.getRequirements());
+        }
+        return mutateItem(request, HttpMethod.PUT, body, request.getMode(), request.getIncludedData(), "putListingsItem");
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Map<String, Object> patchListingsItem(AmazonListingsItemPatchReqVO request) {
+        Map<String, Object> body = new TreeMap<>();
+        body.put("productType", request.getProductType());
+        body.put("patches", request.getPatches());
+        return mutateItem(request, HttpMethod.PATCH, body, request.getMode(), request.getIncludedData(), "patchListingsItem");
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Map<String, Object> deleteListingsItem(AmazonListingsItemGetReqVO request) {
+        return mutateItem(request, HttpMethod.DELETE, null, null, null, "deleteListingsItem");
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Map<String, Object> getListingsRestrictions(AmazonListingsRestrictionsReqVO request) {
+        AmazonShopDO shop = requireShop(request.getShopId());
+        AmazonMarketplaceEnum marketplace = requireMarketplace(request.getCountryCode());
+        String sellerId = requireSellerId(shop.getSellerId());
+        Map<String, String> query = new TreeMap<>();
+        query.put("asin", request.getAsin());
+        query.put("sellerId", sellerId);
+        query.put("marketplaceIds", marketplace.getMarketplaceId());
+        put(query, "conditionType", request.getConditionType());
+        put(query, "reasonLocale", request.getReasonLocale());
+        put(query, "productType", request.getProductType());
+        URI uri = URI.create(marketplace.getEndpoint() + "/listings/2021-08-01/restrictions?" + buildQuery(query));
+        String accessToken = amazonOAuthService.getSellerAccessToken(shop.getId());
+        return amazonSellingPartnerClient.getListingsRestrictions(uri, accessToken, shop.getId(), request.getCountryCode(),
                 marketplace.getMarketplaceId());
     }
 
@@ -120,18 +170,55 @@ public class AmazonListingsServiceImpl implements AmazonListingsService {
      * @return 可直接发起请求的 URI
      */
     private URI buildItemRequestUri(AmazonMarketplaceEnum marketplace, String sellerId, AmazonListingsItemGetReqVO request) {
-        if (isBlank(sellerId)) {
-            throw new IllegalArgumentException("店铺未配置 Amazon sellerId");
-        }
+        sellerId = requireSellerId(sellerId);
         Map<String, String> query = new TreeMap<>();
         query.put("marketplaceIds", marketplace.getMarketplaceId());
         query.put("includedData", joinOrDefault(request.getIncludedData(), "summaries"));
         put(query, "issueLocale", request.getIssueLocale());
 
-        String path = "/listings/2021-08-01/items/"
-                + UriUtils.encodePathSegment(sellerId, StandardCharsets.UTF_8) + "/"
-                + UriUtils.encodePathSegment(request.getSku(), StandardCharsets.UTF_8);
+        String path = buildItemPath(sellerId, request.getSku());
         return URI.create(marketplace.getEndpoint() + path + "?" + buildQuery(query));
+    }
+
+    /**
+     * 调用 Listings Item 的写入或删除接口，避免由 Controller 拼接 Amazon 请求体。
+     *
+     * @param request 店铺、站点和 SKU 定位参数
+     * @param method HTTP 请求方式
+     * @param body Amazon 请求体；删除时为 {@code null}
+     * @param mode Amazon 提交模式
+     * @param includedData 需要在响应中返回的数据集
+     * @param operationName Amazon 操作名称
+     * @return Amazon 原始 JSON 响应
+     */
+    private Map<String, Object> mutateItem(AmazonListingsItemGetReqVO request, HttpMethod method, Object body, String mode,
+                                           List<String> includedData, String operationName) {
+        AmazonShopDO shop = requireShop(request.getShopId());
+        AmazonMarketplaceEnum marketplace = requireMarketplace(request.getCountryCode());
+        Map<String, String> query = new TreeMap<>();
+        query.put("marketplaceIds", marketplace.getMarketplaceId());
+        put(query, "issueLocale", request.getIssueLocale());
+        if (method != HttpMethod.DELETE) {
+            put(query, "includedData", join(includedData));
+            put(query, "mode", mode);
+        }
+        URI uri = URI.create(marketplace.getEndpoint() + buildItemPath(requireSellerId(shop.getSellerId()), request.getSku())
+                + "?" + buildQuery(query));
+        String accessToken = amazonOAuthService.getSellerAccessToken(shop.getId());
+        return amazonSellingPartnerClient.mutateListingsItem(uri, accessToken, method, body, operationName, shop.getId(),
+                request.getCountryCode(), marketplace.getMarketplaceId());
+    }
+
+    /**
+     * 构造单个 Listings Item 路径并对 sellerId、SKU 进行路径段编码。
+     *
+     * @param sellerId 店铺 Seller ID
+     * @param sku 卖家 SKU
+     * @return Amazon Listings Item 路径
+     */
+    private String buildItemPath(String sellerId, String sku) {
+        return "/listings/2021-08-01/items/" + UriUtils.encodePathSegment(sellerId, StandardCharsets.UTF_8) + "/"
+                + UriUtils.encodePathSegment(sku, StandardCharsets.UTF_8);
     }
 
     /** 按 RFC 3986 编码并排序查询参数。 */
@@ -171,6 +258,19 @@ public class AmazonListingsServiceImpl implements AmazonListingsService {
             throw new IllegalArgumentException("Amazon 店铺不存在: " + shopId);
         }
         return shop;
+    }
+
+    /**
+     * 校验店铺已配置 Seller ID。
+     *
+     * @param sellerId 店铺 Seller ID
+     * @return 非空 Seller ID
+     */
+    private String requireSellerId(String sellerId) {
+        if (isBlank(sellerId)) {
+            throw new IllegalArgumentException("店铺未配置 Amazon sellerId");
+        }
+        return sellerId;
     }
 
     /** 解析请求国家代码对应的 Amazon Marketplace。 */

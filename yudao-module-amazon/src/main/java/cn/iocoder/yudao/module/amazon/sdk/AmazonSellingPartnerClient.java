@@ -60,6 +60,41 @@ public class AmazonSellingPartnerClient {
     }
 
     /**
+     * 调用 Listings Items 的写入或删除接口并归档 Amazon 响应。
+     *
+     * @param uri Listings Items 请求地址
+     * @param accessToken 店铺的 Seller LWA access token
+     * @param method HTTP 请求方法
+     * @param body 请求体；删除时为 {@code null}
+     * @param operationName Amazon 操作名称
+     * @param shopId 店铺编号
+     * @param countryCode 站点国家代码
+     * @param marketplaceId 请求的 Marketplace ID
+     * @return Amazon Listings JSON 响应
+     */
+    public Map<String, Object> mutateListingsItem(URI uri, String accessToken, HttpMethod method, Object body,
+                                                  String operationName, Long shopId, String countryCode, String marketplaceId) {
+        return exchangeForBody(uri, accessToken, method, body, AmazonApiCategory.LISTINGS, operationName,
+                "listings-item-submission", shopId, countryCode, marketplaceId);
+    }
+
+    /**
+     * 查询商品限制并保存 Amazon 返回的 JSON 数据。
+     *
+     * @param uri Listings Restrictions 请求地址
+     * @param accessToken 店铺的 Seller LWA access token
+     * @param shopId 店铺编号
+     * @param countryCode 站点国家代码
+     * @param marketplaceId 请求的 Marketplace ID
+     * @return Amazon Listings Restrictions JSON 响应
+     */
+    public Map<String, Object> getListingsRestrictions(URI uri, String accessToken, Long shopId, String countryCode,
+                                                        String marketplaceId) {
+        return getListings(uri, accessToken, "getListingsRestrictions", "listings-restrictions", shopId, countryCode,
+                marketplaceId);
+    }
+
+    /**
      * 查询 FBA 库存摘要并保存 Amazon 返回的 JSON 数据。
      *
      * @param uri FBA Inventory summaries 请求地址
@@ -152,6 +187,25 @@ public class AmazonSellingPartnerClient {
     }
 
     /**
+     * 调用 Orders 的写入接口并归档 Amazon 响应。
+     *
+     * @param uri Orders 请求地址
+     * @param accessToken 店铺的 Seller LWA access token
+     * @param method HTTP 请求方法
+     * @param body Amazon 请求体
+     * @param operationName Amazon 操作名称
+     * @param shopId 店铺编号
+     * @param countryCode 站点国家代码
+     * @param marketplaceId 请求的 Marketplace ID
+     * @return Amazon Orders JSON 响应
+     */
+    public Map<String, Object> mutateOrders(URI uri, String accessToken, HttpMethod method, Object body,
+                                            String operationName, Long shopId, String countryCode, String marketplaceId) {
+        return exchangeForOptionalBody(uri, accessToken, method, body, AmazonApiCategory.ORDERS, operationName,
+                "orders-mutation", shopId, countryCode, marketplaceId);
+    }
+
+    /**
      * 执行 Listings API 的 GET 请求并持久化响应，以保留 Amazon 返回字段供后续排查。
      *
      * @param uri Listings 请求地址
@@ -202,6 +256,52 @@ public class AmazonSellingPartnerClient {
     private Map<String, Object> exchangeForBody(URI uri, String accessToken, HttpMethod method, Object body,
                                                 AmazonApiCategory category, String operationName, String storageName,
                                                 Long shopId, String countryCode, String marketplaceId) {
+        return exchangeForBody(uri, accessToken, method, body, category, operationName, storageName, shopId, countryCode,
+                marketplaceId, false);
+    }
+
+    /**
+     * 执行可能返回空响应体的 SP-API 请求；Orders 写接口成功时按规范返回 HTTP 204。
+     *
+     * @param uri SP-API 请求地址
+     * @param accessToken 店铺的 Seller LWA access token
+     * @param method HTTP 请求方式
+     * @param body Amazon 请求体
+     * @param category 响应归档的 API 分类
+     * @param operationName Amazon API 操作名称
+     * @param storageName JSON 存储名称
+     * @param shopId 店铺编号
+     * @param countryCode 站点国家代码
+     * @param marketplaceId 请求的 Marketplace ID
+     * @return Amazon JSON 响应；204 响应返回空 Map
+     */
+    private Map<String, Object> exchangeForOptionalBody(URI uri, String accessToken, HttpMethod method, Object body,
+                                                        AmazonApiCategory category, String operationName, String storageName,
+                                                        Long shopId, String countryCode, String marketplaceId) {
+        return exchangeForBody(uri, accessToken, method, body, category, operationName, storageName, shopId, countryCode,
+                marketplaceId, true);
+    }
+
+    /**
+     * 执行 SP-API 请求并在响应存在时归档 JSON；仅允许指定接口以空响应表示成功。
+     *
+     * @param uri SP-API 请求地址
+     * @param accessToken 店铺的 Seller LWA access token
+     * @param method HTTP 请求方式
+     * @param body Amazon 请求体；GET 请求可为 {@code null}
+     * @param category 响应归档的 API 分类
+     * @param operationName Amazon API 操作名称
+     * @param storageName JSON 存储名称
+     * @param shopId 店铺编号
+     * @param countryCode 站点国家代码
+     * @param marketplaceId 请求的 Marketplace ID
+     * @param allowEmptyResponse 是否允许 HTTP 204 空响应
+     * @return Amazon JSON 响应；允许空响应时返回空 Map
+     */
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> exchangeForBody(URI uri, String accessToken, HttpMethod method, Object body,
+                                                AmazonApiCategory category, String operationName, String storageName,
+                                                Long shopId, String countryCode, String marketplaceId, boolean allowEmptyResponse) {
         HttpHeaders headers = buildHeaders(accessToken, body != null);
         AmazonApiRequestLogContext context = new AmazonApiRequestLogContext(operationName, category.getDirectoryName(),
                 method.name(), uri, shopId, countryCode, List.of(marketplaceId), body == null ? queryParams(uri) : body,
@@ -217,6 +317,10 @@ public class AmazonSellingPartnerClient {
             throw exception;
         }
         if (response.getBody() == null) {
+            if (allowEmptyResponse) {
+                amazonApiRequestLogService.log(context, response.getStatusCode().value(), response.getHeaders(), null);
+                return Map.of();
+            }
             IllegalStateException exception = new IllegalStateException("Amazon SP-API 响应为空");
             amazonApiRequestLogService.log(context, response.getStatusCode().value(), response.getHeaders(), exception);
             throw exception;

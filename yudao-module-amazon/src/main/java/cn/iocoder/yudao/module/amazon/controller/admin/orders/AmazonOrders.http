@@ -33,7 +33,82 @@ tenant-id: {{adminTenantId}}
 {
   "shopId": 1,
   "countryCode": "US",
-  "orderId": "902-3159896-1390916"
+  "orderId": "902-3159896-1390916",
+  "nextToken": "NEXT_PAGE_TOKEN"
+}
+
+### 更新 Amazon Easy Ship 发货状态
+POST {{baseUrl}}/amazon/orders/shipment
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{
+  "shopId": 1,
+  "countryCode": "US",
+  "orderId": "902-3159896-1390916",
+  "shipmentStatus": "PickedUp"
+}
+
+### 确认 Amazon 订单发货
+POST {{baseUrl}}/amazon/orders/shipment-confirmation
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{
+  "shopId": 1,
+  "countryCode": "US",
+  "orderId": "902-3159896-1390916",
+  "packageDetail": {
+    "packageReferenceId": "package-001",
+    "carrierCode": "UPS",
+    "shippingMethod": "Ground",
+    "shipDate": "2026-08-08T10:00:00Z",
+    "orderItems": [{"orderItemId": "123", "quantity": 1}]
+  }
+}
+
+### 更新受监管订单验证状态
+POST {{baseUrl}}/amazon/orders/regulated-info/update
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{
+  "shopId": 1,
+  "countryCode": "US",
+  "orderId": "902-3159896-1390916",
+  "regulatedOrderVerificationStatus": {
+    "externalReviewerId": "reviewer-001",
+    "status": "Approved"
+  }
+}
+
+### 查询 Amazon Orders 2026 订单列表
+POST {{baseUrl}}/amazon/orders/v2026/list
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{
+  "shopId": 1,
+  "countryCode": "US",
+  "lastUpdatedAfter": "2026-08-01T00:00:00Z",
+  "includedData": ["FULFILLMENT"]
+}
+
+### 查询 Amazon Orders 2026 订单详情
+POST {{baseUrl}}/amazon/orders/v2026/detail
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{
+  "shopId": 1,
+  "countryCode": "US",
+  "orderId": "902-3159896-1390916",
+  "includedData": ["FULFILLMENT"]
 }
 
 ### 查询 Amazon 订单商品买家信息

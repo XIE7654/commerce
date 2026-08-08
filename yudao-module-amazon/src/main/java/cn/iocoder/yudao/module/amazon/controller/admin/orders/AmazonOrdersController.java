@@ -2,7 +2,13 @@ package cn.iocoder.yudao.module.amazon.controller.admin.orders;
 
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.module.amazon.controller.admin.orders.vo.AmazonOrderGetReqVO;
+import cn.iocoder.yudao.module.amazon.controller.admin.orders.vo.AmazonOrderItemsReqVO;
+import cn.iocoder.yudao.module.amazon.controller.admin.orders.vo.AmazonOrderRegulatedInfoUpdateReqVO;
+import cn.iocoder.yudao.module.amazon.controller.admin.orders.vo.AmazonOrderShipmentConfirmationReqVO;
+import cn.iocoder.yudao.module.amazon.controller.admin.orders.vo.AmazonOrderShipmentReqVO;
+import cn.iocoder.yudao.module.amazon.controller.admin.orders.vo.AmazonOrder2026GetReqVO;
 import cn.iocoder.yudao.module.amazon.controller.admin.orders.vo.AmazonOrdersListReqVO;
+import cn.iocoder.yudao.module.amazon.controller.admin.orders.vo.AmazonOrders2026ListReqVO;
 import cn.iocoder.yudao.module.amazon.service.orders.AmazonOrdersService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -64,7 +70,7 @@ public class AmazonOrdersController {
     @PostMapping("/items")
     @Operation(summary = "查询 Amazon 订单商品")
     @PreAuthorize("@ss.hasPermission('amazon:orders:query')")
-    public CommonResult<Map<String, Object>> getOrderItems(@Valid @RequestBody AmazonOrderGetReqVO request) {
+    public CommonResult<Map<String, Object>> getOrderItems(@Valid @RequestBody AmazonOrderItemsReqVO request) {
         return CommonResult.success(amazonOrdersService.getOrderItems(request));
     }
 
@@ -77,7 +83,7 @@ public class AmazonOrdersController {
     @PostMapping("/items/buyer-info")
     @Operation(summary = "查询 Amazon 订单商品买家信息")
     @PreAuthorize("@ss.hasPermission('amazon:orders:query')")
-    public CommonResult<Map<String, Object>> getOrderItemsBuyerInfo(@Valid @RequestBody AmazonOrderGetReqVO request) {
+    public CommonResult<Map<String, Object>> getOrderItemsBuyerInfo(@Valid @RequestBody AmazonOrderItemsReqVO request) {
         return CommonResult.success(amazonOrdersService.getOrderItemsBuyerInfo(request));
     }
 
@@ -118,6 +124,72 @@ public class AmazonOrdersController {
     @PreAuthorize("@ss.hasPermission('amazon:orders:query')")
     public CommonResult<Map<String, Object>> getOrderRegulatedInfo(@Valid @RequestBody AmazonOrderGetReqVO request) {
         return CommonResult.success(amazonOrdersService.getOrderRegulatedInfo(request));
+    }
+
+    /**
+     * 更新 Easy Ship 订单的发货状态。
+     *
+     * @param request 订单、站点和发货状态
+     * @return Amazon 原始响应
+     */
+    @PostMapping("/shipment")
+    @Operation(summary = "更新 Amazon Easy Ship 发货状态")
+    @PreAuthorize("@ss.hasPermission('amazon:orders:update')")
+    public CommonResult<Map<String, Object>> updateShipmentStatus(@Valid @RequestBody AmazonOrderShipmentReqVO request) {
+        return CommonResult.success(amazonOrdersService.updateShipmentStatus(request));
+    }
+
+    /**
+     * 确认卖家自配送订单的发货信息。
+     *
+     * @param request 订单、站点和包裹明细
+     * @return Amazon 原始响应
+     */
+    @PostMapping("/shipment-confirmation")
+    @Operation(summary = "确认 Amazon 订单发货")
+    @PreAuthorize("@ss.hasPermission('amazon:orders:update')")
+    public CommonResult<Map<String, Object>> confirmShipment(@Valid @RequestBody AmazonOrderShipmentConfirmationReqVO request) {
+        return CommonResult.success(amazonOrdersService.confirmShipment(request));
+    }
+
+    /**
+     * 更新受监管订单的验证状态。
+     *
+     * @param request 订单、站点和验证状态
+     * @return Amazon 原始响应
+     */
+    @PostMapping("/regulated-info/update")
+    @Operation(summary = "更新 Amazon 受监管订单验证状态")
+    @PreAuthorize("@ss.hasPermission('amazon:orders:update')")
+    public CommonResult<Map<String, Object>> updateOrderRegulatedInfo(
+            @Valid @RequestBody AmazonOrderRegulatedInfoUpdateReqVO request) {
+        return CommonResult.success(amazonOrdersService.updateOrderRegulatedInfo(request));
+    }
+
+    /**
+     * 查询 Orders 2026-01-01 版本的订单列表。
+     *
+     * @param request 店铺、站点和新版筛选条件
+     * @return Amazon 原始响应
+     */
+    @PostMapping("/v2026/list")
+    @Operation(summary = "查询 Amazon Orders 2026 订单列表")
+    @PreAuthorize("@ss.hasPermission('amazon:orders:query')")
+    public CommonResult<Map<String, Object>> getOrders2026(@Valid @RequestBody AmazonOrders2026ListReqVO request) {
+        return CommonResult.success(amazonOrdersService.getOrders2026(request));
+    }
+
+    /**
+     * 查询 Orders 2026-01-01 版本的指定订单。
+     *
+     * @param request 店铺、站点、订单编号和返回数据集
+     * @return Amazon 原始响应
+     */
+    @PostMapping("/v2026/detail")
+    @Operation(summary = "查询 Amazon Orders 2026 订单详情")
+    @PreAuthorize("@ss.hasPermission('amazon:orders:query')")
+    public CommonResult<Map<String, Object>> getOrder2026(@Valid @RequestBody AmazonOrder2026GetReqVO request) {
+        return CommonResult.success(amazonOrdersService.getOrder2026(request));
     }
 
 }
