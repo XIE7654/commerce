@@ -45,6 +45,17 @@ public class AmazonSellingPartnerClient {
     }
 
     /**
+     * 查询 FBA 库存摘要并保存 Amazon 返回的 JSON 数据。
+     *
+     * @param uri FBA Inventory summaries 请求地址
+     * @param accessToken 店铺的 Seller LWA access token
+     * @return FBA 库存摘要 JSON 响应；空响应返回空 Map
+     */
+    public Map<String, Object> getInventorySummaries(URI uri, String accessToken) {
+        return get(uri, accessToken, AmazonApiCategory.FBA_INVENTORY, "inventory-summaries");
+    }
+
+    /**
      * 执行 Listings API 的 GET 请求并持久化响应，以保留 Amazon 返回字段供后续排查。
      *
      * @param uri Listings 请求地址
@@ -52,8 +63,21 @@ public class AmazonSellingPartnerClient {
      * @param storageName JSON 存储名称
      * @return Amazon Listings JSON 响应；空响应返回空 Map
      */
-    @SuppressWarnings("unchecked")
     private Map<String, Object> getListings(URI uri, String accessToken, String storageName) {
+        return get(uri, accessToken, AmazonApiCategory.LISTINGS, storageName);
+    }
+
+    /**
+     * 执行 SP-API 的 GET 请求并持久化 JSON 响应，供不同只读 API 统一复用。
+     *
+     * @param uri SP-API 请求地址
+     * @param accessToken 店铺的 Seller LWA access token
+     * @param category 响应归档的 API 分类
+     * @param storageName JSON 存储名称
+     * @return Amazon JSON 响应；空响应返回空 Map
+     */
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> get(URI uri, String accessToken, AmazonApiCategory category, String storageName) {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
         headers.set("x-amz-access-token", accessToken);
@@ -62,7 +86,7 @@ public class AmazonSellingPartnerClient {
             return Map.of();
         }
         Map<String, Object> body = (Map<String, Object>) response.getBody();
-        amazonJsonStorageService.persist(AmazonApiCategory.LISTINGS, storageName, body);
+        amazonJsonStorageService.persist(category, storageName, body);
         return body;
     }
 

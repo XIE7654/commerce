@@ -13,6 +13,7 @@ public enum AmazonApiCategory {
     DELIVERY_BY_AMAZON("delivery_by_amazon"),
     EASY_SHIP("easy_ship"),
     EXTERNAL_FULFILLMENT("external_fulfillment"),
+    FBA_INVENTORY("fba_inventory"),
     FEEDS("feeds"),
     FINANCES("finances"),
     FULFILLMENT_BY_AMAZON("fulfillment_by_amazon_fba"),
