@@ -12,6 +12,71 @@ tenant-id: {{adminTenantId}}
   "pageSize": 10
 }
 
+### 创建或全量更新 Amazon Listings Item
+POST {{baseUrl}}/amazon/listings/item/put
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{
+  "shopId": 1,
+  "countryCode": "US",
+  "sku": "SKU-001",
+  "productType": "PRODUCT",
+  "requirements": "LISTING_OFFER_ONLY",
+  "attributes": {
+    "fulfillment_availability": [{"fulfillment_channel_code": "DEFAULT", "quantity": 10}]
+  },
+  "mode": "VALIDATION_PREVIEW"
+}
+
+### 局部更新 Amazon Listings Item
+POST {{baseUrl}}/amazon/listings/item/patch
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{
+  "shopId": 1,
+  "countryCode": "US",
+  "sku": "SKU-001",
+  "productType": "PRODUCT",
+  "patches": [{
+    "op": "replace",
+    "path": "/attributes/fulfillment_availability",
+    "value": [{"fulfillment_channel_code": "DEFAULT", "quantity": 10}]
+  }],
+  "mode": "VALIDATION_PREVIEW"
+}
+
+### 删除 Amazon Listings Item
+POST {{baseUrl}}/amazon/listings/item/delete
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{
+  "shopId": 1,
+  "countryCode": "US",
+  "sku": "SKU-001",
+  "issueLocale": "en_US"
+}
+
+### 查询 Amazon Listings 上架限制
+POST {{baseUrl}}/amazon/listings/restrictions
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{
+  "shopId": 1,
+  "countryCode": "US",
+  "asin": "B000000000",
+  "conditionType": "new_new",
+  "reasonLocale": "en_US",
+  "productType": "PRODUCT"
+}
+
 ### 按 SKU 获取 Amazon Listings Item 详情
 POST {{baseUrl}}/amazon/listings/item
 Authorization: Bearer {{token}}

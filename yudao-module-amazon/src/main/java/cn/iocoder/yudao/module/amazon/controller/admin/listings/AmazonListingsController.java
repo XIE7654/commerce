@@ -3,6 +3,9 @@ package cn.iocoder.yudao.module.amazon.controller.admin.listings;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.module.amazon.controller.admin.listings.vo.AmazonListingsSearchReqVO;
 import cn.iocoder.yudao.module.amazon.controller.admin.listings.vo.AmazonListingsItemGetReqVO;
+import cn.iocoder.yudao.module.amazon.controller.admin.listings.vo.AmazonListingsItemPatchReqVO;
+import cn.iocoder.yudao.module.amazon.controller.admin.listings.vo.AmazonListingsItemPutReqVO;
+import cn.iocoder.yudao.module.amazon.controller.admin.listings.vo.AmazonListingsRestrictionsReqVO;
 import cn.iocoder.yudao.module.amazon.service.listings.AmazonListingsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -53,5 +56,57 @@ public class AmazonListingsController {
     @PreAuthorize("@ss.hasPermission('amazon:listings:query')")
     public CommonResult<Map<String, Object>> getItem(@Valid @RequestBody AmazonListingsItemGetReqVO request) {
         return CommonResult.success(amazonListingsService.getListingsItem(request));
+    }
+
+    /**
+     * 创建或全量更新指定 SKU 的 Listings Item。
+     *
+     * @param request 店铺、站点、SKU 和完整商品属性
+     * @return Amazon 提交结果
+     */
+    @PostMapping("/item/put")
+    @Operation(summary = "创建或全量更新 Amazon Listings Item")
+    @PreAuthorize("@ss.hasPermission('amazon:listings:update')")
+    public CommonResult<Map<String, Object>> putItem(@Valid @RequestBody AmazonListingsItemPutReqVO request) {
+        return CommonResult.success(amazonListingsService.putListingsItem(request));
+    }
+
+    /**
+     * 局部更新指定 SKU 的 Listings Item。
+     *
+     * @param request 店铺、站点、SKU 和 JSON Patch 操作
+     * @return Amazon 提交结果
+     */
+    @PostMapping("/item/patch")
+    @Operation(summary = "局部更新 Amazon Listings Item")
+    @PreAuthorize("@ss.hasPermission('amazon:listings:update')")
+    public CommonResult<Map<String, Object>> patchItem(@Valid @RequestBody AmazonListingsItemPatchReqVO request) {
+        return CommonResult.success(amazonListingsService.patchListingsItem(request));
+    }
+
+    /**
+     * 删除指定 SKU 的 Listings Item。
+     *
+     * @param request 店铺、站点和 SKU
+     * @return Amazon 删除结果
+     */
+    @PostMapping("/item/delete")
+    @Operation(summary = "删除 Amazon Listings Item")
+    @PreAuthorize("@ss.hasPermission('amazon:listings:delete')")
+    public CommonResult<Map<String, Object>> deleteItem(@Valid @RequestBody AmazonListingsItemGetReqVO request) {
+        return CommonResult.success(amazonListingsService.deleteListingsItem(request));
+    }
+
+    /**
+     * 查询指定 ASIN 的上架限制。
+     *
+     * @param request 店铺、站点和 ASIN
+     * @return Amazon 限制信息
+     */
+    @PostMapping("/restrictions")
+    @Operation(summary = "查询 Amazon Listings 上架限制")
+    @PreAuthorize("@ss.hasPermission('amazon:listings:query')")
+    public CommonResult<Map<String, Object>> getRestrictions(@Valid @RequestBody AmazonListingsRestrictionsReqVO request) {
+        return CommonResult.success(amazonListingsService.getListingsRestrictions(request));
     }
 }

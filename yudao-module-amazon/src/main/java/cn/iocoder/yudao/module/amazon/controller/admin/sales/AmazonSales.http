@@ -1,0 +1,14 @@
+### 查询 Amazon 销售订单指标
+POST {{baseUrl}}/amazon/sales/order-metrics
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{
+  "shopId": 1,
+  "countryCode": "US",
+  "interval": "2026-08-01T00:00:00Z--2026-08-02T00:00:00Z",
+  "granularity": "Day",
+  "granularityTimeZone": "UTC",
+  "buyerType": "All"
+}

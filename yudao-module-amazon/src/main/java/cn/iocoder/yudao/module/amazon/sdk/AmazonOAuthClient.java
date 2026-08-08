@@ -56,7 +56,7 @@ public class AmazonOAuthClient {
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         URI uri = URI.create(url);
         AmazonApiRequestLogContext context = new AmazonApiRequestLogContext("requestToken", "tokens", HttpMethod.POST.name(),
-                uri, null, null, null, form, headers, LocalDateTime.now());
+                uri, null, null, null, form, headers, LocalDateTime.now(), null);
         ResponseEntity<Map> httpResponse;
         try {
             httpResponse = restTemplate.exchange(uri, HttpMethod.POST, new HttpEntity<>(form, headers), Map.class);
@@ -79,8 +79,8 @@ public class AmazonOAuthClient {
             amazonApiRequestLogService.log(context, httpResponse.getStatusCode().value(), httpResponse.getHeaders(), exception);
             throw exception;
         }
-        amazonApiRequestLogService.log(context, httpResponse.getStatusCode().value(), httpResponse.getHeaders(), null);
-        amazonJsonStorageService.persist(AmazonApiCategory.TOKENS, "oauth-token", response);
+        Long fileId = amazonJsonStorageService.persist(AmazonApiCategory.TOKENS, "oauth-token", response);
+        amazonApiRequestLogService.log(context.withFileId(fileId), httpResponse.getStatusCode().value(), httpResponse.getHeaders(), null);
         return response;
     }
 

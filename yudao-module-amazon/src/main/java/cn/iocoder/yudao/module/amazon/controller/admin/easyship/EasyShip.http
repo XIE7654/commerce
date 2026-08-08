@@ -1,0 +1,39 @@
+### List handover slots
+POST {{baseUrl}}/amazon/easy-ship/handover-slots
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"IN","body":{}}
+
+### Get package
+POST {{baseUrl}}/amazon/easy-ship/package/detail
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"IN","query":{"amazonOrderId":"ORDER-1","marketplaceId":"A21TJRUUN4KGV"}}
+
+### Create package
+POST {{baseUrl}}/amazon/easy-ship/package
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"IN","body":{}}
+
+### Update packages
+POST {{baseUrl}}/amazon/easy-ship/package/update
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"IN","body":{}}
+
+### Create packages in bulk
+POST {{baseUrl}}/amazon/easy-ship/packages/bulk
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"IN","body":{}}

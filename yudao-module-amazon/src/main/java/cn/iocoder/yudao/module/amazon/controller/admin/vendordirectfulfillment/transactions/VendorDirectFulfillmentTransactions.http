@@ -1,0 +1,15 @@
+### 查询 V1 事务状态
+POST {{baseUrl}}/amazon/vendor-direct-fulfillment/transactions/v1/get
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","pathParams":{"transactionId":"TRANSACTION-1"}}
+
+### 查询 2021-12-28 事务状态
+POST {{baseUrl}}/amazon/vendor-direct-fulfillment/transactions/2021-12-28/get
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","pathParams":{"transactionId":"TRANSACTION-1"}}

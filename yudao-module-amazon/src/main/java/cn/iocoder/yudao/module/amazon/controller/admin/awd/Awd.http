@@ -1,0 +1,39 @@
+### AWD inventory
+POST {{baseUrl}}/amazon/awd/inventory
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","query":{"maxResults":"25","details":"SHOW"}}
+
+### Create inbound order
+POST {{baseUrl}}/amazon/awd/inbound-orders
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","body":{}}
+
+### Get inbound order
+POST {{baseUrl}}/amazon/awd/inbound-orders/detail
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","resourceId":"ORDER-1"}
+
+### List outbound orders
+POST {{baseUrl}}/amazon/awd/outbound-orders/list
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","query":{"maxResults":"25"}}
+
+### Create replenishment order
+POST {{baseUrl}}/amazon/awd/replenishment-orders
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","body":{}}

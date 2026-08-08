@@ -1,0 +1,10 @@
+### 轮换开发者应用 Client Secret
+POST {{baseUrl}}/amazon/application-management/client-secret/rotate
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{
+  "shopId": 1,
+  "countryCode": "US"
+}

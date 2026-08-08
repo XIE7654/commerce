@@ -1,0 +1,135 @@
+### 查询服务工单
+POST {{baseUrl}}/amazon/services/jobs/get
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","serviceJobId":"job-001"}
+
+### 取消服务工单
+POST {{baseUrl}}/amazon/services/jobs/cancel
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","serviceJobId":"job-001","query":{"cancellationReasonCode":"CUSTOMER_CANCELLED"}}
+
+### 完成服务工单
+POST {{baseUrl}}/amazon/services/jobs/complete
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","serviceJobId":"job-001"}
+
+### 查询服务工单列表
+POST {{baseUrl}}/amazon/services/jobs/list
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","query":{"pageSize":"10"}}
+
+### 创建服务预约
+POST {{baseUrl}}/amazon/services/appointments/create
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","serviceJobId":"job-001","body":{"appointmentStartTime":"2026-08-10T09:00:00Z","appointmentEndTime":"2026-08-10T10:00:00Z"}}
+
+### 改约服务预约
+POST {{baseUrl}}/amazon/services/appointments/reschedule
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","serviceJobId":"job-001","appointmentId":"appointment-001","body":{"appointmentStartTime":"2026-08-11T09:00:00Z","appointmentEndTime":"2026-08-11T10:00:00Z"}}
+
+### 分配预约资源
+POST {{baseUrl}}/amazon/services/appointments/resources/assign
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","serviceJobId":"job-001","appointmentId":"appointment-001","body":{"resources":[]}}
+
+### 设置预约履约数据
+POST {{baseUrl}}/amazon/services/appointments/fulfillment/set
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","serviceJobId":"job-001","appointmentId":"appointment-001","body":{}}
+
+### 查询范围时段容量
+POST {{baseUrl}}/amazon/services/resources/capacity/range
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","resourceId":"resource-001","body":{}}
+
+### 查询固定时段容量
+POST {{baseUrl}}/amazon/services/resources/capacity/fixed
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","resourceId":"resource-001","body":{}}
+
+### 更新资源日程
+POST {{baseUrl}}/amazon/services/resources/schedule/update
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","resourceId":"resource-001","body":{}}
+
+### 创建预约预留
+POST {{baseUrl}}/amazon/services/reservations/create
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","body":{}}
+
+### 更新预约预留
+POST {{baseUrl}}/amazon/services/reservations/update
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","reservationId":"reservation-001","body":{}}
+
+### 取消预约预留
+POST {{baseUrl}}/amazon/services/reservations/cancel
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","reservationId":"reservation-001"}
+
+### 查询工单预约时段
+POST {{baseUrl}}/amazon/services/appointments/slots/by-job
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","serviceJobId":"job-001"}
+
+### 查询通用预约时段
+POST {{baseUrl}}/amazon/services/appointments/slots
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","asin":"B000000000","storeId":"store-001"}
+
+### 创建服务文档上传地址
+POST {{baseUrl}}/amazon/services/documents/upload-destination/create
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","body":{"contentType":"application/pdf"}}

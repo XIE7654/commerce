@@ -1,0 +1,79 @@
+### 查询发票属性
+POST {{baseUrl}}/amazon/invoices/attributes
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"BR","marketplaceId":"A2Q3Y263D00KWC"}
+
+### 查询发票导出文档
+POST {{baseUrl}}/amazon/invoices/documents/get
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"BR","invoicesDocumentId":"DOC-123"}
+
+### 创建发票导出
+POST {{baseUrl}}/amazon/invoices/exports/create
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"BR","exportBody":{"marketplaceId":"A2Q3Y263D00KWC","dateStart":"2026-08-01T00:00:00Z","dateEnd":"2026-08-07T23:59:59Z","fileFormat":"XML","statuses":["AUTHORIZED"]}}
+
+### 查询发票导出列表
+POST {{baseUrl}}/amazon/invoices/exports/list
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"BR","marketplaceId":"A2Q3Y263D00KWC","dateStart":"2026-08-01T00:00:00Z","pageSize":20,"statuses":["AUTHORIZED"]}
+
+### 查询指定发票导出
+POST {{baseUrl}}/amazon/invoices/exports/get
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"BR","exportId":"EXPORT-123"}
+
+### 创建政府发票
+POST {{baseUrl}}/amazon/invoices/government-invoices/create
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"BR","governmentInvoiceBody":{"marketplaceId":"A2Q3Y263D00KWC","shipmentId":"SHIPMENT-123","invoiceType":"REMITTANCE","transactionType":"INBOUND_SHIPMENT"}}
+
+### 查询政府发票状态
+POST {{baseUrl}}/amazon/invoices/government-invoices/status
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"BR","marketplaceId":"A2Q3Y263D00KWC","shipmentId":"SHIPMENT-123","invoiceType":"REMITTANCE","transactionType":"INBOUND_SHIPMENT"}
+
+### 查询政府发票文档
+POST {{baseUrl}}/amazon/invoices/government-invoices/document
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"BR","marketplaceId":"A2Q3Y263D00KWC","shipmentId":"SHIPMENT-123","invoiceType":"REMITTANCE","transactionType":"INBOUND_SHIPMENT","fileFormat":"XML"}
+
+### 查询发票列表
+POST {{baseUrl}}/amazon/invoices/list
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"BR","marketplaceId":"A2Q3Y263D00KWC","dateStart":"2026-08-01T00:00:00Z","dateEnd":"2026-08-07T23:59:59Z","statuses":["AUTHORIZED"],"pageSize":20}
+
+### 查询发票详情
+POST {{baseUrl}}/amazon/invoices/get
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"BR","marketplaceId":"A2Q3Y263D00KWC","invoiceId":"INV-123"}

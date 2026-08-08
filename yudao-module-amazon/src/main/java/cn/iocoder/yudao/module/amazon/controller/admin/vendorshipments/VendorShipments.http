@@ -1,0 +1,31 @@
+### 提交 Vendor 货件确认
+POST {{baseUrl}}/amazon/vendor-shipments/confirmations/submit
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","body":{"shipmentConfirmations":[{"shipmentIdentifier":"SHIPMENT-001","shipmentConfirmationType":"ORIGINAL","shipmentType":"TRUCK_LOAD","shipmentStructure":"PALLETIZED_LTL","sellingParty":{"partyId":"VENDOR_CODE"},"shipFromParty":{"partyId":"VENDOR_CODE"},"shipToParty":{"partyId":"AMAZON"},"shippedDate":"2026-08-08T08:00:00Z","items":[]}]}}
+
+### 提交 Vendor 货件
+POST {{baseUrl}}/amazon/vendor-shipments/submit
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","body":{"shipments":[{"shipmentIdentifier":"SHIPMENT-001","shipmentType":"TRUCK_LOAD","shipmentStructure":"PALLETIZED_LTL","sellingParty":{"partyId":"VENDOR_CODE"},"shipFromParty":{"partyId":"VENDOR_CODE"},"shipToParty":{"partyId":"AMAZON"},"items":[]}]}}
+
+### 查询 Vendor 货件详情
+POST {{baseUrl}}/amazon/vendor-shipments/list
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","query":{"createdAfter":"2026-08-01T00:00:00Z","limit":"20"}}
+
+### 查询 Vendor 运输标签
+POST {{baseUrl}}/amazon/vendor-shipments/labels/list
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","query":{"labelCreatedAfter":"2026-08-01T00:00:00Z","limit":"20"}}

@@ -1,0 +1,15 @@
+### 查询订单可用征集动作
+POST {{baseUrl}}/amazon/solicitations/actions/get
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","amazonOrderId":"123-1234567-1234567"}
+
+### 发起商品评论与卖家反馈征集
+POST {{baseUrl}}/amazon/solicitations/product-review-and-seller-feedback/create
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","amazonOrderId":"123-1234567-1234567"}

@@ -1,0 +1,7 @@
+### 查询车型目录
+POST {{baseUrl}}/amazon/vehicles/list
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"DE","marketplaceId":"A1PA6795UKMFR9","vehicleType":"CAR","updatedAfter":"2024-01-05T18:00:03+00:00"}

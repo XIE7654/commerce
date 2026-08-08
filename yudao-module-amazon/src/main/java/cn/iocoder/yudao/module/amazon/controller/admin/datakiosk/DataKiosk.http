@@ -1,0 +1,39 @@
+### 创建 Data Kiosk 查询任务
+POST {{baseUrl}}/amazon/data-kiosk/queries
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","query":"query { sampleQuery { sales { date } } }"}
+
+### 查询 Data Kiosk 任务列表
+POST {{baseUrl}}/amazon/data-kiosk/queries/list
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","processingStatuses":["DONE"],"pageSize":20}
+
+### 查询 Data Kiosk 任务详情
+POST {{baseUrl}}/amazon/data-kiosk/queries/get
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","queryId":"QueryId1"}
+
+### 取消 Data Kiosk 查询任务
+POST {{baseUrl}}/amazon/data-kiosk/queries/cancel
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","queryId":"QueryId1"}
+
+### 查询 Data Kiosk 文档下载信息
+POST {{baseUrl}}/amazon/data-kiosk/documents/get
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","documentId":"DocumentId1"}

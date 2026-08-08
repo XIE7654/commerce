@@ -1,0 +1,7 @@
+### 创建文件上传目的地
+POST {{baseUrl}}/amazon/uploads/destinations/create
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","resource":"aplus/2020-11-01/contentDocuments","marketplaceIds":["ATVPDKIKX0DER"],"contentMD5":"1B2M2Y8AsgTpgAmY7PhCfg==","contentType":"application/json"}

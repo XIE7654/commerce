@@ -1,0 +1,16 @@
+### 创建 Restricted Data Token
+POST {{baseUrl}}/amazon/tokens/restricted-data-token
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{
+  "shopId": 1,
+  "countryCode": "US",
+  "restrictedResources": [
+    {
+      "method": "GET",
+      "path": "/orders/v0/orders/902-3159896-1390916/address"
+    }
+  ]
+}

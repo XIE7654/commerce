@@ -1,0 +1,15 @@
+### 查询 FBA 入库资格预览
+POST {{baseUrl}}/amazon/fba-inbound-eligibility/item-preview
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{
+  "shopId": 1,
+  "countryCode": "US",
+  "query": {
+    "asin": "B000000000",
+    "program": "INBOUND",
+    "marketplaceIds": "ATVPDKIKX0DER"
+  }
+}

@@ -9,8 +9,9 @@ CREATE TABLE IF NOT EXISTS amazon_api_request_log (
     api_category VARCHAR(64) NOT NULL COMMENT 'API 分类，例如 fba_inventory',
     operation_name VARCHAR(128) NOT NULL COMMENT '操作名，例如 getInventorySummaries',
     request_method VARCHAR(10) NOT NULL COMMENT 'HTTP 请求方式',
-    request_url VARCHAR(2048) NOT NULL COMMENT '脱敏后的完整请求 URL',
-    request_path VARCHAR(512) NOT NULL COMMENT '请求路径',
+    request_url VARCHAR(2048) NULL COMMENT '脱敏后的完整请求 URL；OAuth 凭据请求不记录',
+    request_path VARCHAR(512) NULL COMMENT '请求路径；OAuth 凭据请求不记录',
+    file_id BIGINT NULL COMMENT '响应归档文件编号，对应 infra_file.id',
     request_params JSON NULL COMMENT '脱敏后的查询参数或请求体',
     request_headers JSON NULL COMMENT '脱敏后的请求头',
     request_body_hash CHAR(64) NULL COMMENT '原始请求体 SHA-256',
@@ -35,5 +36,6 @@ CREATE TABLE IF NOT EXISTS amazon_api_request_log (
     KEY idx_amazon_api_request_log_tenant_operation_time (tenant_id, operation_name, requested_at),
     KEY idx_amazon_api_request_log_amazon_request_id (amazon_request_id),
     KEY idx_amazon_api_request_log_tenant_result_time (tenant_id, result_status, requested_at),
+    KEY idx_amazon_api_request_log_file_id (file_id),
     KEY idx_amazon_api_request_log_tenant_id (tenant_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Amazon SP-API 请求调用日志';

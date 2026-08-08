@@ -1,0 +1,6 @@
+### 搜索商品类型定义
+POST {{baseUrl}}/amazon/product-type-definitions/search
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+{"shopId":1,"countryCode":"US","body":{}}

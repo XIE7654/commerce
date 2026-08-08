@@ -1,0 +1,20 @@
+### 搜索 Catalog Items
+POST {{baseUrl}}/amazon/catalog-items/search
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+{"shopId":1,"countryCode":"US","body":{}}
+
+### 查询 Catalog Item
+POST {{baseUrl}}/amazon/catalog-items/get
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+{"shopId":1,"countryCode":"US","asin":"B000000000"}
+
+### 查询 Catalog 分类（ASIN 与 sellerSku 二选一）
+POST {{baseUrl}}/amazon/catalog-items/categories
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+{"shopId":1,"countryCode":"US","asin":"B000000000"}

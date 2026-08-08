@@ -1,0 +1,63 @@
+### Featured Offer 预期价格（2022-05-01）
+POST {{baseUrl}}/amazon/product-pricing/featured-offer-expected-price
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","body":{"requests":[{"uri":"/products/pricing/2022-05-01/offer/featuredOfferExpectedPrice","method":"POST","body":{"asin":"B000000000","marketplaceId":"ATVPDKIKX0DER"}}]}}
+
+### 竞争摘要（2022-05-01）
+POST {{baseUrl}}/amazon/product-pricing/competitive-summary
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","body":{"requests":[{"uri":"/products/pricing/2022-05-01/items/competitiveSummary","method":"GET","asin":"B000000000","marketplaceId":"ATVPDKIKX0DER","includedData":["featuredBuyingOptions"]}]}}
+
+### 商品价格（Product Pricing V0）
+POST {{baseUrl}}/amazon/product-pricing/price
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","itemType":"Asin","asins":["B000000000"],"itemCondition":"New","offerType":"B2C"}
+
+### 商品竞争价格（Product Pricing V0）
+POST {{baseUrl}}/amazon/product-pricing/competitive-price
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","itemType":"Sku","skus":["SKU-001"],"customerType":"Consumer"}
+
+### SKU 最低报价（Product Pricing V0）
+POST {{baseUrl}}/amazon/product-pricing/listing-offers
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","sellerSku":"SKU-001","itemCondition":"New","customerType":"Consumer"}
+
+### ASIN 最低报价（Product Pricing V0）
+POST {{baseUrl}}/amazon/product-pricing/item-offers
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","asin":"B000000000","itemCondition":"New","customerType":"Consumer"}
+
+### ASIN 批量最低报价（Product Pricing V0）
+POST {{baseUrl}}/amazon/product-pricing/item-offers-batch
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","body":{"requests":[{"uri":"/products/pricing/v0/items/B000000000/offers","method":"GET","MarketplaceId":"ATVPDKIKX0DER","ItemCondition":"New","CustomerType":"Consumer"}]}}
+
+### SKU 批量最低报价（Product Pricing V0）
+POST {{baseUrl}}/amazon/product-pricing/listing-offers-batch
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{"shopId":1,"countryCode":"US","body":{"requests":[{"uri":"/products/pricing/v0/listings/SKU-001/offers","method":"GET","MarketplaceId":"ATVPDKIKX0DER","ItemCondition":"New","CustomerType":"Consumer"}]}}

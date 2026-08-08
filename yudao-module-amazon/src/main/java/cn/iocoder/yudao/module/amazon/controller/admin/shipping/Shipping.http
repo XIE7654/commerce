@@ -1,0 +1,231 @@
+### Create V1 shipment
+POST {{baseUrl}}/amazon/shipping/v1/shipments
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","body":{}}
+
+### Get V1 shipment
+POST {{baseUrl}}/amazon/shipping/v1/shipments/detail
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","resourceId":"shipment-1"}
+
+### Cancel V1 shipment
+POST {{baseUrl}}/amazon/shipping/v1/shipments/cancel
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","resourceId":"shipment-1"}
+
+### Purchase V1 labels
+POST {{baseUrl}}/amazon/shipping/v1/shipments/purchase-labels
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","resourceId":"shipment-1","body":{}}
+
+### Retrieve V1 label
+POST {{baseUrl}}/amazon/shipping/v1/shipments/label
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","resourceId":"shipment-1","secondaryResourceId":"tracking-1","body":{}}
+
+### Purchase V1 shipment
+POST {{baseUrl}}/amazon/shipping/v1/purchase-shipment
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","body":{}}
+
+### Get V1 rates
+POST {{baseUrl}}/amazon/shipping/v1/rates
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","body":{}}
+
+### Get V1 account
+POST {{baseUrl}}/amazon/shipping/v1/account
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US"}
+
+### Get V1 tracking
+POST {{baseUrl}}/amazon/shipping/v1/tracking
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","resourceId":"tracking-1"}
+
+### Get V2 rates
+POST {{baseUrl}}/amazon/shipping/v2/rates
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","shippingBusinessId":"AmazonShipping_US","body":{}}
+
+### Direct purchase V2 shipment
+POST {{baseUrl}}/amazon/shipping/v2/shipments/direct-purchase
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","shippingBusinessId":"AmazonShipping_US","idempotencyKey":"request-1","query":{"locale":"en_US"},"body":{}}
+
+### Purchase V2 shipment
+POST {{baseUrl}}/amazon/shipping/v2/shipments
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","shippingBusinessId":"AmazonShipping_US","idempotencyKey":"request-1","body":{}}
+
+### One click V2 shipment
+POST {{baseUrl}}/amazon/shipping/v2/one-click-shipment
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","shippingBusinessId":"AmazonShipping_US","body":{}}
+
+### Get V2 tracking
+POST {{baseUrl}}/amazon/shipping/v2/tracking
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","shippingBusinessId":"AmazonShipping_US","query":{"trackingId":"tracking-1","carrierId":"carrier-1"}}
+
+### Get V2 shipment documents
+POST {{baseUrl}}/amazon/shipping/v2/shipments/documents
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","shippingBusinessId":"AmazonShipping_US","resourceId":"shipment-1","query":{"packageClientReferenceId":"package-1"}}
+
+### Cancel V2 shipment
+POST {{baseUrl}}/amazon/shipping/v2/shipments/cancel
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","shippingBusinessId":"AmazonShipping_US","resourceId":"shipment-1"}
+
+### Get V2 additional inputs
+POST {{baseUrl}}/amazon/shipping/v2/shipments/additional-inputs
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","shippingBusinessId":"AmazonShipping_US","query":{"requestToken":"token-1","rateId":"rate-1"}}
+
+### Get carrier account form inputs
+POST {{baseUrl}}/amazon/shipping/v2/carrier-account-form-inputs
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","shippingBusinessId":"AmazonShipping_US"}
+
+### Get carrier accounts
+POST {{baseUrl}}/amazon/shipping/v2/carrier-accounts/list
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","shippingBusinessId":"AmazonShipping_US","body":{}}
+
+### Link carrier account
+POST {{baseUrl}}/amazon/shipping/v2/carrier-accounts
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","shippingBusinessId":"AmazonShipping_US","resourceId":"carrier-1","body":{}}
+
+### Update carrier account
+POST {{baseUrl}}/amazon/shipping/v2/carrier-accounts/update
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","shippingBusinessId":"AmazonShipping_US","resourceId":"carrier-1","body":{}}
+
+### Unlink carrier account
+POST {{baseUrl}}/amazon/shipping/v2/carrier-accounts/unlink
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","shippingBusinessId":"AmazonShipping_US","resourceId":"carrier-1","body":{}}
+
+### Generate collection form
+POST {{baseUrl}}/amazon/shipping/v2/collection-forms
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","shippingBusinessId":"AmazonShipping_US","idempotencyKey":"request-1","body":{}}
+
+### Get collection form history
+POST {{baseUrl}}/amazon/shipping/v2/collection-forms/history
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","shippingBusinessId":"AmazonShipping_US","body":{}}
+
+### Get unmanifested shipments
+POST {{baseUrl}}/amazon/shipping/v2/unmanifested-shipments
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","shippingBusinessId":"AmazonShipping_US","body":{}}
+
+### Get collection form
+POST {{baseUrl}}/amazon/shipping/v2/collection-forms/detail
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","shippingBusinessId":"AmazonShipping_US","resourceId":"collection-form-1"}
+
+### Get access points
+POST {{baseUrl}}/amazon/shipping/v2/access-points
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","shippingBusinessId":"AmazonShipping_US","query":{"accessPointTypes":"PUDO","countryCode":"US","postalCode":"98101"}}
+
+### Submit NDR feedback
+POST {{baseUrl}}/amazon/shipping/v2/ndr-feedback
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","shippingBusinessId":"AmazonShipping_US","body":{}}
+
+### Create claim
+POST {{baseUrl}}/amazon/shipping/v2/claims
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+Content-Type: application/json
+
+{"shopId":1,"countryCode":"US","shippingBusinessId":"AmazonShipping_US","body":{}}
