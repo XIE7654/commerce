@@ -76,6 +76,23 @@ public class AmazonSellingPartnerClient {
     }
 
     /**
+     * 调用 Amazon Orders API 并保存返回的 JSON 数据。
+     *
+     * @param uri Orders 请求地址
+     * @param accessToken 店铺的 Seller LWA access token
+     * @param operationName Amazon Orders 操作名称
+     * @param storageName JSON 存储名称
+     * @param shopId 店铺编号
+     * @param countryCode 站点国家代码
+     * @param marketplaceId 请求的 Marketplace ID
+     * @return Amazon Orders JSON 响应；空响应返回空 Map
+     */
+    public Map<String, Object> getOrders(URI uri, String accessToken, String operationName, String storageName,
+                                         Long shopId, String countryCode, String marketplaceId) {
+        return get(uri, accessToken, AmazonApiCategory.ORDERS, operationName, storageName, shopId, countryCode, marketplaceId);
+    }
+
+    /**
      * 执行 Listings API 的 GET 请求并持久化响应，以保留 Amazon 返回字段供后续排查。
      *
      * @param uri Listings 请求地址

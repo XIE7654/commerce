@@ -1,0 +1,85 @@
+### 查询 Amazon 订单列表
+POST {{baseUrl}}/amazon/orders/list
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{
+  "shopId": 1,
+  "countryCode": "US",
+  "createdAfter": "2026-01-01T00:00:00Z",
+  "maxResultsPerPage": 100,
+  "orderStatuses": ["Unshipped", "PartiallyShipped"]
+}
+
+### 查询 Amazon 订单详情
+POST {{baseUrl}}/amazon/orders/detail
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{
+  "shopId": 1,
+  "countryCode": "US",
+  "orderId": "902-3159896-1390916"
+}
+
+### 查询 Amazon 订单商品
+POST {{baseUrl}}/amazon/orders/items
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{
+  "shopId": 1,
+  "countryCode": "US",
+  "orderId": "902-3159896-1390916"
+}
+
+### 查询 Amazon 订单商品买家信息
+POST {{baseUrl}}/amazon/orders/items/buyer-info
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{
+  "shopId": 1,
+  "countryCode": "US",
+  "orderId": "902-3159896-1390916"
+}
+
+### 查询 Amazon 订单买家信息
+POST {{baseUrl}}/amazon/orders/buyer-info
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{
+  "shopId": 1,
+  "countryCode": "US",
+  "orderId": "902-3159896-1390916"
+}
+
+### 查询 Amazon 订单收货地址
+POST {{baseUrl}}/amazon/orders/address
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{
+  "shopId": 1,
+  "countryCode": "US",
+  "orderId": "902-3159896-1390916"
+}
+
+### 查询 Amazon 受监管订单信息
+POST {{baseUrl}}/amazon/orders/regulated-info
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{
+  "shopId": 1,
+  "countryCode": "US",
+  "orderId": "902-3159896-1390916"
+}
