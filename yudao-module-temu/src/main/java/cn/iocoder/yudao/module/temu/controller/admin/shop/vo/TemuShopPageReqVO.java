@@ -11,15 +11,15 @@ import static cn.iocoder.yudao.framework.common.util.date.DateUtils.FORMAT_YEAR_
 
 @Schema(description = "管理后台 - Temu 店铺分页 Request VO")
 @Data
-public class ShopPageReqVO extends PageParam {
+public class TemuShopPageReqVO extends PageParam {
 
-    @Schema(description = "店铺类型：1-全托管，2-半托管，3-本土店铺", example = "1")
+    @Schema(description = "店铺类型：1-全托管，2-半托管，3-本土店铺", example = "2")
     private Integer shopType;
 
     @Schema(description = "Temu 站点代码，例如 US、DE、JP")
     private String site;
 
-    @Schema(description = "店铺名称", example = "芋艿")
+    @Schema(description = "店铺名称", example = "赵六")
     private String shopName;
 
     @Schema(description = "Temu 授权 Token")

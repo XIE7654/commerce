@@ -136,6 +136,6 @@ public abstract class AmazonFulfillmentApiServiceSupport {
     }
 
     /** Amazon operation 的 HTTP 方法和路径定义。 */
-    protected record OperationDefinition(HttpMethod method, String path) {
+    public record OperationDefinition(HttpMethod method, String path) {
     }
 }

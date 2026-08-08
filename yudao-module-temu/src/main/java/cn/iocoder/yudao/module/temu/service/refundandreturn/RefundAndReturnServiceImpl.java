@@ -8,6 +8,7 @@ import cn.iocoder.yudao.module.temu.enums.TemuSiteRegionEnum;
 import cn.iocoder.yudao.module.temu.framework.config.TemuProperties;
 import cn.iocoder.yudao.module.temu.sdk.TemuClient;
 import cn.iocoder.yudao.module.temu.sdk.TemuJsonStorageService;
+import cn.iocoder.yudao.module.temu.service.apirequestlog.TemuApiRequestLogService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -28,6 +29,8 @@ public class RefundAndReturnServiceImpl implements RefundAndReturnService {
     private TemuProperties temuProperties;
     @Resource
     private TemuJsonStorageService temuJsonStorageService;
+    @Resource
+    private TemuApiRequestLogService temuApiRequestLogService;
 
     /**
      * 调用 Temu 父售后单列表查询接口。
@@ -88,8 +91,8 @@ public class RefundAndReturnServiceImpl implements RefundAndReturnService {
         if (region == null || isBlank(region.getAppKey()) || isBlank(region.getAppSecret())) {
             throw new IllegalArgumentException("Temu 站点未配置 appKey 或 appSecret: " + site.name());
         }
-        return new TemuClient(region.getAppKey(), region.getAppSecret(), request.getAccessToken(),
-                site.getEndpoint(), temuJsonStorageService);
+        return new TemuClient(region.getAppKey(), region.getAppSecret(), request.getAccessToken(), site.getEndpoint(),
+                temuJsonStorageService, site.name(), temuApiRequestLogService);
     }
 
     /**
