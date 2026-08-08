@@ -39,7 +39,7 @@ public class AmazonFeedsServiceImpl implements AmazonFeedsService {
 
     /** 创建 Feed；调用前必须已上传 Feed Document。 */
     @Override public Map<String,Object> createFeed(AmazonFeedCreateReqVO request) {
-        AmazonMarketplaceEnum m = marketplace(request.getCountryCode()); Map<String,Object> body = new LinkedHashMap<>(); body.put("feedType",request.getFeedType()); body.put("marketplaceIds",request.getMarketplaceIds()); body.put("inputFeedDocumentId",request.getInputFeedDocumentId()); if (!empty(request.getFeedOptions())) body.put("feedOptions",request.getFeedOptions());
+        AmazonMarketplaceEnum m = marketplace(request.getCountryCode()); Map<String,Object> body = new LinkedHashMap<>(); body.put("feedType",request.getFeedType()); body.put("marketplaceIds",request.getMarketplaceIds()); body.put("inputFeedDocumentId",request.getInputFeedDocumentId()); if (request.getFeedOptions() != null && !request.getFeedOptions().isEmpty()) body.put("feedOptions",request.getFeedOptions());
         return call(request.getShopId(),request.getCountryCode(),m,PATH+"/feeds","createFeed","feed",body);
     }
     /** 查询 Feed 详情。 */

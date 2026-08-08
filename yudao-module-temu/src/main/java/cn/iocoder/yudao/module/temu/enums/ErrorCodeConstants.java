@@ -10,5 +10,6 @@ import cn.iocoder.yudao.framework.common.exception.ErrorCode;
 public interface ErrorCodeConstants {
 
     ErrorCode SHOP_NOT_EXISTS = new ErrorCode(1_300_001_000, "Temu 店铺不存在");
+    ErrorCode API_REQUEST_LOG_NOT_EXISTS = new ErrorCode(1_300_002_000, "Temu OpenAPI 请求调用日志不存在");
 
 }

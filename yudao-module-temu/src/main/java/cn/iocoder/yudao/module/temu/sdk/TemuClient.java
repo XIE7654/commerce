@@ -10,6 +10,8 @@ import cn.iocoder.yudao.module.temu.sdk.api.PriceApi;
 import cn.iocoder.yudao.module.temu.sdk.api.ProductApi;
 import cn.iocoder.yudao.module.temu.sdk.api.PromotionApi;
 import cn.iocoder.yudao.module.temu.sdk.api.WebhookApi;
+import cn.iocoder.yudao.module.temu.service.apirequestlog.TemuApiRequestLogContext;
+import cn.iocoder.yudao.module.temu.service.apirequestlog.TemuApiRequestLogService;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -19,12 +21,15 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -50,6 +55,8 @@ public class TemuClient {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     private final TemuJsonStorageService jsonStorageService;
+    private final String site;
+    private final TemuApiRequestLogService temuApiRequestLogService;
     private final int connectTimeoutMillis;
     private final int readTimeoutMillis;
 
@@ -93,6 +100,25 @@ public class TemuClient {
     }
 
     /**
+     * 使用默认 HTTP 客户端创建 SDK，并启用响应归档和请求日志。
+     *
+     * @param appKey 应用 Key
+     * @param appSecret 应用 Secret
+     * @param accessToken 店铺授权 Token
+     * @param baseUrl Temu OpenAPI 区域域名
+     * @param jsonStorageService 响应归档服务
+     * @param site Temu 站点代码
+     * @param temuApiRequestLogService 请求日志服务
+     */
+    public TemuClient(String appKey, String appSecret, String accessToken, String baseUrl,
+                      TemuJsonStorageService jsonStorageService, String site,
+                      TemuApiRequestLogService temuApiRequestLogService) {
+        this(appKey, appSecret, accessToken, baseUrl,
+                new RestTemplate(createRequestFactory(10000, 30000)), new ObjectMapper(), 10000, 30000,
+                jsonStorageService, site, temuApiRequestLogService);
+    }
+
+    /**
      * 使用调用方提供的 HTTP 客户端创建 SDK，便于接入统一代理、链路追踪和测试 Mock。
      *
      * @param appKey 应用 Key
@@ -127,6 +153,29 @@ public class TemuClient {
     public TemuClient(String appKey, String appSecret, String accessToken, String baseUrl,
                       RestTemplate restTemplate, ObjectMapper objectMapper,
                       int connectTimeoutMillis, int readTimeoutMillis, TemuJsonStorageService jsonStorageService) {
+        this(appKey, appSecret, accessToken, baseUrl, restTemplate, objectMapper,
+                connectTimeoutMillis, readTimeoutMillis, jsonStorageService, null, null);
+    }
+
+    /**
+     * 使用调用方提供的 HTTP 客户端、响应归档服务与请求日志服务创建 SDK。
+     *
+     * @param appKey 应用 Key
+     * @param appSecret 应用 Secret
+     * @param accessToken 店铺授权 Token
+     * @param baseUrl Temu OpenAPI 区域域名
+     * @param restTemplate HTTP 客户端
+     * @param objectMapper JSON 转换器
+     * @param connectTimeoutMillis 连接超时时间，仅作为客户端配置说明
+     * @param readTimeoutMillis 读取超时时间，仅作为客户端配置说明
+     * @param jsonStorageService 响应归档服务；为 {@code null} 时不归档
+     * @param site Temu 站点代码；为 {@code null} 时日志不记录站点
+     * @param temuApiRequestLogService 请求日志服务；为 {@code null} 时不记录请求日志
+     */
+    public TemuClient(String appKey, String appSecret, String accessToken, String baseUrl,
+                      RestTemplate restTemplate, ObjectMapper objectMapper,
+                      int connectTimeoutMillis, int readTimeoutMillis, TemuJsonStorageService jsonStorageService,
+                      String site, TemuApiRequestLogService temuApiRequestLogService) {
         if (isBlank(appKey) || isBlank(appSecret) || isBlank(baseUrl)) {
             throw new IllegalArgumentException("Temu appKey、appSecret、baseUrl 不能为空");
         }
@@ -137,6 +186,8 @@ public class TemuClient {
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
         this.jsonStorageService = jsonStorageService;
+        this.site = site;
+        this.temuApiRequestLogService = temuApiRequestLogService;
         this.connectTimeoutMillis = connectTimeoutMillis;
         this.readTimeoutMillis = readTimeoutMillis;
     }
@@ -184,22 +235,60 @@ public class TemuClient {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
+        URI requestUri = buildRequestUri(method, params);
+        TemuApiRequestLogContext context = new TemuApiRequestLogContext(apiType, method.name(), requestUri,
+                site, params, headers, LocalDateTime.now());
         try {
             ResponseEntity<String> response;
             if (HttpMethod.GET.equals(method)) {
-                UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(baseUrl + ROUTER_PATH);
-                params.forEach(builder::queryParam);
-                response = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET,
+                response = restTemplate.exchange(requestUri, HttpMethod.GET,
                         new HttpEntity<>(headers), String.class);
             } else {
-                response = restTemplate.exchange(baseUrl + ROUTER_PATH, HttpMethod.POST,
+                response = restTemplate.exchange(requestUri, HttpMethod.POST,
                         new HttpEntity<>(params, headers), String.class);
             }
             JsonNode responseBody = objectMapper.readTree(response.getBody());
+            logRequest(context, response.getStatusCode().value(), response.getHeaders(), responseBody, null);
             persistResponse(apiType, responseBody);
             return responseBody;
-        } catch (RestClientException | JacksonException ex) {
+        } catch (RestClientResponseException ex) {
+            logRequest(context, ex.getStatusCode().value(), ex.getResponseHeaders(), null, ex);
             throw new TemuApiException("调用 Temu OpenAPI 失败: " + apiType, ex);
+        } catch (RestClientException | JacksonException ex) {
+            logRequest(context, null, null, null, ex);
+            throw new TemuApiException("调用 Temu OpenAPI 失败: " + apiType, ex);
+        }
+    }
+
+    /**
+     * 构建实际请求 URI，使 GET 审计日志能够记录脱敏前的完整查询参数。
+     *
+     * @param method HTTP 请求方式
+     * @param params 已签名的 Temu 请求参数
+     * @return 请求 URI
+     */
+    private URI buildRequestUri(HttpMethod method, Map<String, Object> params) {
+        if (!HttpMethod.GET.equals(method)) {
+            return URI.create(baseUrl + ROUTER_PATH);
+        }
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(baseUrl + ROUTER_PATH);
+        params.forEach(builder::queryParam);
+        return builder.build().encode().toUri();
+    }
+
+    /**
+     * 记录请求结果；日志服务不可用或写入失败时不应干扰 Temu 业务调用。
+     *
+     * @param context 请求审计上下文
+     * @param httpStatusCode HTTP 状态码
+     * @param responseHeaders 响应头
+     * @param responseBody 响应体
+     * @param exception 调用异常
+     */
+    private void logRequest(TemuApiRequestLogContext context, Integer httpStatusCode, HttpHeaders responseHeaders,
+                            JsonNode responseBody, Throwable exception) {
+        if (temuApiRequestLogService != null) {
+            temuApiRequestLogService.log(context, httpStatusCode, responseHeaders, responseBody, exception);
         }
     }
 

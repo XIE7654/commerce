@@ -6,6 +6,7 @@ import cn.iocoder.yudao.module.temu.enums.TemuSiteRegionEnum;
 import cn.iocoder.yudao.module.temu.framework.config.TemuProperties;
 import cn.iocoder.yudao.module.temu.sdk.TemuClient;
 import cn.iocoder.yudao.module.temu.sdk.TemuJsonStorageService;
+import cn.iocoder.yudao.module.temu.service.apirequestlog.TemuApiRequestLogService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -25,6 +26,8 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     private TemuProperties temuProperties;
     @Resource
     private TemuJsonStorageService temuJsonStorageService;
+    @Resource
+    private TemuApiRequestLogService temuApiRequestLogService;
 
     /**
      * 调用 {@code bg.open.accesstoken.info.get} 查询当前 Token 的授权信息。
@@ -64,8 +67,8 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         if (region == null || isBlank(region.getAppKey()) || isBlank(region.getAppSecret())) {
             throw new IllegalArgumentException("Temu 站点未配置 appKey 或 appSecret: " + site.name());
         }
-        return new TemuClient(region.getAppKey(), region.getAppSecret(), accessToken,
-                site.getEndpoint(), temuJsonStorageService);
+        return new TemuClient(region.getAppKey(), region.getAppSecret(), accessToken, site.getEndpoint(),
+                temuJsonStorageService, site.name(), temuApiRequestLogService);
     }
 
     /**
