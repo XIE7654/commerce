@@ -24,7 +24,7 @@ public class ShopDO extends BaseDO {
     /**
      * 主键编号
      */
-    @TableId
+    @TableId(type = IdType.AUTO)
     private Long id;
     /**
      * 店铺类型：1-全托管，2-半托管，3-本土店铺

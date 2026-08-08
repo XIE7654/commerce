@@ -39,7 +39,8 @@ public class FbaInventoryServiceImpl implements FbaInventoryService {
         AmazonShopDO shop = requireShop(request.getShopId());
         AmazonMarketplaceEnum marketplace = requireMarketplace(request.getCountryCode());
         String accessToken = amazonOAuthService.getSellerAccessToken(shop.getId());
-        return amazonSellingPartnerClient.getInventorySummaries(buildRequestUri(marketplace, request), accessToken);
+        return amazonSellingPartnerClient.getInventorySummaries(buildRequestUri(marketplace, request), accessToken,
+                shop.getId(), request.getCountryCode(), marketplace.getMarketplaceId());
     }
 
     /**

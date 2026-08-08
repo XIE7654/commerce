@@ -42,7 +42,8 @@ public class AmazonListingsServiceImpl implements AmazonListingsService {
         AmazonMarketplaceEnum marketplace = requireMarketplace(request.getCountryCode());
         String accessToken = amazonOAuthService.getSellerAccessToken(shop.getId());
         URI uri = buildRequestUri(marketplace, shop.getSellerId(), request);
-        return amazonSellingPartnerClient.getListingsItems(uri, accessToken);
+        return amazonSellingPartnerClient.getListingsItems(uri, accessToken, shop.getId(), request.getCountryCode(),
+                marketplace.getMarketplaceId());
     }
 
     /** {@inheritDoc} */
@@ -52,7 +53,8 @@ public class AmazonListingsServiceImpl implements AmazonListingsService {
         AmazonMarketplaceEnum marketplace = requireMarketplace(request.getCountryCode());
         String accessToken = amazonOAuthService.getSellerAccessToken(shop.getId());
         URI uri = buildItemRequestUri(marketplace, shop.getSellerId(), request);
-        return amazonSellingPartnerClient.getListingsItem(uri, accessToken);
+        return amazonSellingPartnerClient.getListingsItem(uri, accessToken, shop.getId(), request.getCountryCode(),
+                marketplace.getMarketplaceId());
     }
 
     /**

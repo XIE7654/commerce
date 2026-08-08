@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS amazon_shop (
-    id BIGINT NOT NULL COMMENT '主键编号',
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键编号',
     seller_id VARCHAR(64) NULL COMMENT 'Amazon sellerId',
     marketplace_id VARCHAR(64) NULL COMMENT '默认 marketplaceId',
     shop_name VARCHAR(128) NOT NULL COMMENT '店铺名称',

@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS temu_shop (
-    id BIGINT NOT NULL COMMENT '主键编号',
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键编号',
     shop_type TINYINT NOT NULL COMMENT '店铺类型：1-全托管，2-半托管，3-本土店铺',
     site VARCHAR(16) NOT NULL COMMENT 'Temu 站点代码，例如 US、DE、JP',
     shop_name VARCHAR(128) NOT NULL COMMENT '店铺名称',
