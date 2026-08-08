@@ -1,15 +1,22 @@
 package cn.iocoder.yudao.module.amazon.sdk;
 
 import cn.iocoder.yudao.module.amazon.framework.config.AwsProperties;
+import cn.iocoder.yudao.module.amazon.service.apilog.AmazonApiRequestLogContext;
+import cn.iocoder.yudao.module.amazon.service.apilog.AmazonApiRequestLogService;
 import jakarta.annotation.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 /** Amazon OAuth HTTP 客户端，统一归档 JSON 响应。 */
@@ -20,6 +27,8 @@ public class AmazonOAuthClient {
     private AwsProperties properties;
     @Resource
     private AmazonJsonStorageService amazonJsonStorageService;
+    @Resource
+    private AmazonApiRequestLogService amazonApiRequestLogService;
 
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -45,15 +54,33 @@ public class AmazonOAuthClient {
         form.add("client_secret", ads ? properties.getAdClientSecret() : properties.getClientSecret());
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        Map<?, ?> result = restTemplate.postForObject(url, new HttpEntity<>(form, headers), Map.class);
+        URI uri = URI.create(url);
+        AmazonApiRequestLogContext context = new AmazonApiRequestLogContext("requestToken", "tokens", HttpMethod.POST.name(),
+                uri, null, null, null, form, headers, LocalDateTime.now());
+        ResponseEntity<Map> httpResponse;
+        try {
+            httpResponse = restTemplate.exchange(uri, HttpMethod.POST, new HttpEntity<>(form, headers), Map.class);
+        } catch (RestClientResponseException exception) {
+            amazonApiRequestLogService.log(context, exception.getStatusCode().value(), exception.getResponseHeaders(), exception);
+            throw exception;
+        } catch (RuntimeException exception) {
+            amazonApiRequestLogService.log(context, null, null, exception);
+            throw exception;
+        }
+        Map<?, ?> result = httpResponse.getBody();
         if (result == null) {
-            throw new IllegalStateException("Amazon OAuth token 响应为空");
+            IllegalStateException exception = new IllegalStateException("Amazon OAuth token 响应为空");
+            amazonApiRequestLogService.log(context, httpResponse.getStatusCode().value(), httpResponse.getHeaders(), exception);
+            throw exception;
         }
         Map<String, Object> response = (Map<String, Object>) result;
-        amazonJsonStorageService.persist(AmazonApiCategory.TOKENS, "oauth-token", response);
         if (response.get("access_token") == null) {
-            throw new IllegalStateException("Amazon OAuth token 响应缺少 access_token");
+            IllegalStateException exception = new IllegalStateException("Amazon OAuth token 响应缺少 access_token");
+            amazonApiRequestLogService.log(context, httpResponse.getStatusCode().value(), httpResponse.getHeaders(), exception);
+            throw exception;
         }
+        amazonApiRequestLogService.log(context, httpResponse.getStatusCode().value(), httpResponse.getHeaders(), null);
+        amazonJsonStorageService.persist(AmazonApiCategory.TOKENS, "oauth-token", response);
         return response;
     }
 

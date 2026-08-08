@@ -4,6 +4,7 @@ import cn.iocoder.yudao.module.temu.controller.admin.addproducts.vo.AddProductsC
 import cn.iocoder.yudao.module.temu.enums.TemuSiteRegionEnum;
 import cn.iocoder.yudao.module.temu.framework.config.TemuProperties;
 import cn.iocoder.yudao.module.temu.sdk.TemuClient;
+import cn.iocoder.yudao.module.temu.sdk.TemuJsonStorageService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -22,6 +23,8 @@ public class AddProductsServiceImpl implements AddProductsService {
 
     @Resource
     private TemuProperties temuProperties;
+    @Resource
+    private TemuJsonStorageService temuJsonStorageService;
 
     /**
      * 查询 Temu 商品分类。
@@ -53,7 +56,7 @@ public class AddProductsServiceImpl implements AddProductsService {
         if (region == null || isBlank(region.getAppKey()) || isBlank(region.getAppSecret())) {
             throw new IllegalArgumentException("Temu 站点未配置 appKey 或 appSecret: " + site.name());
         }
-        return new TemuClient(region.getAppKey(), region.getAppSecret(), accessToken, site.getEndpoint());
+        return new TemuClient(region.getAppKey(), region.getAppSecret(), accessToken, site.getEndpoint(), temuJsonStorageService);
     }
 
     /**

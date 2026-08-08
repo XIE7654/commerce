@@ -5,6 +5,7 @@ import cn.iocoder.yudao.module.temu.controller.admin.auth.vo.TemuAuthInfoReqVO;
 import cn.iocoder.yudao.module.temu.enums.TemuSiteRegionEnum;
 import cn.iocoder.yudao.module.temu.framework.config.TemuProperties;
 import cn.iocoder.yudao.module.temu.sdk.TemuClient;
+import cn.iocoder.yudao.module.temu.sdk.TemuJsonStorageService;
 import tools.jackson.databind.JsonNode;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,8 @@ public class TemuAuthServiceImpl implements TemuAuthService {
 
     @Resource
     private TemuProperties temuProperties;
+    @Resource
+    private TemuJsonStorageService temuJsonStorageService;
 
     /**
      * 查询当前 access_token 的权限信息。
@@ -72,7 +75,7 @@ public class TemuAuthServiceImpl implements TemuAuthService {
         if (region == null || isBlank(region.getAppKey()) || isBlank(region.getAppSecret())) {
             throw new IllegalArgumentException("Temu 站点未配置 appKey 或 appSecret: " + site.name());
         }
-        return new TemuClient(region.getAppKey(), region.getAppSecret(), accessToken, site.getEndpoint());
+        return new TemuClient(region.getAppKey(), region.getAppSecret(), accessToken, site.getEndpoint(), temuJsonStorageService);
     }
 
     /**

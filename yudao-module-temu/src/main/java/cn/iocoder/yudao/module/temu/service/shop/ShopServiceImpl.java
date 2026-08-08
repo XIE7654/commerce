@@ -32,8 +32,15 @@ public class ShopServiceImpl implements ShopService {
     @Resource
     private ShopMapper shopMapper;
 
+    /**
+     * 创建 Temu 店铺并保存授权有效期。
+     *
+     * @param createReqVO 店铺与授权信息
+     * @return 新建店铺编号
+     */
     @Override
     public Long createShop(ShopSaveReqVO createReqVO) {
+        validateAuthorizationPeriod(createReqVO);
         // 插入
         ShopDO shop = BeanUtils.toBean(createReqVO, ShopDO.class);
         shopMapper.insert(shop);
@@ -42,13 +49,32 @@ public class ShopServiceImpl implements ShopService {
         return shop.getId();
     }
 
+    /**
+     * 更新 Temu 店铺及其授权有效期。
+     *
+     * @param updateReqVO 店铺与授权信息
+     */
     @Override
     public void updateShop(ShopSaveReqVO updateReqVO) {
         // 校验存在
         validateShopExists(updateReqVO.getId());
+        validateAuthorizationPeriod(updateReqVO);
         // 更新
         ShopDO updateObj = BeanUtils.toBean(updateReqVO, ShopDO.class);
         shopMapper.updateById(updateObj);
+    }
+
+    /**
+     * 校验授权时间区间，防止保存无效的授权生命周期。
+     *
+     * @param request 店铺授权信息
+     * @throws IllegalArgumentException 授权过期时间早于授权时间时抛出
+     */
+    private void validateAuthorizationPeriod(ShopSaveReqVO request) {
+        if (request.getAuthorizeTime() != null && request.getAuthorizeExpireTime() != null
+                && request.getAuthorizeExpireTime().isBefore(request.getAuthorizeTime())) {
+            throw new IllegalArgumentException("授权过期时间不能早于授权时间");
+        }
     }
 
     @Override

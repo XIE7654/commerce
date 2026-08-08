@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.temu.controller.admin.shop.vo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
+import java.time.LocalDateTime;
 import jakarta.validation.constraints.*;
 
 @Schema(description = "管理后台 - Temu 店铺新增/修改 Request VO")
@@ -27,5 +28,11 @@ public class ShopSaveReqVO {
     @Schema(description = "Temu 授权 Token", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotEmpty(message = "Temu 授权 Token不能为空")
     private String authToken;
+
+    @Schema(description = "Temu 授权时间", example = "2026-08-07T12:00:00")
+    private LocalDateTime authorizeTime;
+
+    @Schema(description = "Temu 授权过期时间", example = "2027-08-07T12:00:00")
+    private LocalDateTime authorizeExpireTime;
 
 }

@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.temu.dal.dataobject.shop;
 
 import cn.iocoder.yudao.framework.tenant.core.db.TenantBaseDO;
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
@@ -9,6 +10,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+
+import java.time.LocalDateTime;
 
 /**
  * Temu 店铺 DO。
@@ -28,7 +31,7 @@ public class TemuShopDO extends TenantBaseDO {
     /**
      * 主键编号。
      */
-    @TableId
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     /**
@@ -50,5 +53,15 @@ public class TemuShopDO extends TenantBaseDO {
      * Temu 授权 Token。
      */
     private String authToken;
+
+    /**
+     * Temu 授权生效时间。
+     */
+    private LocalDateTime authorizeTime;
+
+    /**
+     * Temu 授权过期时间，用于提示店铺重新授权。
+     */
+    private LocalDateTime authorizeExpireTime;
 
 }
