@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS temu_shop (
     site VARCHAR(16) NOT NULL COMMENT 'Temu 站点代码，例如 US、DE、JP',
     shop_name VARCHAR(128) NOT NULL COMMENT '店铺名称',
     auth_token VARCHAR(512) NOT NULL COMMENT 'Temu 授权 Token',
+    status TINYINT NOT NULL DEFAULT 0 COMMENT '状态：0-开启，1-关闭，对应系统 common_status 字典',
     authorize_time DATETIME NULL COMMENT '授权时间',
     authorize_expire_time DATETIME NULL COMMENT '授权过期时间',
     creator VARCHAR(64) NULL DEFAULT '' COMMENT '创建者',

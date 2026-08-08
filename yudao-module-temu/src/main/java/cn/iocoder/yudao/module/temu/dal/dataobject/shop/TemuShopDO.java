@@ -43,6 +43,10 @@ public class TemuShopDO extends BaseDO {
      * Temu 授权 Token
      */
     private String authToken;
+    /**
+     * 状态：0-开启，1-关闭，对应系统 common_status 字典。
+     */
+    private Integer status;
 
 
 }

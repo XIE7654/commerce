@@ -23,6 +23,7 @@ public interface TemuShopMapper extends BaseMapperX<TemuShopDO> {
                 .eqIfPresent(TemuShopDO::getSite, reqVO.getSite())
                 .likeIfPresent(TemuShopDO::getShopName, reqVO.getShopName())
                 .eqIfPresent(TemuShopDO::getAuthToken, reqVO.getAuthToken())
+                .eqIfPresent(TemuShopDO::getStatus, reqVO.getStatus())
                 .betweenIfPresent(TemuShopDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(TemuShopDO::getId));
     }
