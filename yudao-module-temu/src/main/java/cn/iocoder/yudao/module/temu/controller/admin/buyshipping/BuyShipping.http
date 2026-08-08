@@ -1,0 +1,126 @@
+### Buy Shipping 购单发货接口测试
+
+@temuAccessToken = replace-with-temu-access-token
+@warehouseId = WH-03283345879192414
+@orderSn = 211-08525158244391299
+@parentOrderSn = PO-211-08525158244391299
+@packageSn = PK-3907568816619673114
+
+### 查询可购买物流服务
+POST {{baseUrl}}/temu/buy-shipping/shipping-services/list
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "warehouseId": "{{warehouseId}}",
+  "length": "12.5",
+  "width": "8.0",
+  "height": "4.0",
+  "weight": "2.5",
+  "dimensionUnit": "in",
+  "weightUnit": "lb",
+  "orderSnList": ["{{orderSn}}"]
+}
+
+### 查询购单发货仓库
+POST {{baseUrl}}/temu/buy-shipping/warehouses/list
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}"
+}
+
+### 创建货件
+POST {{baseUrl}}/temu/buy-shipping/shipments/create
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "sendType": 0,
+  "sendRequestList": [{
+    "warehouseId": "{{warehouseId}}",
+    "length": "12.5",
+    "width": "8.0",
+    "height": "4.0",
+    "weight": "2.5",
+    "dimensionUnit": "in",
+    "weightUnit": "lb",
+    "shipCompanyId": 314439762,
+    "channelId": 25459115954176,
+    "orderSendInfoList": [{"quantity": 1, "orderSn": "{{orderSn}}", "parentOrderSn": "{{parentOrderSn}}", "goodsId": 602242644031031, "skuId": 36165772167792}]
+  }]
+}
+
+### 更新货件
+POST {{baseUrl}}/temu/buy-shipping/shipments/update
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "retrySendPackageRequestList": [{
+    "warehouseId": "{{warehouseId}}",
+    "packageSn": "{{packageSn}}",
+    "length": "12.5",
+    "width": "8.0",
+    "height": "4.0",
+    "weight": "2.5",
+    "dimensionUnit": "in",
+    "weightUnit": "lb",
+    "shipCompanyId": 314439762,
+    "channelId": 25459115954176,
+    "orderSendInfoList": [{"quantity": 1, "orderSn": "{{orderSn}}", "parentOrderSn": "{{parentOrderSn}}", "goodsId": 602242644031031, "skuId": 36165772167792}]
+  }]
+}
+
+### 获取运输面单
+POST {{baseUrl}}/temu/buy-shipping/shipping-labels/get
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "packageSnList": ["{{packageSn}}"]
+}
+
+### 查询待发货包裹
+POST {{baseUrl}}/temu/buy-shipping/ship-later-packages/list
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "pageNumber": 1,
+  "pageSize": 20
+}
+
+### 确认待发货包裹已发货
+POST {{baseUrl}}/temu/buy-shipping/ship-later-packages/confirm
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "packageSendInfoList": [{
+    "trackingNumber": "replace-with-tracking-number",
+    "packageSn": "{{packageSn}}",
+    "packageDetail": {"quantity": 1, "orderSn": "{{orderSn}}", "parentOrderSn": "{{parentOrderSn}}"}
+  }]
+}

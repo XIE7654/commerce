@@ -1,0 +1,28 @@
+### Inventory Management 库存管理接口测试
+
+@temuAccessToken = replace-with-temu-access-token
+
+### 更新 Temu 商品 SKU 库存
+POST {{baseUrl}}/temu/inventory-management/goods/stock
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "requestUniqueKey": "stock-update-20260808-001",
+  "goodsId": 602238349110173,
+  "skuStockTargetList": [
+    {
+      "skuId": 43510166225830,
+      "stockTarget": 100
+    }
+  ],
+  "skuStockChangeList": [
+    {
+      "skuId": 43510166225830,
+      "stockDiff": 100
+    }
+  ]
+}

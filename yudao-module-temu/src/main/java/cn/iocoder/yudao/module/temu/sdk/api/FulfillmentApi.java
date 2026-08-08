@@ -76,6 +76,13 @@ public class FulfillmentApi extends TemuApiService {
     public JsonNode shipmentV2Get(Map<String, Object> params) { return call("bg.logistics.shipment.v2.get", params); }
 
     /**
+     * 调用 bg.logistics.shipment.get。
+     * @param params 接口业务参数，字段名使用 Temu API 的 camelCase 名称
+     * @return Temu JSON 响应
+     */
+    public JsonNode shipmentGet(Map<String, Object> params) { return call("bg.logistics.shipment.get", params); }
+
+    /**
      * 调用 bg.order.unshipped.package.get。
      * @param params 接口业务参数，字段名使用 Temu API 的 camelCase 名称
      * @return Temu JSON 响应

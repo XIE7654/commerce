@@ -1,0 +1,4094 @@
+{
+  "info": {
+    "_postman_id": "af9fef2f-a956-4667-a3a1-59c176d422d5",
+    "name": "Temu Open APIs",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "2529521",
+    "_collection_link": "https://go.postman.co/collection/22962806-af9fef2f-a956-4667-a3a1-59c176d422d5?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Authorization",
+      "item": [
+        {
+          "name": "getAccessTokenInfo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.open.accesstoken.info.get\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "createAccessTokenInfo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.open.accesstoken.create\",\n    \"code\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Products Listing",
+      "item": [
+        {
+          "name": "getGoodsCategories",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.local.goods.cats.get\",\n    \"parentCatId\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getGoodsTemplate",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.local.goods.template.get\",\n    \"catId\": 4\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getAvailableBrandAndTrademark",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.local.goods.brand.trademark.get\",\n    \"brandId\": 4,\n    \"page\": 1,\n    \"size\": 25\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getSignature",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.local.goods.brand.trademark.get\",\n    \"brandId\": 4,\n    \"page\": 1,\n    \"size\": 25\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getShippingTemplates",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.freight.template.list.query\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getSizeElements",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.local.goods.size.element.get\",\n    \"catId\": 4\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "uploadImageWithAutoTransformer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.local.goods.image.upload\",\n    \"fileUrl\": \"https://m.media-amazon.com/images/I/61PYfD6yciL._AC_SX679_.jpg\",\n    \"formatConversionType\": 1,\n    \"scalingType\": 1,\n    \"compressionType\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "createSpecId",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.local.goods.spec.id.get\",\n    \"catId\": 4,\n    \"parentSpecId\": 1,\n    \"childSpecName\": \"spec name\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "createGoods",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"goodsBasic\": {\n\t\t\"catId\": 30093,\n\t\t\"goodsName\": \"Dewalt DWD210G 120V 10 Amp VSR Pistol Grip 1/2 in. Corded Drill\"\n\t},\n\t\"goodsDesc\": \"this is a goodsDesc this is a goodsDesc\",\n\t\"goodsProperty\": {\n\t\t\"goodsProperties\": [\n\t\t\t{\n\t\t\t\t\"pid\": 13,\n\t\t\t\t\"refPid\": 63,\n\t\t\t\t\"specId\": 2001,\n\t\t\t\t\"templatePid\": 851418,\n\t\t\t\t\"value\": \"White\",\n\t\t\t\t\"vid\": 376\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"pid\": 14,\n\t\t\t\t\"refPid\": 65,\n\t\t\t\t\"specId\": 10002,\n\t\t\t\t\"templatePid\": 851419,\n\t\t\t\t\"value\": \"XXS\",\n\t\t\t\t\"vid\": 311\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"pid\": 21,\n\t\t\t\t\"refPid\": 83,\n\t\t\t\t\"templatePid\": 851424,\n\t\t\t\t\"value\": \"Fake Buttons\",\n\t\t\t\t\"vid\": 549\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"pid\": 10,\n\t\t\t\t\"refPid\": 26,\n\t\t\t\t\"templatePid\": 851425,\n\t\t\t\t\"value\": \"Solid color\",\n\t\t\t\t\"vid\": 215\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"pid\": 7,\n\t\t\t\t\"refPid\": 24,\n\t\t\t\t\"templatePid\": 851427,\n\t\t\t\t\"value\": \"Semi-Sheer\",\n\t\t\t\t\"vid\": 209\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"pid\": 23,\n\t\t\t\t\"refPid\": 84,\n\t\t\t\t\"templatePid\": 851432,\n\t\t\t\t\"value\": \"Bodysuits\",\n\t\t\t\t\"vid\": 857\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"pid\": 4,\n\t\t\t\t\"refPid\": 20,\n\t\t\t\t\"templatePid\": 851433,\n\t\t\t\t\"value\": \"Hand wash or professional dry clean\",\n\t\t\t\t\"vid\": 165\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"pid\": 3,\n\t\t\t\t\"refPid\": 19,\n\t\t\t\t\"templatePid\": 851435,\n\t\t\t\t\"value\": \"Vintage\",\n\t\t\t\t\"vid\": 136\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"pid\": 1,\n\t\t\t\t\"refPid\": 12,\n\t\t\t\t\"templatePid\": 851437,\n\t\t\t\t\"value\": \"Elastane\",\n\t\t\t\t\"vid\": 3\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"numberInputValue\": \"100\",\n\t\t\t\t\"pid\": 2,\n\t\t\t\t\"refPid\": 15,\n\t\t\t\t\"templatePid\": 851440,\n\t\t\t\t\"value\": \"Nylon\",\n\t\t\t\t\"valueUnit\": \"%\",\n\t\t\t\t\"valueUnitId\": 57,\n\t\t\t\t\"vid\": 35385\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"pid\": 1224,\n\t\t\t\t\"refPid\": 1192,\n\t\t\t\t\"templatePid\": 900321,\n\t\t\t\t\"value\": \"Woven\",\n\t\t\t\t\"vid\": 29810\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"pid\": 2089,\n\t\t\t\t\"refPid\": 7003,\n\t\t\t\t\"templatePid\": 1353184,\n\t\t\t\t\"value\": \"2pcs Set\",\n\t\t\t\t\"vid\": 199299\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"pid\": 2054,\n\t\t\t\t\"refPid\": 6926,\n\t\t\t\t\"templatePid\": 1353250,\n\t\t\t\t\"value\": \"Smooth fabric\",\n\t\t\t\t\"vid\": 161198\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"pid\": 2054,\n\t\t\t\t\"refPid\": 6927,\n\t\t\t\t\"templatePid\": 1353251,\n\t\t\t\t\"value\": \"Smooth fabric\",\n\t\t\t\t\"vid\": 161198\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"pid\": 2050,\n\t\t\t\t\"refPid\": 6988,\n\t\t\t\t\"templatePid\": 1353265,\n\t\t\t\t\"value\": \"Smooth fabric\",\n\t\t\t\t\"vid\": 161110\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"pid\": 2050,\n\t\t\t\t\"refPid\": 6989,\n\t\t\t\t\"templatePid\": 1353266,\n\t\t\t\t\"value\": \"Smooth fabric\",\n\t\t\t\t\"vid\": 161110\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"pid\": 2052,\n\t\t\t\t\"refPid\": 6978,\n\t\t\t\t\"templatePid\": 1353255,\n\t\t\t\t\"value\": \"3268\",\n\t\t\t\t\"valueUnit\": \"g/㎡\",\n\t\t\t\t\"valueUnitId\": 240,\n\t\t\t\t\"vid\": 0\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"pid\": 2052,\n\t\t\t\t\"refPid\": 6979,\n\t\t\t\t\"templatePid\": 1353256,\n\t\t\t\t\"value\": \"6109\",\n\t\t\t\t\"valueUnit\": \"g/㎡\",\n\t\t\t\t\"valueUnitId\": 240,\n\t\t\t\t\"vid\": 0\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"pid\": 2052,\n\t\t\t\t\"refPid\": 6993,\n\t\t\t\t\"templatePid\": 1353270,\n\t\t\t\t\"value\": \"5285\",\n\t\t\t\t\"valueUnit\": \"g/㎡\",\n\t\t\t\t\"valueUnitId\": 240,\n\t\t\t\t\"vid\": 0\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"pid\": 2052,\n\t\t\t\t\"refPid\": 6994,\n\t\t\t\t\"templatePid\": 1353271,\n\t\t\t\t\"value\": \"8995\",\n\t\t\t\t\"valueUnit\": \"g/㎡\",\n\t\t\t\t\"valueUnitId\": 240,\n\t\t\t\t\"vid\": 0\n\t\t\t}\n\t\t]\n\t},\n\t\"goodsServicePromise\": {\n\t\t\"costTemplateId\": \"LFT-11620561533419540183\",\n\t\t\"fulfillmentType\": 1,\n\t\t\"shipmentLimitDay\": 1\n\t},\n\t\"goodsTrademark\": {\n\t\t\"brandId\": 110016314656,\n\t\t\"trademarkId\": 211000162002\n\t},\n\t\"sign\": \"81F66E61D7B82F6EC3B6138AA715BCB0\",\n\t\"skuList\": [\n\t\t{\n\t\t\t\"height\": \"1.0\",\n\t\t\t\"images\": [\n\t\t\t\t\"https://img-eu.kwcdn.com/local-goods-img/201a0da0000/941b7418-37b6-40f0-a117-c29eeccf858c.jpeg\"\n\t\t\t],\n\t\t\t\"length\": \"1.0\",\n\t\t\t\"price\": {\n\t\t\t\t\"basePrice\": {\n\t\t\t\t\t\"amount\": \"1.99\",\n\t\t\t\t\t\"currency\": \"EUR\"\n\t\t\t\t},\n\t\t\t\t\"listPrice\": {\n\t\t\t\t\t\"amount\": \"2.98\",\n\t\t\t\t\t\"currency\": \"EUR\"\n\t\t\t\t},\n\t\t\t\t\"listPriceType\": 0\n\t\t\t},\n\t\t\t\"quantity\": 1,\n\t\t\t\"specIdList\": [\n\t\t\t\t2001,\n\t\t\t\t10002\n\t\t\t],\n\t\t\t\"volumeUnit\": \"cm\",\n\t\t\t\"weight\": \"1.0\",\n\t\t\t\"weightUnit\": \"g\",\n\t\t\t\"width\": \"1.0\"\n\t\t}\n\t],\n\t\"type\": \"bg.local.goods.add\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "recommendCategories",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.local.goods.category.recommend\",\n    \"goodsName\": \"REX Commuter\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "recommendProperties",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.local.goods.property.get\",\n    \"catId\": 40023,\n    \"goodsName\": \"Dewalt DWD210G 120V 10 Amp VSR Pistol Grip 1/2 in. Corded Drill\",\n    \"goodsPropList\": [\n        {\n            \"propName\": \"color\",\n            \"values\": [\"White\"]\n        },\n        {\n            \"propName\": \"size\",\n            \"values\": [\"XSS\"]\n        },\n        {\n            \"values\": [\"Fake Buttons\"],\n            \"propName\": \"type\"\n        }\n    ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Products Management",
+      "item": [
+        {
+          "name": "getGoodsList",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.local.goods.list.query\",\n    \"goodsSearchType\": 1,\n    \"orderType\": 1,\n    \"pageNo\": 1,\n    \"pageSize\": 100\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getGoodsSkuList",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.local.goods.sku.list.query\",\n    \"skuStatusFilterType\": 2,\n    \"pageNo\": 1,\n    \"pageSize\": 25\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getGoodsDetail",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.local.goods.detail.query\",\n    \"goodsId\": 602771461874681\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getGoodsSpecDetail",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"temu.local.goods.spec.info.get\",\n    \"specIdList\": [76177975]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "updateGoodsInfo<Full>",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\" : \"bg.local.goods.update\",\n    \"goodsProperty\": {\n        \"goodsProperties\": [\n            {\n                \"templatePid\": 1389546,\n                \"refPid\": 1456,\n                \"vid\": 35623,\n                \"value\": \"CD\",\n                \"pid\": 1379\n            },\n            {\n                \"templatePid\": 1389548,\n                \"refPid\": 3673,\n                \"vid\": 62905,\n                \"value\": \"English\",\n                \"pid\": 1735\n            },\n            {\n                \"templatePid\": 1389549,\n                \"refPid\": 7006,\n                \"pid\": 2095,\n                \"vid\": 0,\n                \"value\": \"482\"\n            },\n            {\n                \"templatePid\": 1389551,\n                \"refPid\": 7150,\n                \"vid\": 205210,\n                \"value\": \"玉子线上回归DVD_02\",\n                \"pid\": 2167\n            }\n        ]\n    },\n    \"goodsBasic\": {\n        \"catId\": 4,\n        \"goodsName\": \"Dewalt DWD210G 120V 10 Amp VSR Pistol Grip 1/2 in. Corded Drill\"\n    },\n    \"goodsId\" : 602300089208955,\n    \"goodsServicePromise\": {\n        \"costTemplateId\": \"LFT-1092101837701122414\",\n        \"fulfillmentType\": 1,\n        \"shipmentLimitDay\": 1\n    },\n    \"skuList\": [\n        {\n            \"skuId\":38880191475137,\n            \"height\": \"1.0\",\n            \"length\": \"1.0\",\n            \"width\": \"1.0\",\n            \"weight\": \"1.0\",\n            \"weightUnit\": \"lb\",\n            \"volumeUnit\": \"in\",\n            \"images\": [\n                \"https://img.kwcdn.com/local-goods-image/2029dea33e/e5dd0af2-9626-4d1c-8552-7a95bc44a693.jpeg\"\n            ],\n            \"quantity\": 0,\n            \"specIdList\": [\n                96261077\n            ],\n            \"externalProductId\": \"9782266286810\",\n            \"externalProductType\": 3,\n            \"price\": {\n                \"basePrice\": {\n                    \"amount\": \"1.99\",\n                    \"currency\": \"USD\"\n                }\n            }\n        }\n    ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "updateGoodsInfo<Partial>",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.local.goods.partial.update\",\n    \"bulletPoints\": [\n        \"Update\"\n    ],\n    \"catId\": 1179,\n    \"goodsDesc\": \"Update\",\n    \"goodsId\": 602448802507894,\n    \"goodsName\": \"Esellerpro Executive Pen (BLACK) Update1 \",\n    \"goodsProperties\": [\n        {\n            \"pid\": 1,\n            \"refPid\": 1920,\n            \"templatePid\": 988850,\n            \"value\": \"Silicone\",\n            \"vid\": 56\n        },\n        {\n            \"pid\": 1132,\n            \"refPid\": 1067,\n            \"templatePid\": 988851,\n            \"value\": \"Power Supply\",\n            \"vid\": 26407\n        },\n        {\n            \"pid\": 1155,\n            \"refPid\": 1132,\n            \"templatePid\": 988852,\n            \"value\": \"110V/220V\",\n            \"vid\": 46120\n        },\n        {\n            \"pid\": 1404,\n            \"refPid\": 1485,\n            \"templatePid\": 988853,\n            \"value\": \"US Plug\",\n            \"vid\": 36261\n        },\n        {\n            \"pid\": 113,\n            \"templatePid\": 928925,\n            \"vid\": 20531,\n            \"value\": \"Click-off cap\",\n            \"refPid\": 206\n        }\n    ],\n    \"goodsServicePromise\": {\n        \"shipmentLimitDay\": 1,\n        \"costTemplateId\": \"LFT-1092101837701122414\",\n        \"fulfillmentType\": 1\n    }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getGoodsSaleStatus",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.local.goods.publish.status.get\",\n    \"goodsIdList\": [602771461874681]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "updateGoodsSaleStatus",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.local.goods.sale.status.set\",\n    \"goodsId\": 602771461874681,\n    \"onsale\": 1\n}   ",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Inventory Management",
+      "item": [
+        {
+          "name": "updateGoodsStock",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.local.goods.stock.edit\",\n    \"requestUniqueKey\": \"123\",\n    \"goodsId\": 602238349110173,\n    \"skuStockTargetList\": [\n        {\n            \"skuId\": 43510166225830,\n            \"stockTarget\": 100\n        }\n    ],\n    \"skuStockChangeList\": [\n        {\n            \"skuId\": 43510166225830,\n            \"stockDiff\": 100\n        }\n    ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Pricing",
+      "item": [
+        {
+          "name": "getGoodsPriceList",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.local.goods.sku.list.price.query\",\n    \"querySupplierPriceBaseList\": [\n        {\n            \"goodsId\": 602859038941039,\n            \"skuIdList\": [48098265035528, 42772505624440]\n        }\n    ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "updateGoodsPrice",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.local.goods.priceorder.change.sku.price\",\n    \"goodsId\": 1,\n    \"changeSkuPriceDTOList\": [\n        {\n            \"reason\": \"11\",\n            \"skuChangePriceBaseDTOList\": [\n                {\n                    \"newSupplierPrice\": {\n                        \"amount\": \"11\",\n                        \"currency\": \"USD\"\n                    },\n                    \"skuId\": 11\n                }\n            ]\n        }\n    ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getGoodsPriceOrder",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.local.goods.priceorder.query\",\n    \"page\": 1,\n    \"size\": 5,\n    \"priceOrderType\": 2,\n    \"goodsId\": \"602488598047711\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "acceptGoodsPriceOrder",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.local.goods.priceorder.accept\",\n    \"priceOrderInfoList\": [\n        {\n            \"priceOrderId\": \"720125043038883104\",\n            \"goodsId\": 603170826732143,\n            \"priceCommitVersion\": 0\n        }\n    ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "negotiateGoodsPriceOrder",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.local.goods.priceorder.negotiate\",\n    \"priceOrderId\": 711240924547164,\n    \"goodsId\": 602667845790155,\n    \"priceCommitVersion\": 1,\n    \"priceCommitId\": 202096051,\n    \"negotiatedPriceSkuList\": [\n        {\n            \"reason\": \"1\",\n            \"skuId\": 37119254897789,\n            \"newSupplierPrice\": {\n                \"amount\": \"21\",\n                \"currency\": \"USD\"\n            }\n        }\n    ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "rejectGoodsPriceOrder",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"temu.local.goods.priceorder.reject\",\n    \"rejectDelist\": false,\n    \"priceOrderBaseList\": [\n        {\n            \"goodsId\": 602859038941039,\n            \"priceOrderSn\": \"720125052045812206\",\n            \"priceCommitVersion\": 0\n        }\n    ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "createGoodsAppealPriceOrder",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"temu.local.goods.appealorder.create\",\n    \"goodsId\": 603241962123101,\n    \"merchantAppealReasonCodeList\": [\n        \"IP_LICENSED_PRODUCT\"\n    ],\n    \"skuInfoList\": [\n        {\n            \"skuId\": 44767517922814,\n            \"supplyPrice\": {\n                \"amount\": \"500.00\",\n                \"currency\": \"USD\"\n            },\n            \"recommendedSupplyPrice\": {\n                \"amount\": \"1.23\",\n                \"currency\": \"USD\"\n            },\n            \"targetSupplyPrice\": {\n                \"amount\": \"20.00\",\n                \"currency\": \"USD\"\n            }\n        }\n    ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getGoodsAppealPriceOrder",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"temu.local.goods.appealorder.query\",\n    \"goodsId\": 603241962123101,\n    \"tabCode\": 10\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getGoodsAppealPriceOrderRecord",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"temu.local.goods.appealorder.record.query\",\n    \"skuId\": 51845624028930\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getGoodsRecomendPrice",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"temu.local.goods.recommendedprice.query\",\n    \"recommendedPriceType\": 10,\n    \"goodsIdList\": [\"602859038941039\"],\n    \"language\": \"en\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getOrderPrice",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.order.amount.query\",\n    \"parentOrderSn\": \"PO-076-06583510520870550\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Order Management",
+      "item": [
+        {
+          "name": "getOrderList",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.order.list.v2.get\",\n    \"parentOrderStatus\": 4,\n    \"regionId\": 211,\n    \"pageNumber\": 1,\n    \"pageSize\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getOrderDetail",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.order.detail.v2.get\",\n    \"parentOrderSn\": \"PO-211-08979834258470637\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getCustomOrderDetail",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.order.customization.get\",\n    \"orderSnList\": [\"211-08979834258470637\"]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getOrderShippingInfo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.order.shippinginfo.v2.get\",\n    \"parentOrderSn\": \"PO-210-08993436652072571\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getOrderShippingCompanies",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.logistics.companies.get\",\n    \"regionId\": \"211\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Order Fulfillment",
+      "item": [
+        {
+          "name": "getOrderShipmentConfirm",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.logistics.shipment.v2.confirm\",\n    \"sendRequestList\": [\n        {\n            \"carrierId\": 960246690,\n            \"orderSendInfoList\": [\n                {\n                    \"goodsId\": 601099512037184,\n                    \"orderSn\": \"211-00023968318071120\",\n                    \"parentOrderSn\": \"PO-211-00023989289591120\",\n                    \"quantity\": 1,\n                    \"skuId\": 47\n                }\n            ],\n            \"trackingNumber\": \"930000000\"\n        }\n    ],\n    \"sendType\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getOrderShipmentInfo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.logistics.shipment.v2.get\",\n    \"parentOrderSn\": \"PO-211-00023989289591120\",\n    \"orderSn\": \"211-00023968318071120\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "updateOrderShipmentInfo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.logistics.shipment.get\",\n    \"packageSn\": \"PK-00023989289591120\",\n    \"shipCompanyId\": \"89289591120\",\n    \"trackingNumber\": \"211-00023968318071120\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Refund And Return",
+      "item": [
+        {
+          "name": "getParentAftersaleOrderList",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.aftersales.parentaftersales.list.get\",\n    \"pageNo\": 1,\n    \"pageSize\": 10,\n    \"afterSalesStatusGroup\": 7,\n    \"createAtEnd\": 1747387481,\n    \"createAtStart\": 1747187481\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getAftersaleOrderList",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.aftersales.aftersales.list.get\",\n    \"pageNo\": 1,\n    \"pageSize\": 10,\n    \"parentAfterSalesSnList\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getReturnOrderList",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.aftersales.parentreturnorder.get\",\n    \"parentAfterSalesSn\": \"PO-211-06792196915752890-D01\",\n    \"afterSalesSn\": \"PO-211-06792196915752890\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Buy Shipping",
+      "item": [
+        {
+          "name": "getShippingServices",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.logistics.shippingservices.get\",\n    \"warehouseId\": \"WH-03283345879192414\",\n    \"length\": \"222\",\n    \"width\": \"222\",\n    \"height\": \"222\",\n    \"weight\": \"11\",\n    \"dimensionUnit\": \"in\",\n    \"weightUnit\": \"lb\",\n    \"orderSnList\": [\n        \"211-08525158244391299\"\n    ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getWarehouseList",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.logistics.warehouse.list.get\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "createShipment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.logistics.shipment.create\",\n    \"sendType\": 0,\n    \"sendRequestList\": [\n        {\n            \"warehouseId\": \"WH-015653600871924144\",\n            \"length\": \"1.01\",\n            \"width\": \"1.01\",\n            \"height\": \"1.01\",\n            \"weight\": \"1.01\",\n            \"dimensionUnit\": \"in\",\n            \"weightUnit\": \"lb\",\n            \"shipCompanyId\": 314439762,\n            \"channelId\": 25459115954176,\n            \"orderSendInfoList\": [\n                {\n                    \"quantity\": 1,\n                    \"orderSn\": \"211-17609009288231171\",\n                    \"parentOrderSn\": \"PO-211-17608988316711171\",\n                    \"goodsId\": 602242644031031,\n                    \"skuId\": 36165772167792\n                }\n            ]\n        }\n    ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "updateShipment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.logistics.shipment.update\",\n    \"retrySendPackageRequestList\": [\n        {\n            \"warehouseId\": \"PK-5248977270210713114\",\n            \"packageSn\": \"PK-5248977270210713114\",\n            \"length\": \"1.01\",\n            \"width\": \"1.01\",\n            \"height\": \"1.01\",\n            \"weight\": \"1\",\n            \"dimensionUnit\": \"in\",\n            \"weightUnit\": \"lb\",\n            \"shipCompanyId\": 314439762,\n            \"channelId\": 25459115954176,\n            \"orderSendInfoList\": [\n                {\n                    \"quantity\": 1,\n                    \"orderSn\": \"211-17609009288231171\",\n                    \"parentOrderSn\": \"PO-211-17608988316711171\",\n                    \"goodsId\": 602242644031031,\n                    \"skuId\": 36165772167792\n                }\n            ]\n        }\n    ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getShippingLabel",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.logistics.shipment.document.get\",\n    \"packageSnList\": [\n        \"PK-3907568816619673114\"\n    ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getShipLaterPackages",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.order.unshipped.package.get\",\n    \"pageSize\": 1,\n    \"pageNumber\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "confirmShipLaterPackagesShipped",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.logistics.shipped.package.confirm\",\n    \"packageSendInfoList\": [\n        {\n            \"trackingNumber\": \"111\",\n            \"packageSn\": \"111\",\n            \"packageDetail\": {\n                \"quantity\": 1,\n                \"orderSn\": \"11\",\n                \"parentOrderSn\": \"11\"\n\n            }\n\n        }\n    ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Webhook",
+      "item": [
+        {
+          "name": "subsribeEvents",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"bg.tmc.message.update\",\n    \"cancelEventCodeList\": [],\n    \"permitEventCodeList\": [\n        \"bg_order_status_change_event\",\n        \"bg_trade_logistics_address_changed\",\n        \"bg_aftersales_status_change\",\n        \"bg_cancel_order_status_change\"\n    ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{us_endpoints}}",
+              "host": [
+                "{{us_endpoints}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "bg.order.list.get",
+                  "disabled": true
+                },
+                {
+                  "key": "app_key",
+                  "value": "c9a17fa695a07be52f1836c3e2ec0b23",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713382474",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "2811DADD6B8C790638C96D4C9E4471E4",
+                  "disabled": true
+                },
+                {
+                  "key": "data_type",
+                  "value": "JSON",
+                  "disabled": true
+                },
+                {
+                  "key": "access_token",
+                  "value": "dfgu5e5yafdl4aervx58b3rih807wjbdsrugcnogo4z8cky7watooijq",
+                  "disabled": true
+                },
+                {
+                  "key": "app_secret",
+                  "value": "c54100b5b15d69d5cf0db9e8a653333a60f73c23",
+                  "disabled": true
+                },
+                {
+                  "key": "sign",
+                  "value": "B68B05A75DA27E2A3731B666965D3206",
+                  "disabled": true
+                },
+                {
+                  "key": "timestamp",
+                  "value": "1713385043",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.variables.set(\"timestamp\", Math.floor(Date.now() / 1000));",
+          "const app_secret = pm.collectionVariables.get(\"app_secret\");",
+          "const app_key = pm.collectionVariables.get(\"app_key\");",
+          "const access_token = pm.collectionVariables.get(\"access_token\");",
+          "const data_type = pm.collectionVariables.get(\"data_type\");",
+          "",
+          "let body = pm.request.body.raw;",
+          "let request_params = JSON.parse(body);",
+          "let additionalParams = {",
+          "    app_key: app_key,",
+          "    access_token: access_token,",
+          "    data_type: data_type,",
+          "    timestamp: pm.variables.get(\"timestamp\") ",
+          "};",
+          "Object.assign(request_params, additionalParams); ",
+          "console.log(\"request_params:\", request_params);",
+          "",
+          "let keys = Object.keys(request_params).sort();",
+          "",
+          "let temp = [];",
+          "keys.forEach(key => {",
+          "    let value = JSON.stringify(request_params[key], null, 0)",
+          "        .replace(/^\"|\"$/g, ''); ",
+          "    temp.push(key + value);",
+          "});",
+          "",
+          "let un_sign = app_secret + temp.join('') + app_secret;",
+          "console.log(\"Un-Sign String:\", un_sign);",
+          "",
+          "let sign = CryptoJS.MD5(un_sign).toString().toUpperCase();",
+          "console.log(\"Signature:\", sign);",
+          "",
+          "request_params[\"sign\"] = sign;",
+          "pm.request.body.update(JSON.stringify(request_params));",
+          "console.log(\"Updated Body with Signature:\", request_params);"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "us_endpoints",
+      "value": "https://openapi-b-us.temu.com/openapi/router",
+      "type": "default"
+    },
+    {
+      "key": "app_key",
+      "value": "4ebbc9190ae410443d65b4c2faca981f",
+      "type": "default"
+    },
+    {
+      "key": "app_secret",
+      "value": "4782d2d827276688bf4758bed55dbdd4bbe79a79",
+      "type": "default"
+    },
+    {
+      "key": "access_token",
+      "value": "uplv3hfyt5kcwoymrgnajnbl1ow5qxlz4sqhev6hl3xosz5dejrtyl2jre7",
+      "type": "default"
+    },
+    {
+      "key": "data_type",
+      "value": "JSON",
+      "type": "default"
+    }
+  ]
+}

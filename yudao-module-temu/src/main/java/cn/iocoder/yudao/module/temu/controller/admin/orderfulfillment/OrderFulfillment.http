@@ -1,0 +1,60 @@
+### Order Fulfillment 订单履约接口测试
+
+@temuAccessToken = replace-with-temu-access-token
+@parentOrderSn = PO-211-00023989289591120
+@orderSn = 211-00023968318071120
+@packageSn = PK-00023989289591120
+
+### 确认订单发货
+POST {{baseUrl}}/temu/order-fulfillment/shipments/confirm
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "sendType": 0,
+  "sendRequestList": [
+    {
+      "carrierId": 960246690,
+      "trackingNumber": "930000000",
+      "orderSendInfoList": [
+        {
+          "goodsId": 601099512037184,
+          "orderSn": "{{orderSn}}",
+          "parentOrderSn": "{{parentOrderSn}}",
+          "quantity": 1,
+          "skuId": 47
+        }
+      ]
+    }
+  ]
+}
+
+### 查询订单发货信息
+POST {{baseUrl}}/temu/order-fulfillment/shipments/info
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "parentOrderSn": "{{parentOrderSn}}",
+  "orderSn": "{{orderSn}}"
+}
+
+### 查询包裹物流信息
+POST {{baseUrl}}/temu/order-fulfillment/shipments/detail
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "packageSn": "{{packageSn}}",
+  "shipCompanyId": "89289591120",
+  "trackingNumber": "{{orderSn}}"
+}

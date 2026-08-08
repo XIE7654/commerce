@@ -132,6 +132,27 @@ public class ProductApi extends TemuApiService {
     public JsonNode goodsListQuery(Map<String, Object> params) { return call("bg.local.goods.list.query", params); }
 
     /**
+     * 调用 bg.local.goods.detail.query。
+     * @param params 接口业务参数，字段名使用 Temu API 的 camelCase 名称
+     * @return Temu JSON 响应
+     */
+    public JsonNode goodsDetailQuery(Map<String, Object> params) { return call("bg.local.goods.detail.query", params); }
+
+    /**
+     * 调用 bg.local.goods.update。
+     * @param params 接口业务参数，字段名使用 Temu API 的 camelCase 名称
+     * @return Temu JSON 响应
+     */
+    public JsonNode goodsUpdate(Map<String, Object> params) { return call("bg.local.goods.update", params); }
+
+    /**
+     * 调用 bg.local.goods.partial.update。
+     * @param params 接口业务参数，字段名使用 Temu API 的 camelCase 名称
+     * @return Temu JSON 响应
+     */
+    public JsonNode goodsPartialUpdate(Map<String, Object> params) { return call("bg.local.goods.partial.update", params); }
+
+    /**
      * 调用 bg.local.goods.sku.list.query。
      * @param params 接口业务参数，字段名使用 Temu API 的 camelCase 名称
      * @return Temu JSON 响应
