@@ -76,6 +76,65 @@ public class AmazonSellingPartnerClient {
     }
 
     /**
+     * 查询报表任务或报表文件元数据并保存 Amazon 返回的 JSON 数据。
+     *
+     * @param uri Reports API 请求地址
+     * @param accessToken 店铺的 Seller LWA access token
+     * @param operationName Amazon API 操作名称
+     * @param storageName JSON 存储名称
+     * @param shopId 店铺编号
+     * @param countryCode 站点国家代码
+     * @param marketplaceId 请求的 Marketplace ID
+     * @return Reports JSON 响应；空响应返回空 Map
+     */
+    public Map<String, Object> getReports(URI uri, String accessToken, String operationName, String storageName,
+                                          Long shopId, String countryCode, String marketplaceId) {
+        return get(uri, accessToken, AmazonApiCategory.REPORTS, operationName, storageName, shopId, countryCode, marketplaceId);
+    }
+
+    /**
+     * 创建报表任务并保存 Amazon 返回的 JSON 数据。
+     *
+     * @param uri 创建报表任务的请求地址
+     * @param accessToken 店铺的 Seller LWA access token
+     * @param body Amazon Reports API 请求体
+     * @param shopId 店铺编号
+     * @param countryCode 站点国家代码
+     * @param marketplaceId 请求的 Marketplace ID
+     * @return 创建任务后的 Amazon JSON 响应
+     */
+    public Map<String, Object> createReport(URI uri, String accessToken, Map<String, Object> body, Long shopId,
+                                            String countryCode, String marketplaceId) {
+        return exchangeForBody(uri, accessToken, HttpMethod.POST, body, AmazonApiCategory.REPORTS, "createReport",
+                "report", shopId, countryCode, marketplaceId);
+    }
+
+    /**
+     * 取消尚未开始处理的报表任务。
+     *
+     * @param uri 取消报表任务的请求地址
+     * @param accessToken 店铺的 Seller LWA access token
+     * @param shopId 店铺编号
+     * @param countryCode 站点国家代码
+     * @param marketplaceId 请求的 Marketplace ID
+     */
+    public void cancelReport(URI uri, String accessToken, Long shopId, String countryCode, String marketplaceId) {
+        HttpHeaders headers = buildHeaders(accessToken, false);
+        AmazonApiRequestLogContext context = new AmazonApiRequestLogContext("cancelReport", AmazonApiCategory.REPORTS.getDirectoryName(),
+                HttpMethod.DELETE.name(), uri, shopId, countryCode, List.of(marketplaceId), queryParams(uri), headers, LocalDateTime.now(), null);
+        try {
+            ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.DELETE, new HttpEntity<>(headers), Void.class);
+            amazonApiRequestLogService.log(context, response.getStatusCode().value(), response.getHeaders(), null);
+        } catch (RestClientResponseException exception) {
+            amazonApiRequestLogService.log(context, exception.getStatusCode().value(), exception.getResponseHeaders(), exception);
+            throw exception;
+        } catch (RuntimeException exception) {
+            amazonApiRequestLogService.log(context, null, null, exception);
+            throw exception;
+        }
+    }
+
+    /**
      * 调用 Amazon Orders API 并保存返回的 JSON 数据。
      *
      * @param uri Orders 请求地址
@@ -121,14 +180,35 @@ public class AmazonSellingPartnerClient {
     @SuppressWarnings("unchecked")
     private Map<String, Object> get(URI uri, String accessToken, AmazonApiCategory category, String operationName,
                                     String storageName, Long shopId, String countryCode, String marketplaceId) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
-        headers.set("x-amz-access-token", accessToken);
+        return exchangeForBody(uri, accessToken, HttpMethod.GET, null, category, operationName, storageName, shopId,
+                countryCode, marketplaceId);
+    }
+
+    /**
+     * 执行需要 JSON 响应的 SP-API 请求并将响应持久化，供查询和创建类接口统一复用。
+     *
+     * @param uri SP-API 请求地址
+     * @param accessToken 店铺的 Seller LWA access token
+     * @param method HTTP 请求方式
+     * @param body 请求体；GET 请求可为 {@code null}
+     * @param category 响应归档的 API 分类
+     * @param operationName Amazon API 操作名称
+     * @param storageName JSON 存储名称
+     * @param shopId 店铺编号
+     * @param countryCode 站点国家代码
+     * @param marketplaceId 请求的 Marketplace ID
+     * @return Amazon JSON 响应
+     */
+    private Map<String, Object> exchangeForBody(URI uri, String accessToken, HttpMethod method, Object body,
+                                                AmazonApiCategory category, String operationName, String storageName,
+                                                Long shopId, String countryCode, String marketplaceId) {
+        HttpHeaders headers = buildHeaders(accessToken, body != null);
         AmazonApiRequestLogContext context = new AmazonApiRequestLogContext(operationName, category.getDirectoryName(),
-                HttpMethod.GET.name(), uri, shopId, countryCode, List.of(marketplaceId), queryParams(uri), headers, LocalDateTime.now());
+                method.name(), uri, shopId, countryCode, List.of(marketplaceId), body == null ? queryParams(uri) : body,
+                headers, LocalDateTime.now(), null);
         ResponseEntity<Map> response;
         try {
-            response = restTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(headers), Map.class);
+            response = restTemplate.exchange(uri, method, new HttpEntity<>(body, headers), Map.class);
         } catch (RestClientResponseException exception) {
             amazonApiRequestLogService.log(context, exception.getStatusCode().value(), exception.getResponseHeaders(), exception);
             throw exception;
@@ -141,10 +221,27 @@ public class AmazonSellingPartnerClient {
             amazonApiRequestLogService.log(context, response.getStatusCode().value(), response.getHeaders(), exception);
             throw exception;
         }
-        Map<String, Object> body = (Map<String, Object>) response.getBody();
-        amazonApiRequestLogService.log(context, response.getStatusCode().value(), response.getHeaders(), null);
-        amazonJsonStorageService.persist(category, storageName, body);
-        return body;
+        Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
+        Long fileId = amazonJsonStorageService.persist(category, storageName, responseBody);
+        amazonApiRequestLogService.log(context.withFileId(fileId), response.getStatusCode().value(), response.getHeaders(), null);
+        return responseBody;
+    }
+
+    /**
+     * 构建调用 SP-API 所需的通用请求头。
+     *
+     * @param accessToken 店铺的 Seller LWA access token
+     * @param hasJsonBody 是否携带 JSON 请求体
+     * @return 包含调用鉴权与媒体类型的请求头
+     */
+    private HttpHeaders buildHeaders(String accessToken, boolean hasJsonBody) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+        if (hasJsonBody) {
+            headers.setContentType(MediaType.APPLICATION_JSON);
+        }
+        headers.set("x-amz-access-token", accessToken);
+        return headers;
     }
 
     /**

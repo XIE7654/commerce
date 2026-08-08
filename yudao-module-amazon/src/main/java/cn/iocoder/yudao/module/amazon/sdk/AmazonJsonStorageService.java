@@ -2,6 +2,8 @@ package cn.iocoder.yudao.module.amazon.sdk;
 
 import cn.iocoder.yudao.framework.tenant.core.context.TenantContextHolder;
 import cn.iocoder.yudao.module.infra.api.file.FileApi;
+import cn.iocoder.yudao.module.infra.dal.dataobject.file.FileDO;
+import cn.iocoder.yudao.module.infra.dal.mysql.file.FileMapper;
 import jakarta.annotation.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,8 @@ public class AmazonJsonStorageService {
     @Resource
     private FileApi fileApi;
     @Resource
+    private FileMapper fileMapper;
+    @Resource
     private ObjectMapper objectMapper;
 
     /**
@@ -34,11 +38,18 @@ public class AmazonJsonStorageService {
      * @param category Amazon API 类型，用于区分归档目录
      * @param operation 调用场景，用于生成可读文件名
      * @param data 已反序列化的 JSON 数据
+     * @return infra_file 文件编号
      */
-    public void persist(AmazonApiCategory category, String operation, Object data) {
+    public Long persist(AmazonApiCategory category, String operation, Object data) {
         try {
             byte[] content = objectMapper.writeValueAsString(data).getBytes(StandardCharsets.UTF_8);
-            fileApi.createFile(content, buildFileName(operation), buildDirectory(category), MediaType.APPLICATION_JSON_VALUE);
+            String url = fileApi.createFile(content, buildFileName(operation), buildDirectory(category), MediaType.APPLICATION_JSON_VALUE);
+            FileDO file = fileMapper.selectOne(FileDO::getUrl, url);
+            if (file == null) {
+                // 文件服务写入 infra_file 后才会返回 URL；缺少记录时不能生成失效关联。
+                throw new IllegalStateException("Amazon JSON 归档文件未写入 infra_file");
+            }
+            return file.getId();
         } catch (JacksonException ex) {
             throw new IllegalStateException("Amazon JSON 数据序列化失败", ex);
         }

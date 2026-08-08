@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.amazon.service.apilog;
 
 import cn.iocoder.yudao.module.amazon.dal.dataobject.apilog.AmazonApiRequestLogDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.apilog.AmazonApiRequestLogMapper;
+import cn.iocoder.yudao.module.amazon.framework.config.AwsProperties;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
@@ -17,7 +18,6 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -34,13 +34,15 @@ public class AmazonApiRequestLogServiceImpl implements AmazonApiRequestLogServic
     private static final int RESULT_FAILURE = 2;
     private static final int ERROR_MESSAGE_MAX_LENGTH = 1000;
     private static final Set<String> SENSITIVE_KEYS = Set.of(
-            "authorization", "access_token", "refresh_token", "client_secret", "code",
-            "x-amz-access-token", "x-amz-security-token", "x-amz-signature", "signature");
+            "authorization", "access_token", "refresh_token", "client_id", "client_secret", "code",
+            "x_amz_access_token", "x_amz_security_token", "x_amz_signature", "signature");
 
     @Resource
     private AmazonApiRequestLogMapper amazonApiRequestLogMapper;
     @Resource
     private ObjectMapper objectMapper;
+    @Resource
+    private AwsProperties awsProperties;
 
     /** {@inheritDoc} */
     @Override
@@ -48,6 +50,7 @@ public class AmazonApiRequestLogServiceImpl implements AmazonApiRequestLogServic
         try {
             LocalDateTime completedAt = LocalDateTime.now();
             AmazonApiRequestLogDO logDO = new AmazonApiRequestLogDO();
+            boolean oauthTokenRequest = isOAuthTokenRequest(context);
             logDO.setRequestId(UUID.randomUUID().toString().replace("-", ""));
             logDO.setTraceId(MDC.get("traceId"));
             logDO.setShopId(context.shopId());
@@ -56,11 +59,14 @@ public class AmazonApiRequestLogServiceImpl implements AmazonApiRequestLogServic
             logDO.setApiCategory(context.apiCategory());
             logDO.setOperationName(context.operationName());
             logDO.setRequestMethod(context.method());
-            logDO.setRequestUrl(maskUrl(context.uri()));
-            logDO.setRequestPath(context.uri().getRawPath());
-            logDO.setRequestParams(toMaskedJson(context.requestParams()));
-            logDO.setRequestHeaders(toMaskedJson(context.requestHeaders() == null ? null : context.requestHeaders().toSingleValueMap()));
-            logDO.setRequestBodyHash(sha256(context.requestParams()));
+            // OAuth Token 请求包含应用凭据并使用配置端点；审计只保留结果，避免任何配置值进入日志表。
+            logDO.setRequestUrl(oauthTokenRequest ? null : maskUrl(context.uri()));
+            logDO.setRequestPath(oauthTokenRequest ? null : context.uri().getRawPath());
+            logDO.setFileId(context.fileId());
+            logDO.setRequestParams(oauthTokenRequest ? null : toMaskedJson(context.requestParams()));
+            logDO.setRequestHeaders(oauthTokenRequest ? null
+                    : toMaskedJson(context.requestHeaders() == null ? null : context.requestHeaders().toSingleValueMap()));
+            logDO.setRequestBodyHash(oauthTokenRequest ? null : sha256(context.requestParams()));
             logDO.setHttpStatusCode(httpStatusCode);
             logDO.setResultStatus(exception == null ? RESULT_SUCCESS : RESULT_FAILURE);
             logDO.setErrorCode(exception == null ? null : exception.getClass().getSimpleName());
@@ -159,7 +165,9 @@ public class AmazonApiRequestLogServiceImpl implements AmazonApiRequestLogServic
      * @return 敏感字段时返回 {@code true}
      */
     private boolean isSensitiveKey(String key) {
-        return SENSITIVE_KEYS.contains(key.toLowerCase(Locale.ROOT));
+        String normalizedKey = key.replaceAll("([a-z])([A-Z])", "$1_$2")
+                .replace('-', '_').toLowerCase(Locale.ROOT);
+        return SENSITIVE_KEYS.contains(normalizedKey);
     }
 
     /**
@@ -172,9 +180,41 @@ public class AmazonApiRequestLogServiceImpl implements AmazonApiRequestLogServic
         if (value == null) {
             return null;
         }
-        String result = value;
+        String result = maskConfiguredValues(value);
         for (String key : SENSITIVE_KEYS) {
-            result = result.replaceAll("(?i)(" + key.replace("-", "\\-") + "=)[^,\\s&]+", "$1**");
+            String keyPattern = key.replace("_", "[-_]");
+            result = result.replaceAll("(?i)(" + keyPattern + "=)[^,\\s&]+", "$1**");
+        }
+        return result;
+    }
+
+    /**
+     * 判断是否为 OAuth Token 请求。
+     *
+     * <p>此类请求的表单含有客户端凭据，且 URL 来自 AWS 配置，必须整段排除出请求日志。</p>
+     *
+     * @param context Amazon 请求日志上下文
+     * @return 是 OAuth Token 请求时返回 {@code true}
+     */
+    private boolean isOAuthTokenRequest(AmazonApiRequestLogContext context) {
+        return "tokens".equals(context.apiCategory()) && "requestToken".equals(context.operationName());
+    }
+
+    /**
+     * 从异常信息中移除 AWS 字符串配置值，避免客户端库将请求地址或凭据回显到日志表。
+     *
+     * @param value 原始异常信息
+     * @return 已替换配置值的异常信息
+     */
+    private String maskConfiguredValues(String value) {
+        String result = value;
+        for (String configuredValue : new String[]{awsProperties.getAppId(), awsProperties.getClientId(),
+                awsProperties.getClientSecret(), awsProperties.getAdClientId(), awsProperties.getAdClientSecret(),
+                awsProperties.getSellerAuthLoginUri(), awsProperties.getAdAuthLoginUri(), awsProperties.getCryptoKey(),
+                awsProperties.getStoreTokenUrl(), awsProperties.getAdTokenUrl()}) {
+            if (configuredValue != null && !configuredValue.isBlank()) {
+                result = result.replace(configuredValue, "**");
+            }
         }
         return result;
     }

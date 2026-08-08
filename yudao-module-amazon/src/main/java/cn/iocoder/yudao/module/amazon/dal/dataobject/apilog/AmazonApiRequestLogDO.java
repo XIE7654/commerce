@@ -40,6 +40,8 @@ public class AmazonApiRequestLogDO extends TenantBaseDO {
     private String requestUrl;
     /** 请求路径。 */
     private String requestPath;
+    /** 响应归档文件编号，对应 infra_file.id。 */
+    private Long fileId;
     /** 脱敏后的请求参数 JSON。 */
     private String requestParams;
     /** 脱敏后的请求头 JSON。 */
