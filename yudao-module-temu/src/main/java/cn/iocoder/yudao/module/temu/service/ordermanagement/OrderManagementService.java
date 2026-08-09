@@ -18,9 +18,17 @@ public interface OrderManagementService {
      * 查询 Temu 订单列表。
      *
      * @param request 订单状态、区域和分页查询参数
-     * @return Temu 官方订单列表响应；成功时会同步当前页数据到本地订单表
+     * @return Temu 官方订单列表响应
      */
     JsonNode getOrderList(OrderManagementOrderListReqVO request);
+
+    /**
+     * 拉取 Temu 订单列表并同步当前页数据到本地订单表。
+     *
+     * @param request 订单状态、区域和分页同步参数
+     * @return Temu 官方订单列表响应
+     */
+    JsonNode syncOrderList(OrderManagementOrderListReqVO request);
 
     /**
      * 分页查询已同步到本地的 Temu 子订单。

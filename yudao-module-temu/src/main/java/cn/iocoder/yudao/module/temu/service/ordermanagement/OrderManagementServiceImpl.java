@@ -60,20 +60,41 @@ public class OrderManagementServiceImpl implements OrderManagementService {
      * 调用 Temu 订单列表查询接口。
      *
      * @param request 订单状态、区域和分页查询参数
-     * @return Temu 官方订单列表响应；成功时会同步当前页数据到本地订单表
+     * @return Temu 官方订单列表响应
      */
     @Override
     public JsonNode getOrderList(OrderManagementOrderListReqVO request) {
+        return queryOrderList(request);
+    }
+
+    /**
+     * 拉取 Temu 订单并在调用成功后同步当前页子订单到本地。
+     *
+     * @param request 订单状态、区域和分页同步参数
+     * @return Temu 官方订单列表响应
+     */
+    @Override
+    public JsonNode syncOrderList(OrderManagementOrderListReqVO request) {
         TemuSellerDO seller = validateOrderOwner(request.getShopId());
-        JsonNode response = createClient(request).getOrder().listOrdersV2(Map.of(
-                "parentOrderStatus", request.getParentOrderStatus(), "regionId", request.getRegionId(),
-                "pageNumber", request.getPageNumber(), "pageSize", request.getPageSize()));
+        JsonNode response = queryOrderList(request);
         if (response != null && response.path("success").asBoolean(false)) {
             // 外部接口调用完成后才开启事务，避免网络耗时长期占用数据库连接和事务资源。
             transactionTemplate.executeWithoutResult(status ->
                     syncOrderList(response.path("result").path("pageItems"), request.getShopId(), seller.getId()));
         }
         return response;
+    }
+
+    /**
+     * 调用 Temu 订单列表查询接口。
+     *
+     * @param request 订单状态、区域和分页查询参数
+     * @return Temu 官方订单列表响应
+     */
+    private JsonNode queryOrderList(OrderManagementOrderListReqVO request) {
+        return createClient(request).getOrder().listOrdersV2(Map.of(
+                "parentOrderStatus", request.getParentOrderStatus(), "regionId", request.getRegionId(),
+                "pageNumber", request.getPageNumber(), "pageSize", request.getPageSize()));
     }
 
     /**

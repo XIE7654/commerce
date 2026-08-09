@@ -1,0 +1,26 @@
+### Temu 订单接口测试
+
+@temuAccessToken = uplv3hfyt5kcwoymrgnajnbl1ow5qxlz4sqhev6hl3xosz5dejrtyl2jre7
+@shopId = 1
+@regionId = 211
+
+### 同步订单到本地
+POST {{baseUrl}}/temu/order/sync
+Content-Type: application/json
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
+{
+  "shopId": {{shopId}},
+  "site": "US",
+  "accessToken": "{{temuAccessToken}}",
+  "parentOrderStatus": 4,
+  "regionId": {{regionId}},
+  "pageNumber": 1,
+  "pageSize": 5
+}
+
+### 查询本地订单分页
+GET {{baseUrl}}/temu/order/page?shopId={{shopId}}&pageNo=1&pageSize=10
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}

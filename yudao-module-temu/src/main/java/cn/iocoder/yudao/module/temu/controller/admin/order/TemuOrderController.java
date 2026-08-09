@@ -26,8 +26,11 @@ import cn.iocoder.yudao.framework.apilog.core.annotation.ApiAccessLog;
 import static cn.iocoder.yudao.framework.apilog.core.enums.OperateTypeEnum.*;
 
 import cn.iocoder.yudao.module.temu.controller.admin.order.vo.*;
+import cn.iocoder.yudao.module.temu.controller.admin.ordermanagement.vo.OrderManagementOrderListReqVO;
 import cn.iocoder.yudao.module.temu.dal.dataobject.order.TemuOrderDO;
+import cn.iocoder.yudao.module.temu.service.ordermanagement.OrderManagementService;
 import cn.iocoder.yudao.module.temu.service.order.TemuOrderService;
+import tools.jackson.databind.JsonNode;
 
 @Tag(name = "管理后台 - Temu 订单")
 @RestController
@@ -38,37 +41,20 @@ public class TemuOrderController {
     @Resource
     private TemuOrderService orderService;
 
-    @PostMapping("/create")
-    @Operation(summary = "创建Temu 订单")
-    @PreAuthorize("@ss.hasPermission('temu:order:create')")
-    public CommonResult<Long> createOrder(@Valid @RequestBody TemuOrderSaveReqVO createReqVO) {
-        return success(orderService.createOrder(createReqVO));
-    }
+    @Resource
+    private OrderManagementService orderManagementService;
 
-    @PutMapping("/update")
-    @Operation(summary = "更新Temu 订单")
+    /**
+     * 从 Temu 拉取订单并同步当前页数据到本地订单表。
+     *
+     * @param request 订单状态、区域和分页同步参数
+     * @return Temu 官方订单列表响应
+     */
+    @PostMapping("/sync")
+    @Operation(summary = "同步 Temu 订单")
     @PreAuthorize("@ss.hasPermission('temu:order:update')")
-    public CommonResult<Boolean> updateOrder(@Valid @RequestBody TemuOrderSaveReqVO updateReqVO) {
-        orderService.updateOrder(updateReqVO);
-        return success(true);
-    }
-
-    @DeleteMapping("/delete")
-    @Operation(summary = "删除Temu 订单")
-    @Parameter(name = "id", description = "编号", required = true)
-    @PreAuthorize("@ss.hasPermission('temu:order:delete')")
-    public CommonResult<Boolean> deleteOrder(@RequestParam("id") Long id) {
-        orderService.deleteOrder(id);
-        return success(true);
-    }
-
-    @DeleteMapping("/delete-list")
-    @Parameter(name = "ids", description = "编号", required = true)
-    @Operation(summary = "批量删除Temu 订单")
-                @PreAuthorize("@ss.hasPermission('temu:order:delete')")
-    public CommonResult<Boolean> deleteOrderList(@RequestParam("ids") List<Long> ids) {
-        orderService.deleteOrderListByIds(ids);
-        return success(true);
+    public JsonNode syncOrder(@Valid @RequestBody OrderManagementOrderListReqVO request) {
+        return orderManagementService.syncOrderList(request);
     }
 
     @GetMapping("/get")
