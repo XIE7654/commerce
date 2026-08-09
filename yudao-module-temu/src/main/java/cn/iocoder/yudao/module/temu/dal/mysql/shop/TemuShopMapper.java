@@ -28,4 +28,8 @@ public interface TemuShopMapper extends BaseMapperX<TemuShopDO> {
                 .orderByDesc(TemuShopDO::getId));
     }
 
+    default List<TemuShopDO> selectListByStatus(Integer status) {
+        return selectList(TemuShopDO::getStatus, status);
+    }
+
 }

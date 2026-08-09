@@ -51,6 +51,8 @@ public interface TemuShopService {
      */
     TemuShopDO getShop(Long id);
 
+    List<TemuShopDO> getShopListByStatus(Integer status);
+
     /**
      * 获得Temu 店铺分页
      *

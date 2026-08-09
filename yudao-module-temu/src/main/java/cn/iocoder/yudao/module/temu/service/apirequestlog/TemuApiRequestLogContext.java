@@ -16,6 +16,12 @@ import java.time.LocalDateTime;
  * @param requestHeaders 请求头
  * @param requestedAt 请求开始时间
  */
-public record TemuApiRequestLogContext(String apiType, String method, URI uri, String site,
-                                       Object requestParams, HttpHeaders requestHeaders, LocalDateTime requestedAt) {
+public record TemuApiRequestLogContext(String apiType, String method, URI uri, String site, Long shopId,
+                                       Object requestParams, HttpHeaders requestHeaders, LocalDateTime requestedAt,
+                                       String requestId) {
+    public TemuApiRequestLogContext(String apiType, String method, URI uri, String site,
+                                    Object requestParams, HttpHeaders requestHeaders, LocalDateTime requestedAt) {
+        this(apiType, method, uri, site, null, requestParams, requestHeaders, requestedAt,
+                java.util.UUID.randomUUID().toString().replace("-", ""));
+    }
 }

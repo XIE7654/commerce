@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import org.springframework.stereotype.Service;
 import jakarta.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
@@ -54,12 +55,13 @@ public class TemuApiRequestLogServiceImpl implements TemuApiRequestLogService {
 
     /** {@inheritDoc} */
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public void log(TemuApiRequestLogContext context, Integer httpStatusCode, HttpHeaders responseHeaders,
                     JsonNode responseBody, Throwable requestException) {
         try {
             LocalDateTime completedAt = LocalDateTime.now();
             TemuApiRequestLogDO logDO = new TemuApiRequestLogDO();
-            logDO.setRequestId(UUID.randomUUID().toString().replace("-", ""));
+            logDO.setRequestId(context.requestId());
             logDO.setTraceId(MDC.get("traceId"));
             logDO.setSite(context.site());
             logDO.setApiCategory(TemuApiCategory.fromApiType(context.apiType()).getDirectoryName());
@@ -86,6 +88,15 @@ public class TemuApiRequestLogServiceImpl implements TemuApiRequestLogService {
             // 审计链路故障不能反向影响 Temu 主调用，仅保留告警供运维排查。
             log.warn("记录 Temu API 请求日志失败，apiType={}", context.apiType(), logException);
         }
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateFileId(String requestId, Long fileId) {
+        if (requestId == null || fileId == null) return;
+        apiRequestLogMapper.update(null, new com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper<TemuApiRequestLogDO>()
+                .eq(TemuApiRequestLogDO::getRequestId, requestId)
+                .set(TemuApiRequestLogDO::getFileId, fileId));
     }
 
     @Override
@@ -256,7 +267,8 @@ public class TemuApiRequestLogServiceImpl implements TemuApiRequestLogService {
      * @return 脱敏且截断后的错误信息；调用成功时返回 {@code null}
      */
     private String resolveErrorMessage(JsonNode responseBody, Throwable requestException) {
-        String message = requestException == null ? readResponseText(responseBody, "error_msg", "errorMsg", "message")
+        String message = requestException == null ? readResponseText(responseBody,
+                "error_message", "error_msg", "errorMessage", "errorMsg", "message")
                 : requestException.getMessage();
         return truncate(maskText(message));
     }

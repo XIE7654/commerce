@@ -79,7 +79,7 @@ public class TemuAuthServiceImpl implements TemuAuthService {
             throw new IllegalArgumentException("Temu 站点未配置 appKey 或 appSecret: " + site.name());
         }
         return new TemuClient(region.getAppKey(), region.getAppSecret(), accessToken, site.getEndpoint(),
-                temuJsonStorageService, site.name(), temuApiRequestLogService);
+                temuJsonStorageService, site.name(), temuApiRequestLogService, null);
     }
 
     /**
