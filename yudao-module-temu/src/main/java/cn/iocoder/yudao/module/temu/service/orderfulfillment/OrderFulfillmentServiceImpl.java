@@ -86,7 +86,7 @@ public class OrderFulfillmentServiceImpl implements OrderFulfillmentService {
             throw new IllegalArgumentException("Temu 站点未配置 appKey 或 appSecret: " + site.name());
         }
         return new TemuClient(region.getAppKey(), region.getAppSecret(), request.getAccessToken(), site.getEndpoint(),
-                temuJsonStorageService, site.name(), temuApiRequestLogService);
+                temuJsonStorageService, site.name(), temuApiRequestLogService, request.getShopId());
     }
 
     /**

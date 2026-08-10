@@ -28,6 +28,8 @@ public interface TemuApiRequestLogService {
     void log(TemuApiRequestLogContext context, Integer httpStatusCode, HttpHeaders responseHeaders,
              JsonNode responseBody, Throwable exception);
 
+    void updateFileId(String requestId, Long fileId);
+
     /**
      * 创建Temu OpenAPI 请求调用日志
      *

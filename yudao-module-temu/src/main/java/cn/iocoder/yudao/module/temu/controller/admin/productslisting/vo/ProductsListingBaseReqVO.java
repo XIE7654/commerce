@@ -9,6 +9,7 @@ import lombok.Data;
  */
 @Data
 public class ProductsListingBaseReqVO {
+    private Long shopId;
 
     /** Temu 站点代码，用于选择服务端区域配置。 */
     @Schema(description = "Temu 站点代码", requiredMode = Schema.RequiredMode.REQUIRED, example = "US")

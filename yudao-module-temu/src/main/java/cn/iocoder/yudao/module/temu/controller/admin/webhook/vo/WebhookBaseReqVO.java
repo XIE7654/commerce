@@ -7,6 +7,7 @@ import lombok.Data;
 /** Webhook 接口公共认证请求参数。 */
 @Data
 public class WebhookBaseReqVO {
+    private Long shopId;
 
     /** Temu 站点代码，用于匹配服务端区域应用配置。 */
     @Schema(description = "Temu 站点代码", requiredMode = Schema.RequiredMode.REQUIRED, example = "US")

@@ -1,6 +1,6 @@
 ### Temu Authorization 接口测试
 
-@temuAccessToken = replace-with-temu-access-token
+@temuAccessToken = uplv3hfyt5kcwoymrgnajnbl1ow5qxlz4sqhev6hl3xosz5dejrtyl2jre7
 @temuAuthCode = replace-with-temu-auth-code
 
 ### 查询 access_token 授权信息

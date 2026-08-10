@@ -18,6 +18,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
+import cn.iocoder.yudao.framework.common.enums.CommonStatusEnum;
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
@@ -86,6 +87,14 @@ public class TemuShopController {
     public CommonResult<PageResult<TemuShopRespVO>> getShopPage(@Valid TemuShopPageReqVO pageReqVO) {
         PageResult<TemuShopDO> pageResult = shopService.getShopPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, TemuShopRespVO.class));
+    }
+
+    @GetMapping("/simple-list")
+    @Operation(summary = "获得 Temu 店铺精简列表", description = "只包含启用店铺，主要用于前端下拉选项")
+    @PreAuthorize("@ss.hasPermission('temu:shop:query')")
+    public CommonResult<List<TemuShopSimpleRespVO>> getShopSimpleList() {
+        List<TemuShopDO> list = shopService.getShopListByStatus(CommonStatusEnum.ENABLE.getStatus());
+        return success(BeanUtils.toBean(list, TemuShopSimpleRespVO.class));
     }
 
     @GetMapping("/export-excel")

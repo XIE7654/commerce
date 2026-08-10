@@ -34,11 +34,11 @@ public class TemuJsonStorageService {
      * @param apiType Temu OpenAPI 接口 type，用于确定目录和文件名
      * @param response Temu 已解析的响应 JSON
      */
-    public void persist(String apiType, JsonNode response) {
+    public Long persist(String apiType, JsonNode response) {
         try {
             byte[] content = objectMapper.writeValueAsString(response).getBytes(StandardCharsets.UTF_8);
             TemuApiCategory category = TemuApiCategory.fromApiType(apiType);
-            fileApi.createFile(content, buildFileName(apiType), buildDirectory(category), MediaType.APPLICATION_JSON_VALUE);
+            return fileApi.createFileId(content, buildFileName(apiType), buildDirectory(category), MediaType.APPLICATION_JSON_VALUE);
         } catch (JacksonException ex) {
             throw new IllegalStateException("Temu JSON 响应序列化失败", ex);
         }

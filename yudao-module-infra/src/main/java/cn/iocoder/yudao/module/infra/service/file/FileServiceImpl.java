@@ -104,6 +104,26 @@ public class FileServiceImpl implements FileService {
         return url;
     }
 
+    @Override
+    @SneakyThrows
+    public Long createFileId(byte[] content, String name, String directory, String type) {
+        name = FilePathUtils.validateFileName(name);
+        if (StrUtil.isEmpty(type)) type = FileTypeUtils.getMineType(content, name);
+        if (StrUtil.isEmpty(name)) name = DigestUtil.sha256Hex(content);
+        if (StrUtil.isEmpty(FileUtil.extName(name))) {
+            String extension = FileTypeUtils.getExtension(type);
+            if (StrUtil.isNotEmpty(extension)) name += extension;
+        }
+        String path = generateUploadPath(name, directory);
+        FileClient client = fileConfigService.getMasterFileClient();
+        Assert.notNull(client, "客户端(master) 不能为空");
+        String url = client.upload(content, path, type);
+        FileDO file = new FileDO().setConfigId(client.getId()).setName(name).setPath(path)
+                .setUrl(url).setType(type).setSize((long) content.length);
+        fileMapper.insert(file);
+        return file.getId();
+    }
+
     @VisibleForTesting
     String generateUploadPath(String name, String directory) {
         // 1.1 处理 name 和 directory 的合法性

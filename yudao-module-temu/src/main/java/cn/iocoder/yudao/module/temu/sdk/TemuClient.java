@@ -56,6 +56,7 @@ public class TemuClient {
     private final ObjectMapper objectMapper;
     private final TemuJsonStorageService jsonStorageService;
     private final String site;
+    private final Long shopId;
     private final TemuApiRequestLogService temuApiRequestLogService;
     private final int connectTimeoutMillis;
     private final int readTimeoutMillis;
@@ -115,7 +116,15 @@ public class TemuClient {
                       TemuApiRequestLogService temuApiRequestLogService) {
         this(appKey, appSecret, accessToken, baseUrl,
                 new RestTemplate(createRequestFactory(10000, 30000)), new ObjectMapper(), 10000, 30000,
-                jsonStorageService, site, temuApiRequestLogService);
+                jsonStorageService, site, temuApiRequestLogService, null);
+    }
+
+    public TemuClient(String appKey, String appSecret, String accessToken, String baseUrl,
+                      TemuJsonStorageService jsonStorageService, String site,
+                      TemuApiRequestLogService temuApiRequestLogService, Long shopId) {
+        this(appKey, appSecret, accessToken, baseUrl,
+                new RestTemplate(createRequestFactory(10000, 30000)), new ObjectMapper(), 10000, 30000,
+                jsonStorageService, site, temuApiRequestLogService, shopId);
     }
 
     /**
@@ -154,7 +163,7 @@ public class TemuClient {
                       RestTemplate restTemplate, ObjectMapper objectMapper,
                       int connectTimeoutMillis, int readTimeoutMillis, TemuJsonStorageService jsonStorageService) {
         this(appKey, appSecret, accessToken, baseUrl, restTemplate, objectMapper,
-                connectTimeoutMillis, readTimeoutMillis, jsonStorageService, null, null);
+                connectTimeoutMillis, readTimeoutMillis, jsonStorageService, null, null, null);
     }
 
     /**
@@ -176,6 +185,14 @@ public class TemuClient {
                       RestTemplate restTemplate, ObjectMapper objectMapper,
                       int connectTimeoutMillis, int readTimeoutMillis, TemuJsonStorageService jsonStorageService,
                       String site, TemuApiRequestLogService temuApiRequestLogService) {
+        this(appKey, appSecret, accessToken, baseUrl, restTemplate, objectMapper,
+                connectTimeoutMillis, readTimeoutMillis, jsonStorageService, site, temuApiRequestLogService, null);
+    }
+
+    public TemuClient(String appKey, String appSecret, String accessToken, String baseUrl,
+                      RestTemplate restTemplate, ObjectMapper objectMapper,
+                      int connectTimeoutMillis, int readTimeoutMillis, TemuJsonStorageService jsonStorageService,
+                      String site, TemuApiRequestLogService temuApiRequestLogService, Long shopId) {
         if (isBlank(appKey) || isBlank(appSecret) || isBlank(baseUrl)) {
             throw new IllegalArgumentException("Temu appKey、appSecret、baseUrl 不能为空");
         }
@@ -187,6 +204,7 @@ public class TemuClient {
         this.objectMapper = objectMapper;
         this.jsonStorageService = jsonStorageService;
         this.site = site;
+        this.shopId = shopId;
         this.temuApiRequestLogService = temuApiRequestLogService;
         this.connectTimeoutMillis = connectTimeoutMillis;
         this.readTimeoutMillis = readTimeoutMillis;
@@ -237,7 +255,7 @@ public class TemuClient {
         headers.setContentType(MediaType.APPLICATION_JSON);
         URI requestUri = buildRequestUri(method, params);
         TemuApiRequestLogContext context = new TemuApiRequestLogContext(apiType, method.name(), requestUri,
-                site, params, headers, LocalDateTime.now());
+                site, shopId, params, headers, LocalDateTime.now(), java.util.UUID.randomUUID().toString().replace("-", ""));
         try {
             ResponseEntity<String> response;
             if (HttpMethod.GET.equals(method)) {
@@ -249,7 +267,10 @@ public class TemuClient {
             }
             JsonNode responseBody = objectMapper.readTree(response.getBody());
             logRequest(context, response.getStatusCode().value(), response.getHeaders(), responseBody, null);
-            persistResponse(apiType, responseBody);
+            Long fileId = persistResponse(apiType, responseBody);
+            if (fileId != null && temuApiRequestLogService != null) {
+                temuApiRequestLogService.updateFileId(context.requestId(), fileId);
+            }
             return responseBody;
         } catch (RestClientResponseException ex) {
             logRequest(context, ex.getStatusCode().value(), ex.getResponseHeaders(), null, ex);
@@ -298,10 +319,11 @@ public class TemuClient {
      * @param apiType Temu OpenAPI 接口 type
      * @param responseBody 已解析的响应 JSON
      */
-    private void persistResponse(String apiType, JsonNode responseBody) {
+    private Long persistResponse(String apiType, JsonNode responseBody) {
         if (jsonStorageService != null) {
-            jsonStorageService.persist(apiType, responseBody);
+            return jsonStorageService.persist(apiType, responseBody);
         }
+        return null;
     }
 
     /**

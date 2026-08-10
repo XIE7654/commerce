@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.temu.controller.admin.shop.vo;
 
+import cn.iocoder.yudao.framework.common.enums.CommonStatusEnum;
+import cn.iocoder.yudao.framework.common.validation.InEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
@@ -27,5 +29,10 @@ public class TemuShopSaveReqVO {
     @Schema(description = "Temu 授权 Token", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotEmpty(message = "Temu 授权 Token不能为空")
     private String authToken;
+
+    @Schema(description = "状态：0-开启，1-关闭", requiredMode = Schema.RequiredMode.REQUIRED, example = "0")
+    @NotNull(message = "状态不能为空")
+    @InEnum(CommonStatusEnum.class)
+    private Integer status;
 
 }

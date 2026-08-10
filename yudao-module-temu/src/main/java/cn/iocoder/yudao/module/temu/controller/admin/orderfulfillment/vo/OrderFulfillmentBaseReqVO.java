@@ -9,6 +9,7 @@ import lombok.Data;
  */
 @Data
 public class OrderFulfillmentBaseReqVO {
+    private Long shopId;
 
     /** Temu 站点代码，决定服务端读取的区域应用配置。 */
     @Schema(description = "Temu 站点代码", requiredMode = Schema.RequiredMode.REQUIRED, example = "US")

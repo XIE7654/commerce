@@ -1,9 +1,11 @@
 package cn.iocoder.yudao.module.temu.controller.admin.shop.vo;
 
+import cn.iocoder.yudao.framework.common.enums.CommonStatusEnum;
 import lombok.*;
 import java.util.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 import cn.iocoder.yudao.framework.common.pojo.PageParam;
+import cn.iocoder.yudao.framework.common.validation.InEnum;
 import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDateTime;
 
@@ -24,6 +26,10 @@ public class TemuShopPageReqVO extends PageParam {
 
     @Schema(description = "Temu 授权 Token")
     private String authToken;
+
+    @Schema(description = "状态：0-开启，1-关闭", example = "0")
+    @InEnum(CommonStatusEnum.class)
+    private Integer status;
 
     @Schema(description = "创建时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)

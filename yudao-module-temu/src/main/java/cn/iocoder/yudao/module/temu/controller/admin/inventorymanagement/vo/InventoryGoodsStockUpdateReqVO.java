@@ -14,6 +14,7 @@ import java.util.List;
 @Schema(description = "管理后台 - Inventory Management 商品库存更新 Request VO")
 @Data
 public class InventoryGoodsStockUpdateReqVO {
+    private Long shopId;
 
     /** Temu 站点代码，决定服务端读取的区域应用配置。 */
     @Schema(description = "Temu 站点代码", requiredMode = Schema.RequiredMode.REQUIRED, example = "US")

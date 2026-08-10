@@ -42,6 +42,10 @@ public interface FileApi {
     String createFile(@NotEmpty(message = "文件内容不能为空") byte[] content,
                       String name, String directory, String type);
 
+    /** 保存文件并返回数据库主键。 */
+    Long createFileId(@NotEmpty(message = "文件内容不能为空") byte[] content,
+                      String name, String directory, String type);
+
     /**
      * 生成文件预签名地址，用于读取
      *
