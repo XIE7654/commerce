@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.amazon.dal.mysql.listingissue;
 
 import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
+import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.amazon.dal.dataobject.listingissue.AmazonListingIssueDO;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -19,8 +20,11 @@ public interface AmazonListingIssueMapper extends BaseMapperX<AmazonListingIssue
      */
     default AmazonListingIssueDO selectByUniqueFields(Long listingMarketplaceId, String issueCode, String severity,
                                                        String message) {
-        return selectOne(AmazonListingIssueDO::getListingMarketplaceId, listingMarketplaceId,
-                AmazonListingIssueDO::getIssueCode, issueCode, AmazonListingIssueDO::getSeverity, severity,
-                AmazonListingIssueDO::getMessage, message);
+        // BaseMapperX 的 selectOne 重载最多支持三组条件，四个唯一字段需使用查询构造器组合。
+        return selectOne(new LambdaQueryWrapperX<AmazonListingIssueDO>()
+                .eq(AmazonListingIssueDO::getListingMarketplaceId, listingMarketplaceId)
+                .eq(AmazonListingIssueDO::getIssueCode, issueCode)
+                .eq(AmazonListingIssueDO::getSeverity, severity)
+                .eq(AmazonListingIssueDO::getMessage, message));
     }
 }
