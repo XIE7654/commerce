@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.amazon.utils;
 
 import cn.hutool.core.util.StrUtil;
 
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 
@@ -44,6 +45,23 @@ public final class AmazonDateTimeUtils {
             return OffsetDateTime.parse(value);
         } catch (DateTimeParseException exception) {
             throw new IllegalArgumentException(name + " 必须为 ISO 8601 日期时间格式", exception);
+        }
+    }
+
+    /**
+     * 解析 Amazon 响应中的可选 ISO 8601 时间；格式不规范的数据不影响整批业务同步。
+     *
+     * @param value Amazon 响应时间字符串
+     * @return 本地日期时间；空白或格式无效时返回 {@code null}
+     */
+    public static LocalDateTime parseOrNull(String value) {
+        if (StrUtil.isBlank(value)) {
+            return null;
+        }
+        try {
+            return OffsetDateTime.parse(value).toLocalDateTime();
+        } catch (DateTimeParseException ignored) {
+            return null;
         }
     }
 

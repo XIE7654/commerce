@@ -15,6 +15,13 @@ import cn.iocoder.yudao.framework.common.pojo.PageParam;
 public interface AmazonListingMarketplaceService {
 
     /**
+     * 同步当前租户中所有启用店铺已参与站点的 Amazon Listings 到本地数据库。
+     *
+     * @return 同步店铺、站点、商品数量及失败明细
+     */
+    AmazonListingMarketplaceSyncRespVO syncAllAvailableListings();
+
+    /**
      * 创建Listing信息表
      *
      * @param createReqVO 创建信息

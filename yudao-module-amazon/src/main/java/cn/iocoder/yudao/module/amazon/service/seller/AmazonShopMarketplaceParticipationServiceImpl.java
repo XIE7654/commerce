@@ -1,14 +1,19 @@
 package cn.iocoder.yudao.module.amazon.service.seller;
 
+import cn.hutool.core.util.StrUtil;
 import cn.iocoder.yudao.module.amazon.dal.dataobject.seller.AmazonShopMarketplaceParticipationDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.seller.AmazonShopMarketplaceParticipationMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import static cn.iocoder.yudao.module.amazon.utils.AmazonResponseUtils.getList;
+import static cn.iocoder.yudao.module.amazon.utils.AmazonResponseUtils.getMap;
+import static cn.iocoder.yudao.module.amazon.utils.AmazonResponseUtils.getString;
+import static cn.iocoder.yudao.module.amazon.utils.AmazonResponseUtils.toMap;
 
 /**
  * Amazon 店铺 Marketplace 参与状态同步 Service 实现。
@@ -22,19 +27,36 @@ public class AmazonShopMarketplaceParticipationServiceImpl implements AmazonShop
     /** {@inheritDoc} */
     @Override
     public void syncMarketplaceParticipations(Long shopId, Map<String, Object> response) {
-        Map<String, Object> payload = getMap(response, "payload");
-        for (Object item : getList(payload, "marketplaceParticipationList")) {
+        for (Object item : getParticipationList(response)) {
             if (!(item instanceof Map<?, ?> participationItem)) {
                 continue;
             }
             Map<String, Object> participation = toMap(participationItem);
             Map<String, Object> marketplace = getMap(participation, "marketplace");
             String marketplaceId = getString(marketplace, "id");
-            if (marketplaceId == null || marketplaceId.isBlank()) {
+            if (StrUtil.isBlank(marketplaceId)) {
                 continue;
             }
             saveParticipation(shopId, marketplaceId, marketplace, participation);
         }
+    }
+
+    /**
+     * 获取 Sellers 站点参与状态列表。
+     *
+     * <p>Amazon 标准响应的 {@code payload} 本身为数组；兼容历史包装格式，避免接口代理层
+     * 包装为 {@code payload.marketplaceParticipationList} 时丢失同步数据。</p>
+     *
+     * @param response Sellers API 原始响应
+     * @return Marketplace 参与状态列表
+     */
+    private List<?> getParticipationList(Map<String, Object> response) {
+        List<?> payload = getList(response, "payload");
+        if (!payload.isEmpty()) {
+            return payload;
+        }
+        Map<String, Object> payloadObject = getMap(response, "payload");
+        return getList(payloadObject, "marketplaceParticipationList");
     }
 
     /**
@@ -69,54 +91,6 @@ public class AmazonShopMarketplaceParticipationServiceImpl implements AmazonShop
         } else {
             marketplaceParticipationMapper.updateById(record);
         }
-    }
-
-    /**
-     * 读取嵌套对象；缺失字段按空对象处理，避免单个可选字段影响整次同步。
-     *
-     * @param source 源对象
-     * @param key 字段名
-     * @return 字段对应的 Map
-     */
-    private Map<String, Object> getMap(Map<String, Object> source, String key) {
-        Object value = source.get(key);
-        return value instanceof Map<?, ?> map ? toMap(map) : Map.of();
-    }
-
-    /**
-     * 将未知泛型的 JSON 对象转换为字符串键的 Map。
-     *
-     * @param source JSON 对象
-     * @return 可读取的 Map
-     */
-    private Map<String, Object> toMap(Map<?, ?> source) {
-        Map<String, Object> result = new LinkedHashMap<>();
-        source.forEach((key, value) -> result.put(String.valueOf(key), value));
-        return result;
-    }
-
-    /**
-     * 读取 JSON 数组；字段缺失或格式不符时返回空列表。
-     *
-     * @param source 源对象
-     * @param key 字段名
-     * @return 数组内容
-     */
-    private List<?> getList(Map<String, Object> source, String key) {
-        Object value = source.get(key);
-        return value instanceof List<?> list ? list : List.of();
-    }
-
-    /**
-     * 将响应字段安全转换为字符串。
-     *
-     * @param source 源对象
-     * @param key 字段名
-     * @return 字段值；字段缺失时返回 {@code null}
-     */
-    private String getString(Map<String, Object> source, String key) {
-        Object value = source.get(key);
-        return value == null ? null : String.valueOf(value);
     }
 
     /**

@@ -17,6 +17,18 @@ import cn.iocoder.yudao.module.amazon.controller.admin.listingmarketplace.vo.*;
 @Mapper
 public interface AmazonListingMarketplaceMapper extends BaseMapperX<AmazonListingMarketplaceDO> {
 
+    /**
+     * 按 Listing 和 Marketplace 查询站点信息，用于同步时幂等更新。
+     *
+     * @param listingId Listing 主表编号
+     * @param marketplaceId Amazon Marketplace ID
+     * @return 站点信息；不存在时返回 {@code null}
+     */
+    default AmazonListingMarketplaceDO selectByListingIdAndMarketplaceId(Long listingId, String marketplaceId) {
+        return selectOne(AmazonListingMarketplaceDO::getListingId, listingId,
+                AmazonListingMarketplaceDO::getMarketplaceId, marketplaceId);
+    }
+
     default PageResult<AmazonListingMarketplaceDO> selectPage(AmazonListingMarketplacePageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<AmazonListingMarketplaceDO>()
                 .eqIfPresent(AmazonListingMarketplaceDO::getListingId, reqVO.getListingId())

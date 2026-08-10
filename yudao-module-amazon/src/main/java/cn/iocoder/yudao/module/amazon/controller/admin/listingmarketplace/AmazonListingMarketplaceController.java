@@ -38,6 +38,18 @@ public class AmazonListingMarketplaceController {
     @Resource
     private AmazonListingMarketplaceService listingMarketplaceService;
 
+    /**
+     * 同步所有启用店铺的参与站点 Listings，并保存到本地 Listing 表。
+     *
+     * @return 同步汇总结果
+     */
+    @PostMapping("/sync")
+    @Operation(summary = "同步全部可用店铺 Amazon Listings")
+    @PreAuthorize("@ss.hasPermission('amazon:listing-marketplace:update')")
+    public CommonResult<AmazonListingMarketplaceSyncRespVO> syncAllAvailableListings() {
+        return success(listingMarketplaceService.syncAllAvailableListings());
+    }
+
     @PostMapping("/create")
     @Operation(summary = "创建Listing信息表")
     @PreAuthorize("@ss.hasPermission('amazon:listing-marketplace:create')")

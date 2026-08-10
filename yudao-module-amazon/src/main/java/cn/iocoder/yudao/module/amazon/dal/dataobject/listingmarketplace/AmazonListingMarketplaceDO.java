@@ -3,12 +3,8 @@ package cn.iocoder.yudao.module.amazon.dal.dataobject.listingmarketplace;
 import lombok.*;
 import java.util.*;
 import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.*;
-import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
+import cn.iocoder.yudao.framework.tenant.core.db.TenantBaseDO;
 
 /**
  * Listing信息表 DO
@@ -23,7 +19,7 @@ import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AmazonListingMarketplaceDO extends BaseDO {
+public class AmazonListingMarketplaceDO extends TenantBaseDO {
 
     /**
      * 主键编号

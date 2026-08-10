@@ -19,4 +19,12 @@ public interface AmazonSellersService {
      * @return Amazon Sellers 原始 JSON 响应
      */
     Map<String, Object> getAccount(AmazonSellersReqVO request);
+
+    /**
+     * 同步指定店铺的卖家账户档案及 Marketplace 参与状态。
+     *
+     * @param request 店铺参数
+     * @return Amazon Sellers Account 原始响应
+     */
+    Map<String, Object> syncAccount(AmazonSellersReqVO request);
 }

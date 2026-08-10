@@ -17,6 +17,17 @@ import cn.iocoder.yudao.module.amazon.controller.admin.shop.vo.*;
 @Mapper
 public interface AmazonShopMapper extends BaseMapperX<AmazonShopDO> {
 
+    /**
+     * 查询当前租户下所有启用的 Amazon 店铺。
+     *
+     * @return 启用的店铺列表
+     */
+    default List<AmazonShopDO> selectEnabledList() {
+        return selectList(new LambdaQueryWrapperX<AmazonShopDO>()
+                .eq(AmazonShopDO::getStatus, 0)
+                .orderByAsc(AmazonShopDO::getId));
+    }
+
     default PageResult<AmazonShopDO> selectPage(AmazonShopPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<AmazonShopDO>()
                 .likeIfPresent(AmazonShopDO::getShopName, reqVO.getShopName())

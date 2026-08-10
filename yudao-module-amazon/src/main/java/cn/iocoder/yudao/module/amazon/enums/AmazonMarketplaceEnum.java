@@ -103,4 +103,22 @@ public enum AmazonMarketplaceEnum {
         AmazonMarketplaceEnum marketplace = fromCountryCode(value);
         return marketplace == null ? null : marketplace.marketplaceId;
     }
+
+    /**
+     * 根据 Amazon Marketplace ID 查找站点配置。
+     *
+     * @param marketplaceId Amazon Marketplace ID
+     * @return 对应的站点配置；输入为空或不存在时返回 {@code null}
+     */
+    public static AmazonMarketplaceEnum fromMarketplaceId(String marketplaceId) {
+        if (marketplaceId == null || marketplaceId.trim().isEmpty()) {
+            return null;
+        }
+        for (AmazonMarketplaceEnum marketplace : values()) {
+            if (marketplace.marketplaceId.equalsIgnoreCase(marketplaceId.trim())) {
+                return marketplace;
+            }
+        }
+        return null;
+    }
 }

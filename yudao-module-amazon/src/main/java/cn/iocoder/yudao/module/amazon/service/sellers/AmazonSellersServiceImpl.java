@@ -7,8 +7,11 @@ import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiCategory;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
+import cn.iocoder.yudao.module.amazon.service.seller.AmazonSellerAccountService;
+import cn.iocoder.yudao.module.amazon.service.seller.AmazonShopMarketplaceParticipationService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URI;
 import java.util.Map;
@@ -24,6 +27,10 @@ public class AmazonSellersServiceImpl implements AmazonSellersService {
     private AmazonShopMapper amazonShopMapper;
     @Resource
     private AmazonSellingPartnerClient amazonSellingPartnerClient;
+    @Resource
+    private AmazonSellerAccountService amazonSellerAccountService;
+    @Resource
+    private AmazonShopMarketplaceParticipationService marketplaceParticipationService;
 
     /**
      * {@inheritDoc}
@@ -39,6 +46,21 @@ public class AmazonSellersServiceImpl implements AmazonSellersService {
     @Override
     public Map<String, Object> getAccount(AmazonSellersReqVO request) {
         return execute(request, "/sellers/v1/account", "getAccount", "account");
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Map<String, Object> syncAccount(AmazonSellersReqVO request) {
+        Map<String, Object> accountResponse = getAccount(request);
+        amazonSellerAccountService.syncSellerAccount(request.getShopId(), accountResponse);
+
+        // Marketplace 参与状态不包含在 Account 响应中，需通过独立的 Sellers 接口获取。
+        Map<String, Object> marketplaceResponse = getMarketplaceParticipations(request);
+        marketplaceParticipationService.syncMarketplaceParticipations(request.getShopId(), marketplaceResponse);
+        return accountResponse;
     }
 
     /**
