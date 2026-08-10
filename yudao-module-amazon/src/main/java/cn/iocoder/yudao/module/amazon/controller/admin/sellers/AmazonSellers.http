@@ -4,7 +4,7 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 tenant-id: {{adminTenantId}}
 
-{"shopId": 1, "countryCode": "US"}
+{"shopId": 1}
 
 ### 查询卖家账户
 POST {{baseUrl}}/amazon/sellers/account
@@ -12,4 +12,4 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 tenant-id: {{adminTenantId}}
 
-{"shopId": 1, "countryCode": "US"}
+{"shopId": 1}

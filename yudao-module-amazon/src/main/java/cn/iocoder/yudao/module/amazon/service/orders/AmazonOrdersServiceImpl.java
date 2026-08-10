@@ -44,8 +44,10 @@ public class AmazonOrdersServiceImpl implements AmazonOrdersService {
 
     @Resource
     private AmazonOAuthService amazonOAuthService;
+
     @Resource
     private AmazonShopService amazonShopService;
+
     @Resource
     private AmazonSellingPartnerClient amazonSellingPartnerClient;
 
