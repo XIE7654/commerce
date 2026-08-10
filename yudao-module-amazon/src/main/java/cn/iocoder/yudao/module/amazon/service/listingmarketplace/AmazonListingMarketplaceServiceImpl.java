@@ -10,23 +10,33 @@ import java.time.LocalDateTime;
 import cn.iocoder.yudao.module.amazon.controller.admin.listingmarketplace.vo.*;
 import cn.iocoder.yudao.module.amazon.controller.admin.listings.vo.AmazonListingsSearchReqVO;
 import cn.iocoder.yudao.module.amazon.dal.dataobject.listing.AmazonListingDO;
+import cn.iocoder.yudao.module.amazon.dal.dataobject.listingattribute.AmazonListingAttributeDO;
+import cn.iocoder.yudao.module.amazon.dal.dataobject.listingimage.AmazonListingImageDO;
+import cn.iocoder.yudao.module.amazon.dal.dataobject.listingissue.AmazonListingIssueDO;
 import cn.iocoder.yudao.module.amazon.dal.dataobject.listingmarketplace.AmazonListingMarketplaceDO;
+import cn.iocoder.yudao.module.amazon.dal.dataobject.listingstatus.AmazonListingStatusDO;
 import cn.iocoder.yudao.module.amazon.dal.dataobject.seller.AmazonShopMarketplaceParticipationDO;
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 
 import cn.iocoder.yudao.module.amazon.dal.mysql.listing.AmazonListingMapper;
+import cn.iocoder.yudao.module.amazon.dal.mysql.listingattribute.AmazonListingAttributeMapper;
+import cn.iocoder.yudao.module.amazon.dal.mysql.listingimage.AmazonListingImageMapper;
+import cn.iocoder.yudao.module.amazon.dal.mysql.listingissue.AmazonListingIssueMapper;
 import cn.iocoder.yudao.module.amazon.dal.mysql.listingmarketplace.AmazonListingMarketplaceMapper;
+import cn.iocoder.yudao.module.amazon.dal.mysql.listingstatus.AmazonListingStatusMapper;
 import cn.iocoder.yudao.module.amazon.dal.mysql.seller.AmazonShopMarketplaceParticipationMapper;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
 import cn.iocoder.yudao.module.amazon.service.listings.AmazonListingsService;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static cn.iocoder.yudao.framework.common.util.json.JsonUtils.toJsonString;
 import static cn.iocoder.yudao.module.amazon.enums.ErrorCodeConstants.*;
 import static cn.iocoder.yudao.module.amazon.utils.AmazonDateTimeUtils.parseOrNull;
 import static cn.iocoder.yudao.module.amazon.utils.AmazonResponseUtils.getList;
+import static cn.iocoder.yudao.module.amazon.utils.AmazonResponseUtils.getMap;
 import static cn.iocoder.yudao.module.amazon.utils.AmazonResponseUtils.getPayload;
 import static cn.iocoder.yudao.module.amazon.utils.AmazonResponseUtils.getString;
 import static cn.iocoder.yudao.module.amazon.utils.AmazonResponseUtils.toMap;
@@ -42,6 +52,14 @@ public class AmazonListingMarketplaceServiceImpl implements AmazonListingMarketp
 
     @Resource
     private AmazonListingMarketplaceMapper listingMarketplaceMapper;
+    @Resource
+    private AmazonListingStatusMapper listingStatusMapper;
+    @Resource
+    private AmazonListingImageMapper listingImageMapper;
+    @Resource
+    private AmazonListingAttributeMapper listingAttributeMapper;
+    @Resource
+    private AmazonListingIssueMapper listingIssueMapper;
     @Resource
     private AmazonListingMapper listingMapper;
     @Resource
@@ -171,7 +189,7 @@ public class AmazonListingMarketplaceServiceImpl implements AmazonListingMarketp
     }
 
     /**
-     * 构造每页 Listings 查询参数，固定请求 summaries 以获得本地站点信息表所需字段。
+     * 构造每页 Listings 查询参数，获取站点摘要、属性和问题以支持完整本地归档。
      *
      * @param shopId 店铺编号
      * @param countryCode 站点国家代码
@@ -182,7 +200,7 @@ public class AmazonListingMarketplaceServiceImpl implements AmazonListingMarketp
         AmazonListingsSearchReqVO request = new AmazonListingsSearchReqVO();
         request.setShopId(shopId);
         request.setCountryCode(countryCode);
-        request.setIncludedData(List.of("summaries"));
+        request.setIncludedData(List.of("summaries", "attributes", "issues"));
         request.setSortBy("lastUpdatedDate");
         request.setSortOrder("DESC");
         request.setPageSize(20);
@@ -218,7 +236,8 @@ public class AmazonListingMarketplaceServiceImpl implements AmazonListingMarketp
             if (!requestedMarketplaceId.equals(marketplaceId)) {
                 continue;
             }
-            saveListingMarketplace(listing.getId(), marketplaceId, summary);
+            AmazonListingMarketplaceDO listingMarketplace = saveListingMarketplace(listing.getId(), marketplaceId, summary);
+            saveListingDetails(listingMarketplace.getId(), summary, listingItem);
             result.setListingMarketplaceCount(result.getListingMarketplaceCount() + 1);
         }
     }
@@ -251,7 +270,7 @@ public class AmazonListingMarketplaceServiceImpl implements AmazonListingMarketp
      * @param marketplaceId Amazon Marketplace ID
      * @param summary Amazon summary 原始对象
      */
-    private void saveListingMarketplace(Long listingId, String marketplaceId, Map<String, Object> summary) {
+    private AmazonListingMarketplaceDO saveListingMarketplace(Long listingId, String marketplaceId, Map<String, Object> summary) {
         AmazonListingMarketplaceDO record = listingMarketplaceMapper
                 .selectByListingIdAndMarketplaceId(listingId, marketplaceId);
         if (record == null) {
@@ -270,6 +289,228 @@ public class AmazonListingMarketplaceServiceImpl implements AmazonListingMarketp
             listingMarketplaceMapper.insert(record);
         } else {
             listingMarketplaceMapper.updateById(record);
+        }
+        return record;
+    }
+
+    /**
+     * 将当前 Listings Item 的明细按站点记录创建或更新；不删除其它店铺和历史同步数据。
+     *
+     * @param listingMarketplaceId Listing 站点记录编号
+     * @param summary 当前站点的摘要数据
+     * @param listingItem 当前 SKU 的完整 Listings Item 数据
+     */
+    private void saveListingDetails(Long listingMarketplaceId, Map<String, Object> summary,
+                                    Map<String, Object> listingItem) {
+        saveStatuses(listingMarketplaceId, summary);
+        saveImages(listingMarketplaceId, summary, getMap(listingItem, "attributes"));
+        saveAttributes(listingMarketplaceId, getMap(listingItem, "attributes"));
+        saveIssues(listingMarketplaceId, getList(listingItem, "issues"));
+    }
+
+    /**
+     * 保存摘要中的状态数组。
+     *
+     * @param listingMarketplaceId Listing 站点记录编号
+     * @param summary Amazon summary 原始对象
+     */
+    private void saveStatuses(Long listingMarketplaceId, Map<String, Object> summary) {
+        for (Object value : getList(summary, "status")) {
+            String status = value == null ? null : String.valueOf(value);
+            if (StrUtil.isNotBlank(status)) {
+                AmazonListingStatusDO record = listingStatusMapper
+                        .selectByListingMarketplaceIdAndStatus(listingMarketplaceId, status);
+                if (record == null) {
+                    record = new AmazonListingStatusDO();
+                    record.setListingMarketplaceId(listingMarketplaceId);
+                    record.setStatus(status);
+                    listingStatusMapper.insert(record);
+                } else {
+                    // 更新审计时间，标识该状态在本轮同步中仍由 Amazon 返回。
+                    listingStatusMapper.updateById(record);
+                }
+            }
+        }
+    }
+
+    /**
+     * 保存 summary 主图及属性中所有图片定位器，属性原值保持独立存储以免丢失 Amazon 扩展字段。
+     *
+     * @param listingMarketplaceId Listing 站点记录编号
+     * @param summary Amazon summary 原始对象
+     * @param attributes Amazon attributes 原始对象
+     */
+    private void saveImages(Long listingMarketplaceId, Map<String, Object> summary, Map<String, Object> attributes) {
+        List<AmazonListingImageDO> images = new ArrayList<>();
+        Map<String, Object> mainImage = getMap(summary, "mainImage");
+        addImage(images, listingMarketplaceId, "MAIN", getString(mainImage, "link"),
+                getInteger(mainImage, "width"), getInteger(mainImage, "height"));
+        attributes.forEach((name, value) -> {
+            if (name.toLowerCase(Locale.ROOT).contains("image")) {
+                collectImageUrls(images, listingMarketplaceId, normalizeImageType(name), value);
+            }
+        });
+        for (AmazonListingImageDO image : images) {
+            AmazonListingImageDO record = listingImageMapper.selectByListingMarketplaceIdAndTypeAndSortOrder(
+                    listingMarketplaceId, image.getImageType(), image.getSortOrder());
+            if (record == null) {
+                listingImageMapper.insert(image);
+            } else {
+                record.setImageUrl(image.getImageUrl());
+                record.setWidth(image.getWidth());
+                record.setHeight(image.getHeight());
+                listingImageMapper.updateById(record);
+            }
+        }
+    }
+
+    /**
+     * 保存 attributes 的每个顶级字段，值以 JSON 原样保存以兼容不同 product type。
+     *
+     * @param listingMarketplaceId Listing 站点记录编号
+     * @param attributes Amazon attributes 原始对象
+     */
+    private void saveAttributes(Long listingMarketplaceId, Map<String, Object> attributes) {
+        attributes.forEach((name, value) -> {
+            AmazonListingAttributeDO record = listingAttributeMapper
+                    .selectByListingMarketplaceIdAndAttributeName(listingMarketplaceId, name);
+            if (record == null) {
+                record = new AmazonListingAttributeDO();
+                record.setListingMarketplaceId(listingMarketplaceId);
+                record.setAttributeName(name);
+            }
+            record.setAttributeValue(toJsonString(value));
+            if (record.getId() == null) {
+                listingAttributeMapper.insert(record);
+            } else {
+                listingAttributeMapper.updateById(record);
+            }
+        });
+    }
+
+    /**
+     * 保存 Listings API 返回的 issues，并保留完整 issue 原始值以承载 Amazon 新增字段。
+     *
+     * @param listingMarketplaceId Listing 站点记录编号
+     * @param issues Amazon issues 原始数组
+     */
+    private void saveIssues(Long listingMarketplaceId, List<?> issues) {
+        for (Object issueItem : issues) {
+            if (!(issueItem instanceof Map<?, ?> rawIssue)) {
+                continue;
+            }
+            Map<String, Object> issue = toMap(rawIssue);
+            String issueCode = getString(issue, "code");
+            String severity = getString(issue, "severity");
+            String message = getString(issue, "message");
+            AmazonListingIssueDO record = listingIssueMapper.selectByUniqueFields(listingMarketplaceId, issueCode,
+                    severity, message);
+            if (record == null) {
+                record = new AmazonListingIssueDO();
+                record.setListingMarketplaceId(listingMarketplaceId);
+                record.setIssueCode(issueCode);
+                record.setSeverity(severity);
+                record.setMessage(message);
+            }
+            record.setAttributeNames(toJsonString(getList(issue, "attributeNames")));
+            record.setIssueValue(toJsonString(issue));
+            if (record.getId() == null) {
+                listingIssueMapper.insert(record);
+            } else {
+                listingIssueMapper.updateById(record);
+            }
+        }
+    }
+
+    /**
+     * 从图片属性的任意嵌套结构中提取 URL，兼容 media_location、link、url 等 Listings API 字段。
+     *
+     * @param images 待保存图片集合
+     * @param listingMarketplaceId Listing 站点记录编号
+     * @param imageType 图片类型
+     * @param value 图片属性值
+     */
+    private void collectImageUrls(List<AmazonListingImageDO> images, Long listingMarketplaceId, String imageType,
+                                  Object value) {
+        if (value instanceof Map<?, ?> rawMap) {
+            Map<String, Object> map = toMap(rawMap);
+            String url = firstImageUrl(map);
+            if (url != null) {
+                addImage(images, listingMarketplaceId, imageType, url, getInteger(map, "width"), getInteger(map, "height"));
+            }
+            map.values().forEach(child -> collectImageUrls(images, listingMarketplaceId, imageType, child));
+        } else if (value instanceof List<?> values) {
+            values.forEach(child -> collectImageUrls(images, listingMarketplaceId, imageType, child));
+        }
+    }
+
+    /**
+     * 返回对象中首个可识别的图片 URL 字段。
+     *
+     * @param value 图片属性中的一个对象
+     * @return 图片 URL；未找到时返回 {@code null}
+     */
+    private String firstImageUrl(Map<String, Object> value) {
+        for (String key : List.of("media_location", "link", "url", "image_url")) {
+            String url = getString(value, key);
+            if (StrUtil.startWithIgnoreCase(url, "http://") || StrUtil.startWithIgnoreCase(url, "https://")) {
+                return url;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 将 Amazon 属性名转换为数据库允许的图片类型，避免超出字段长度。
+     *
+     * @param attributeName Amazon 属性名称
+     * @return 不超过 32 个字符的图片类型
+     */
+    private String normalizeImageType(String attributeName) {
+        return StrUtil.subWithLength(attributeName.toUpperCase(Locale.ROOT), 0, 32);
+    }
+
+    /**
+     * 追加去重后的图片记录，并为同类型图片分配稳定排序号。
+     *
+     * @param images 待保存图片集合
+     * @param listingMarketplaceId Listing 站点记录编号
+     * @param imageType 图片类型
+     * @param imageUrl 图片地址
+     * @param width 图片宽度
+     * @param height 图片高度
+     */
+    private void addImage(List<AmazonListingImageDO> images, Long listingMarketplaceId, String imageType, String imageUrl,
+                          Integer width, Integer height) {
+        if (StrUtil.isBlank(imageUrl) || images.stream().anyMatch(image -> imageUrl.equals(image.getImageUrl()))) {
+            return;
+        }
+        AmazonListingImageDO record = new AmazonListingImageDO();
+        record.setListingMarketplaceId(listingMarketplaceId);
+        record.setImageType(imageType);
+        record.setImageUrl(imageUrl);
+        record.setWidth(width);
+        record.setHeight(height);
+        record.setSortOrder((int) images.stream().filter(image -> imageType.equals(image.getImageType())).count());
+        images.add(record);
+    }
+
+    /**
+     * 读取可能由 JSON 反序列化为任意 Number 的整数。
+     *
+     * @param source JSON 对象
+     * @param key 整数字段名
+     * @return 整数值；字段缺失或格式无效时返回 {@code null}
+     */
+    private Integer getInteger(Map<String, Object> source, String key) {
+        Object value = source.get(key);
+        if (value instanceof Number number) {
+            return number.intValue();
+        }
+        try {
+            return value == null ? null : Integer.valueOf(String.valueOf(value));
+        } catch (NumberFormatException ignored) {
+            return null;
         }
     }
 
