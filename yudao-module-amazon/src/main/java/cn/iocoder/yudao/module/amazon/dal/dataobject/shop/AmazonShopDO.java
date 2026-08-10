@@ -1,53 +1,98 @@
 package cn.iocoder.yudao.module.amazon.dal.dataobject.shop;
 
-import cn.iocoder.yudao.framework.tenant.core.db.TenantBaseDO;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-
+import lombok.*;
+import java.util.*;
 import java.time.LocalDateTime;
+import java.time.LocalDateTime;
+import java.time.LocalDateTime;
+import java.time.LocalDateTime;
+import java.time.LocalDateTime;
+import java.time.LocalDateTime;
+import java.time.LocalDateTime;
+import java.time.LocalDateTime;
+import com.baomidou.mybatisplus.annotation.*;
+import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
 
 /**
- * Amazon 店铺授权信息，按租户隔离。
+ * Amazon店铺授权 DO
+ *
+ * @author 自达源码
  */
 @TableName("amazon_shop")
+@KeySequence("amazon_shop_seq") // 用于 Oracle、PostgreSQL、Kingbase、DB2、H2 数据库的主键自增。如果是 MySQL 等数据库，可不写。
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class AmazonShopDO extends TenantBaseDO {
+@ToString(callSuper = true)
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class AmazonShopDO extends BaseDO {
 
-    /** 主键编号。 */
-    @TableId(type = IdType.AUTO)
+    /**
+     * 主键编号
+     */
+    @TableId
     private Long id;
-    /** Amazon sellerId。 */
+    /**
+     * Amazon sellerId
+     */
     private String sellerId;
-    /** 默认 marketplaceId。 */
+    /**
+     * 默认 marketplaceId
+     */
     private String marketplaceId;
-    /** 店铺名称。 */
+    /**
+     * 店铺名称
+     */
     private String shopName;
-    /** Amazon 区域。 */
+    /**
+     * Amazon 区域：NA、EU、FE
+     */
     private String region;
-    /** 授权时间。 */
+    /**
+     * 授权时间
+     */
     private LocalDateTime authorizeTime;
-    /** 授权过期时间。 */
+    /**
+     * 授权过期时间
+     */
     private LocalDateTime authorizeExpireTime;
-    /** Seller refresh token。 */
+    /**
+     * Seller refresh token
+     */
     private String sellerRefreshToken;
-    /** Seller access token。 */
+    /**
+     * Seller access token，短期缓存
+     */
     private String sellerAccessToken;
-    /** Seller access token 过期时间。 */
+    /**
+     * Seller access token 过期时间
+     */
     private LocalDateTime sellerAccessTokenExpiresAt;
-    /** Ads refresh token。 */
+    /**
+     * 广告 refresh token
+     */
     private String adRefreshToken;
-    /** 广告授权时间。 */
-    private LocalDateTime adAuthorizeTime;
-    /** 广告授权过期时间。 */
-    private LocalDateTime adAuthorizeExpireTime;
-    /** Ads access token。 */
+    /**
+     * 广告 access token，短期缓存
+     */
     private String adAccessToken;
-    /** Ads access token 过期时间。 */
+    /**
+     * 广告 access token 过期时间
+     */
     private LocalDateTime adAccessTokenExpiresAt;
-    /** 店铺状态：0-启用，1-禁用。 */
+    /**
+     * 广告授权时间
+     */
+    private LocalDateTime adAuthorizeTime;
+    /**
+     * 广告授权过期时间
+     */
+    private LocalDateTime adAuthorizeExpireTime;
+    /**
+     * 状态：0-启用，1-禁用
+     */
     private Integer status;
+
+
 }

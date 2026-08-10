@@ -1,0 +1,28 @@
+CREATE TABLE IF NOT EXISTS amazon_shop_marketplace_participation (
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键编号',
+    tenant_id BIGINT NOT NULL DEFAULT 0 COMMENT '租户编号',
+    shop_id BIGINT NOT NULL COMMENT '关联 amazon_shop.id',
+    marketplace_id VARCHAR(64) NOT NULL COMMENT 'Amazon Marketplace ID',
+    country_code VARCHAR(8) NOT NULL COMMENT '站点国家或地区代码，例如 US、CA、MX',
+    marketplace_name VARCHAR(128) NOT NULL COMMENT 'Amazon 站点名称，例如 Amazon.com',
+    default_currency_code VARCHAR(8) NULL COMMENT '站点默认货币代码，例如 USD',
+    default_language_code VARCHAR(16) NULL COMMENT '站点默认语言代码，例如 en_US',
+    domain_name VARCHAR(255) NULL COMMENT '站点域名，例如 www.amazon.com',
+    store_name VARCHAR(255) NULL COMMENT '卖家在该站点展示的店铺名称',
+    is_participating BIT NOT NULL DEFAULT b'0' COMMENT '是否参与该站点销售：0-否，1-是',
+    has_suspended_listings BIT NOT NULL DEFAULT b'0' COMMENT '是否存在被停售的商品：0-否，1-是',
+    last_sync_time DATETIME NOT NULL COMMENT '最后从 Sellers API 同步时间',
+    creator VARCHAR(64) NULL DEFAULT '' COMMENT '创建者',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updater VARCHAR(64) NULL DEFAULT '' COMMENT '更新者',
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    deleted BIT NOT NULL DEFAULT b'0' COMMENT '是否删除',
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_amazon_shop_marketplace_participation (tenant_id, shop_id, marketplace_id),
+    KEY idx_amazon_shop_marketplace_participation_tenant_shop (tenant_id, shop_id),
+    KEY idx_amazon_shop_marketplace_participation_tenant_country (tenant_id, country_code),
+    KEY idx_amazon_shop_marketplace_participation_tenant_participating (tenant_id, is_participating),
+    KEY idx_amazon_shop_marketplace_participation_tenant_id (tenant_id),
+    CONSTRAINT fk_amazon_shop_marketplace_participation_shop
+        FOREIGN KEY (shop_id) REFERENCES amazon_shop (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Amazon 店铺 Marketplace 参与状态表';

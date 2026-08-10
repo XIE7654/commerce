@@ -1,15 +1,30 @@
 package cn.iocoder.yudao.module.amazon.dal.mysql.shop;
 
+import java.util.*;
+
+import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
-import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import org.apache.ibatis.annotations.Mapper;
+import cn.iocoder.yudao.module.amazon.controller.admin.shop.vo.*;
 
 /**
- * Amazon 店铺 Mapper。
+ * Amazon店铺授权 Mapper
+ *
+ * @author 自达源码
  */
 @Mapper
 public interface AmazonShopMapper extends BaseMapperX<AmazonShopDO> {
+
+    default PageResult<AmazonShopDO> selectPage(AmazonShopPageReqVO reqVO) {
+        return selectPage(reqVO, new LambdaQueryWrapperX<AmazonShopDO>()
+                .likeIfPresent(AmazonShopDO::getShopName, reqVO.getShopName())
+                .eqIfPresent(AmazonShopDO::getRegion, reqVO.getRegion())
+                .eqIfPresent(AmazonShopDO::getStatus, reqVO.getStatus())
+                .betweenIfPresent(AmazonShopDO::getCreateTime, reqVO.getCreateTime())
+                .orderByDesc(AmazonShopDO::getId));
+    }
 
     /** 按租户隔离查询 sellerId 对应的店铺。 */
     default AmazonShopDO selectBySellerId(String sellerId) {
