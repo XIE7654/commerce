@@ -11,4 +11,6 @@ public interface ErrorCodeConstants {
 
     ErrorCode SHOP_NOT_EXISTS = new ErrorCode(1_301_001_000, "Amazon店铺授权不存在");
 
+    ErrorCode LISTING_MARKETPLACE_NOT_EXISTS = new ErrorCode(1_301_002_000, "Listing信息表不存在");
+
 }
