@@ -12,10 +12,10 @@ import java.time.LocalDateTime;
 /**
  * Amazon 店铺 Marketplace 参与状态 DO。
  */
-@TableName("amazon_shop_marketplace_participation")
+@TableName("amazon_shop_marketplace")
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class AmazonShopMarketplaceParticipationDO extends TenantBaseDO {
+public class AmazonShopMarketplaceDO extends TenantBaseDO {
 
     /** 主键编号。 */
     @TableId(type = IdType.AUTO)

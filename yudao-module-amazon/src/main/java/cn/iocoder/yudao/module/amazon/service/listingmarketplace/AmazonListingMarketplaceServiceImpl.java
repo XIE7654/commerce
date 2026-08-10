@@ -15,7 +15,7 @@ import cn.iocoder.yudao.module.amazon.dal.dataobject.listingimage.AmazonListingI
 import cn.iocoder.yudao.module.amazon.dal.dataobject.listingissue.AmazonListingIssueDO;
 import cn.iocoder.yudao.module.amazon.dal.dataobject.listingmarketplace.AmazonListingMarketplaceDO;
 import cn.iocoder.yudao.module.amazon.dal.dataobject.listingstatus.AmazonListingStatusDO;
-import cn.iocoder.yudao.module.amazon.dal.dataobject.seller.AmazonShopMarketplaceParticipationDO;
+import cn.iocoder.yudao.module.amazon.dal.dataobject.seller.AmazonShopMarketplaceDO;
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
@@ -76,13 +76,13 @@ public class AmazonListingMarketplaceServiceImpl implements AmazonListingMarketp
         List<AmazonShopDO> shops = shopMapper.selectEnabledList();
         result.setShopCount(shops.size());
         for (AmazonShopDO shop : shops) {
-            List<AmazonShopMarketplaceParticipationDO> participations = marketplaceParticipationMapper
+            List<AmazonShopMarketplaceDO> participations = marketplaceParticipationMapper
                     .selectParticipatingByShopId(shop.getId());
             if (participations.isEmpty()) {
                 syncDefaultMarketplace(shop, result);
                 continue;
             }
-            for (AmazonShopMarketplaceParticipationDO participation : participations) {
+            for (AmazonShopMarketplaceDO participation : participations) {
                 syncMarketplace(shop, participation.getMarketplaceId(), participation.getCountryCode(), result);
             }
         }

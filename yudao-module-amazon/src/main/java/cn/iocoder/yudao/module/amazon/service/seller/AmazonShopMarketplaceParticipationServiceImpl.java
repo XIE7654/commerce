@@ -1,7 +1,7 @@
 package cn.iocoder.yudao.module.amazon.service.seller;
 
 import cn.hutool.core.util.StrUtil;
-import cn.iocoder.yudao.module.amazon.dal.dataobject.seller.AmazonShopMarketplaceParticipationDO;
+import cn.iocoder.yudao.module.amazon.dal.dataobject.seller.AmazonShopMarketplaceDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.seller.AmazonShopMarketplaceParticipationMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -70,10 +70,10 @@ public class AmazonShopMarketplaceParticipationServiceImpl implements AmazonShop
     private void saveParticipation(Long shopId, String marketplaceId, Map<String, Object> marketplace,
                                    Map<String, Object> participationItem) {
         Map<String, Object> participation = getMap(participationItem, "participation");
-        AmazonShopMarketplaceParticipationDO record = marketplaceParticipationMapper
+        AmazonShopMarketplaceDO record = marketplaceParticipationMapper
                 .selectByShopIdAndMarketplaceId(shopId, marketplaceId);
         if (record == null) {
-            record = new AmazonShopMarketplaceParticipationDO();
+            record = new AmazonShopMarketplaceDO();
             record.setShopId(shopId);
             record.setMarketplaceId(marketplaceId);
         }
