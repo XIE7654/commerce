@@ -13,17 +13,23 @@ import cn.iocoder.yudao.module.temu.dal.mysql.order.TemuOrderMapper;
 import cn.iocoder.yudao.module.temu.dal.mysql.seller.TemuSellerMapper;
 import cn.iocoder.yudao.module.temu.dal.mysql.shop.TemuShopMapper;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.framework.common.enums.CommonStatusEnum;
 import cn.iocoder.yudao.module.temu.enums.TemuSiteRegionEnum;
 import cn.iocoder.yudao.module.temu.framework.config.TemuProperties;
 import cn.iocoder.yudao.module.temu.sdk.TemuClient;
 import cn.iocoder.yudao.module.temu.sdk.TemuJsonStorageService;
 import cn.iocoder.yudao.module.temu.service.apirequestlog.TemuApiRequestLogService;
+import cn.iocoder.yudao.module.temu.mq.TemuOrderSyncMessage;
+import cn.iocoder.yudao.module.temu.mq.TemuOrderSyncRabbitMQConfig;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.validation.annotation.Validated;
+import lombok.extern.slf4j.Slf4j;
 import tools.jackson.databind.JsonNode;
 
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.time.Instant;
@@ -39,7 +45,13 @@ import static cn.iocoder.yudao.module.temu.enums.ErrorCodeConstants.SHOP_NOT_EXI
  */
 @Service
 @Validated
+@Slf4j
 public class OrderManagementServiceImpl implements OrderManagementService {
+
+    /** 自动同步时采用 Temu 全部父订单状态。 */
+    private static final int ALL_PARENT_ORDER_STATUS = 4;
+    /** 单页最大拉取数量，减少远端请求次数。 */
+    private static final int SYNC_PAGE_SIZE = 100;
 
     @Resource
     private TemuProperties temuProperties;
@@ -55,6 +67,8 @@ public class OrderManagementServiceImpl implements OrderManagementService {
     private TemuOrderMapper orderMapper;
     @Resource
     private TransactionTemplate transactionTemplate;
+    @Resource
+    private RabbitTemplate rabbitTemplate;
 
     /**
      * 调用 Temu 订单列表查询接口。
@@ -80,9 +94,26 @@ public class OrderManagementServiceImpl implements OrderManagementService {
         if (response != null && response.path("success").asBoolean(false)) {
             // 外部接口调用完成后才开启事务，避免网络耗时长期占用数据库连接和事务资源。
             transactionTemplate.executeWithoutResult(status ->
-                    syncOrderList(response.path("result").path("pageItems"), request.getShopId(), seller.getId()));
+                    syncOrderList(response.path("result").path("pageItems"), request.getShopId()));
         }
         return response;
+    }
+
+    /**
+     * 同步所有启用店铺的 Temu 订单。
+     *
+     * <p>接口仅投递店铺同步消息，避免全量分页拉取占用管理端请求；消息消费者会独立处理每个店铺。</p>
+     */
+    @Override
+    public void syncAllAvailableShopOrders() {
+        for (TemuShopDO shop : shopMapper.selectListByStatus(CommonStatusEnum.ENABLE.getStatus())) {
+            if (isBlank(shop.getAuthToken())) {
+                log.warn("[syncAllAvailableShopOrders][shopId({})] 店铺未配置授权 Token，跳过订单同步", shop.getId());
+                continue;
+            }
+            rabbitTemplate.convertAndSend(TemuOrderSyncRabbitMQConfig.EXCHANGE_NAME,
+                    TemuOrderSyncRabbitMQConfig.ROUTING_KEY, new TemuOrderSyncMessage(shop.getId()));
+        }
     }
 
     /**
@@ -98,9 +129,69 @@ public class OrderManagementServiceImpl implements OrderManagementService {
     }
 
     /**
+     * 按店铺最后同步的 Temu 更新时间增量拉取全部订单分页。
+     *
+     * @param shopId Temu 店铺编号
+     */
+    @Override
+    public void syncShopOrders(Long shopId) {
+        TemuShopDO shop = shopMapper.selectById(shopId);
+        if (shop == null || !CommonStatusEnum.ENABLE.getStatus().equals(shop.getStatus())) {
+            log.warn("[syncShopOrders][shopId({})] 店铺不存在或已停用，跳过订单同步", shopId);
+            return;
+        }
+        if (isBlank(shop.getAuthToken())) {
+            log.warn("[syncShopOrders][shopId({})] 店铺未配置授权 Token，跳过订单同步", shopId);
+            return;
+        }
+        TemuSellerDO seller = sellerMapper.selectByShopId(shop.getId());
+        if (seller == null || seller.getRegionId() == null) {
+            log.warn("[syncShopOrders][shopId({})] 店铺缺少卖家或区域授权信息，跳过订单同步", shop.getId());
+            return;
+        }
+        TemuClient client = createClient(shop);
+        LocalDateTime latestUpdateTime = orderMapper.selectLatestTemuUpdateTimeByShopId(shop.getId());
+        int pageNumber = 1;
+        while (true) {
+            JsonNode response = client.getOrder().listOrdersV2(buildAutoSyncParams(seller.getRegionId(), pageNumber,
+                    latestUpdateTime));
+            if (response == null || !response.path("success").asBoolean(false)) {
+                throw new IllegalStateException("Temu 订单列表接口返回失败: " + response);
+            }
+            JsonNode pageItems = response.path("result").path("pageItems");
+            transactionTemplate.executeWithoutResult(status -> syncOrderList(pageItems, shop.getId()));
+            if (!pageItems.isArray() || pageItems.size() < SYNC_PAGE_SIZE) {
+                return;
+            }
+            pageNumber++;
+        }
+    }
+
+    /**
+     * 构造自动同步的 Temu 请求参数。
+     *
+     * @param regionId 店铺卖家所属区域
+     * @param pageNumber 当前页码
+     * @param latestUpdateTime 本地最新 Temu 更新时间；首次同步时为空
+     * @return Temu 订单列表请求参数
+     */
+    private Map<String, Object> buildAutoSyncParams(Integer regionId, int pageNumber, LocalDateTime latestUpdateTime) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("parentOrderStatus", ALL_PARENT_ORDER_STATUS);
+        params.put("regionId", regionId);
+        params.put("pageNumber", pageNumber);
+        params.put("pageSize", SYNC_PAGE_SIZE);
+        // 首次同步无需传递更新时间，避免错误地筛掉历史订单。
+        if (latestUpdateTime != null) {
+            params.put("updateTime", latestUpdateTime.atZone(ZoneId.systemDefault()).toEpochSecond());
+        }
+        return params;
+    }
+
+    /**
      * 分页查询本地已同步订单。
      *
-     * @param request 店铺、卖家及订单筛选条件
+     * @param request 店铺及订单筛选条件
      * @return 本地订单分页数据
      */
     @Override
@@ -171,6 +262,22 @@ public class OrderManagementServiceImpl implements OrderManagementService {
     }
 
     /**
+     * 按店铺保存的站点和授权 Token 创建 Temu SDK 客户端。
+     *
+     * @param shop 已启用的 Temu 店铺
+     * @return 已初始化的 Temu SDK 客户端
+     */
+    private TemuClient createClient(TemuShopDO shop) {
+        TemuSiteRegionEnum site = TemuSiteRegionEnum.valueOf(shop.getSite().trim().toUpperCase(Locale.ROOT));
+        TemuProperties.RegionProperties region = temuProperties.getRegion(site);
+        if (region == null || isBlank(region.getAppKey()) || isBlank(region.getAppSecret())) {
+            throw new IllegalArgumentException("Temu 站点未配置 appKey 或 appSecret: " + site.name());
+        }
+        return new TemuClient(region.getAppKey(), region.getAppSecret(), shop.getAuthToken(), site.getEndpoint(),
+                temuJsonStorageService, site.name(), temuApiRequestLogService, shop.getId());
+    }
+
+    /**
      * 校验店铺存在，并从受控的店铺授权关系取得卖家编号。
      *
      * <p>卖家编号不从请求参数接收，防止订单被关联到其他店铺的卖家。</p>
@@ -195,9 +302,8 @@ public class OrderManagementServiceImpl implements OrderManagementService {
      *
      * @param pageItems Temu 返回的父订单数组
      * @param shopId 归属店铺编号
-     * @param sellerId 由店铺授权关系确定的卖家编号
      */
-    private void syncOrderList(JsonNode pageItems, Long shopId, Long sellerId) {
+    private void syncOrderList(JsonNode pageItems, Long shopId) {
         if (!pageItems.isArray()) {
             return;
         }
@@ -212,7 +318,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
                 if (isBlank(orderSn)) {
                     continue;
                 }
-                TemuOrderDO order = buildOrder(parent, child, shopId, sellerId);
+                TemuOrderDO order = buildOrder(parent, child, shopId);
                 TemuOrderDO existing = orderMapper.selectByShopIdAndOrderSn(shopId, orderSn);
                 if (existing == null) {
                     orderMapper.insert(order);
@@ -230,13 +336,11 @@ public class OrderManagementServiceImpl implements OrderManagementService {
      * @param parent Temu 父订单节点
      * @param child Temu 子订单节点
      * @param shopId 归属店铺编号
-     * @param sellerId 归属卖家编号
      * @return 可持久化的订单记录
      */
-    private TemuOrderDO buildOrder(JsonNode parent, JsonNode child, Long shopId, Long sellerId) {
+    private TemuOrderDO buildOrder(JsonNode parent, JsonNode child, Long shopId) {
         TemuOrderDO order = new TemuOrderDO();
         order.setShopId(shopId);
-        order.setSellerId(sellerId);
         order.setParentOrderSn(text(parent, "parentOrderSn"));
         order.setOrderSn(text(child, "orderSn"));
         order.setSiteId(integer(parent, "siteId"));

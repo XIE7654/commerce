@@ -57,6 +57,19 @@ public class TemuOrderController {
         return orderManagementService.syncOrderList(request);
     }
 
+    /**
+     * 同步全部可用店铺的 Temu 订单。
+     *
+     * @return 同步任务是否已执行完成
+     */
+    @PostMapping("/sync-all")
+    @Operation(summary = "同步全部可用 Temu 店铺订单")
+    @PreAuthorize("@ss.hasPermission('temu:order:update')")
+    public CommonResult<Boolean> syncAllAvailableShopOrders() {
+        orderManagementService.syncAllAvailableShopOrders();
+        return success(true);
+    }
+
     @GetMapping("/get")
     @Operation(summary = "获得Temu 订单")
     @Parameter(name = "id", description = "编号", required = true, example = "1024")

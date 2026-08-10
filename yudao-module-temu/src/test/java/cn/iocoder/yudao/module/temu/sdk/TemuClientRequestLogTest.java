@@ -35,7 +35,7 @@ class TemuClientRequestLogTest {
                         {"success":true,"request_id":"temu-request-1"}
                         """));
         TemuClient client = new TemuClient("app-key", "app-secret", "access-token", "https://openapi.temu.test",
-                restTemplate, new ObjectMapper(), 1000, 1000, null, "US", requestLogService);
+                restTemplate, new ObjectMapper(), 1000, 1000, null, "US", requestLogService, 100L);
 
         client.request("bg.local.goods.cats.get", HttpMethod.POST, Map.of("parentCatId", 1L));
 
@@ -44,6 +44,7 @@ class TemuClientRequestLogTest {
         TemuApiRequestLogContext context = contextCaptor.getValue();
         assertEquals("bg.local.goods.cats.get", context.apiType());
         assertEquals("US", context.site());
+        assertEquals(100L, context.shopId());
         assertEquals("POST", context.method());
         assertEquals("/openapi/router", context.uri().getPath());
         assertTrue(((Map<?, ?>) context.requestParams()).containsKey("access_token"));

@@ -20,6 +20,11 @@ tenant-id: {{adminTenantId}}
   "pageSize": 5
 }
 
+### 同步全部可用店铺订单
+POST {{baseUrl}}/temu/order/sync-all
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
 ### 查询本地订单分页
 GET {{baseUrl}}/temu/order/page?shopId={{shopId}}&pageNo=1&pageSize=10
 Authorization: Bearer {{token}}

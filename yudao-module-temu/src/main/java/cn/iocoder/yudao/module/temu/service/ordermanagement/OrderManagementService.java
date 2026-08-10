@@ -31,6 +31,22 @@ public interface OrderManagementService {
     JsonNode syncOrderList(OrderManagementOrderListReqVO request);
 
     /**
+     * 同步全部可用 Temu 店铺的订单。
+     *
+     * <p>服务会为每个可用店铺投递同步消息，由消费者读取本地最后一次 Temu 更新时间并循环拉取所有分页数据。</p>
+     */
+    void syncAllAvailableShopOrders();
+
+    /**
+     * 同步指定店铺的 Temu 订单。
+     *
+     * <p>该方法由 RabbitMQ 消费者调用，异常会交由消息队列重试和死信处理。</p>
+     *
+     * @param shopId Temu 店铺编号
+     */
+    void syncShopOrders(Long shopId);
+
+    /**
      * 分页查询已同步到本地的 Temu 子订单。
      *
      * @param request 店铺、卖家及订单筛选条件

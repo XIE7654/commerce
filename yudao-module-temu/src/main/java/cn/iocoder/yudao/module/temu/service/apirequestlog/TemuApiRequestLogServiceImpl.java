@@ -63,6 +63,8 @@ public class TemuApiRequestLogServiceImpl implements TemuApiRequestLogService {
             TemuApiRequestLogDO logDO = new TemuApiRequestLogDO();
             logDO.setRequestId(context.requestId());
             logDO.setTraceId(MDC.get("traceId"));
+            // 店铺编号由 SDK 创建客户端时传入，用于按店铺追踪 OpenAPI 调用记录。
+            logDO.setShopId(context.shopId());
             logDO.setSite(context.site());
             logDO.setApiCategory(TemuApiCategory.fromApiType(context.apiType()).getDirectoryName());
             logDO.setOperationName(context.apiType());
