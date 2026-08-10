@@ -74,6 +74,26 @@ public enum AmazonMarketplaceEnum {
     }
 
     /**
+     * 根据销售区域获取用于访问该区域 SP-API 的 Marketplace 配置。
+     *
+     * <p>仅需要区域端点的 API 不依赖具体站点，返回该区域中的任一 Marketplace 配置即可。</p>
+     *
+     * @param value Amazon 销售区域，例如 NA、EU 或 FE
+     * @return 区域对应的 Marketplace 配置；输入为空或不存在时返回 {@code null}
+     */
+    public static AmazonMarketplaceEnum fromSalesRegion(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return null;
+        }
+        for (AmazonMarketplaceEnum marketplace : values()) {
+            if (marketplace.salesRegion.equalsIgnoreCase(value.trim())) {
+                return marketplace;
+            }
+        }
+        return null;
+    }
+
+    /**
      * 根据国家代码获取 Marketplace ID。
      *
      * @param value 国家代码，或类似 {@code {{US}}} 的模板值
@@ -82,5 +102,23 @@ public enum AmazonMarketplaceEnum {
     public static String getMarketplaceId(String value) {
         AmazonMarketplaceEnum marketplace = fromCountryCode(value);
         return marketplace == null ? null : marketplace.marketplaceId;
+    }
+
+    /**
+     * 根据 Amazon Marketplace ID 查找站点配置。
+     *
+     * @param marketplaceId Amazon Marketplace ID
+     * @return 对应的站点配置；输入为空或不存在时返回 {@code null}
+     */
+    public static AmazonMarketplaceEnum fromMarketplaceId(String marketplaceId) {
+        if (marketplaceId == null || marketplaceId.trim().isEmpty()) {
+            return null;
+        }
+        for (AmazonMarketplaceEnum marketplace : values()) {
+            if (marketplace.marketplaceId.equalsIgnoreCase(marketplaceId.trim())) {
+                return marketplace;
+            }
+        }
+        return null;
     }
 }

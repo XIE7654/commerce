@@ -225,8 +225,8 @@ public class AmazonSellingPartnerClient {
      * @param operationName Amazon API 操作名称
      * @param storageName JSON 存储名称
      * @param shopId 店铺编号
-     * @param countryCode 站点国家代码
-     * @param marketplaceId 请求关联的 Marketplace ID
+     * @param countryCode 站点国家代码；不依赖站点的接口可为 {@code null}
+     * @param marketplaceId 请求关联的 Marketplace ID；不依赖站点的接口可为 {@code null}
      * @return Amazon JSON 响应；空响应返回空 Map
      */
     public Map<String, Object> getByCategory(URI uri, String accessToken, AmazonApiCategory category, String operationName,
@@ -482,7 +482,7 @@ public class AmazonSellingPartnerClient {
         HttpHeaders headers = buildHeaders(accessToken, body != null);
         requestHeaders.forEach(headers::set);
         AmazonApiRequestLogContext context = new AmazonApiRequestLogContext(operationName, category.getDirectoryName(),
-                method.name(), uri, shopId, countryCode, List.of(marketplaceId), body == null ? queryParams(uri) : body,
+                method.name(), uri, shopId, countryCode, marketplaceId == null ? List.of() : List.of(marketplaceId), body == null ? queryParams(uri) : body,
                 headers, LocalDateTime.now(), null);
         ResponseEntity<Map> response;
         try {

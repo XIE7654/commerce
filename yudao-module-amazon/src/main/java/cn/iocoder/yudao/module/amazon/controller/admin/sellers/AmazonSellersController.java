@@ -10,18 +10,47 @@ import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.Map;
 
-/** Amazon Sellers 管理接口。 */
-@Tag(name = "管理后台 - Amazon Sellers") @RestController @RequestMapping("/amazon/sellers") @Validated
+/**
+ * Amazon Sellers 管理接口。
+ */
+@Tag(name = "管理后台 - Amazon Sellers")
+@RestController
+@RequestMapping("/amazon/sellers")
+@Validated
 public class AmazonSellersController {
-    @Resource private AmazonSellersService amazonSellersService;
-    /** 查询卖家在各 Amazon 站点的参与状态。 */
-    @PostMapping("/marketplace-participations") @Operation(summary = "查询卖家站点参与状态")
+    @Resource
+    private AmazonSellersService amazonSellersService;
+
+    /**
+     * 查询卖家在各 Amazon 站点的参与状态。
+     */
+    @PostMapping("/marketplace-participations")
+    @Operation(summary = "查询卖家站点参与状态")
     @PreAuthorize("@ss.hasPermission('amazon:sellers:query')")
-    public CommonResult<Map<String, Object>> getMarketplaceParticipations(@Valid @RequestBody AmazonSellersReqVO request) { return CommonResult.success(amazonSellersService.getMarketplaceParticipations(request)); }
-    /** 查询 Amazon 卖家账户信息。 */
-    @PostMapping("/account") @Operation(summary = "查询 Amazon 卖家账户")
+    public CommonResult<Map<String, Object>> getMarketplaceParticipations(@Valid @RequestBody AmazonSellersReqVO request) {
+        return CommonResult.success(amazonSellersService.getMarketplaceParticipations(request));
+    }
+
+    /**
+     * 查询 Amazon 卖家账户信息。
+     */
+    @PostMapping("/account")
+    @Operation(summary = "查询 Amazon 卖家账户")
     @PreAuthorize("@ss.hasPermission('amazon:sellers:query')")
-    public CommonResult<Map<String, Object>> getAccount(@Valid @RequestBody AmazonSellersReqVO request) { return CommonResult.success(amazonSellersService.getAccount(request)); }
+    public CommonResult<Map<String, Object>> getAccount(@Valid @RequestBody AmazonSellersReqVO request) {
+        return CommonResult.success(amazonSellersService.getAccount(request));
+    }
+
+    /**
+     * 同步 Amazon 卖家账户及店铺 Marketplace 参与状态。
+     */
+    @PostMapping("/account/sync")
+    @Operation(summary = "同步 Amazon 卖家账户及站点参与状态")
+    @PreAuthorize("@ss.hasPermission('amazon:sellers:update')")
+    public CommonResult<Map<String, Object>> syncAccount(@Valid @RequestBody AmazonSellersReqVO request) {
+        return CommonResult.success(amazonSellersService.syncAccount(request));
+    }
 }

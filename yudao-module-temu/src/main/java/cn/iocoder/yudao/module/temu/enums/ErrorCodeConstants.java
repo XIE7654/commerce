@@ -5,7 +5,7 @@ import cn.iocoder.yudao.framework.common.exception.ErrorCode;
 /**
  * temu 错误码枚举类
  *
- * temu 系统，使用 1-002-000-000 段
+ * temu 系统，使用 1-300-000-000 段
  */
 public interface ErrorCodeConstants {
 
