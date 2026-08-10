@@ -7,28 +7,32 @@ import cn.iocoder.yudao.module.amazon.controller.admin.reports.vo.AmazonReportSc
 import cn.iocoder.yudao.module.amazon.controller.admin.reports.vo.AmazonReportSchedulesListReqVO;
 import cn.iocoder.yudao.module.amazon.controller.admin.reports.vo.AmazonReportsListReqVO;
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
-import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
 import cn.iocoder.yudao.module.amazon.enums.AmazonReportTypeEnum;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiCategory;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
+import cn.iocoder.yudao.module.amazon.service.shop.AmazonShopService;
 import jakarta.annotation.Resource;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriUtils;
 
 import java.net.URI;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+
+import static cn.hutool.core.collection.CollUtil.isEmpty;
+import static cn.hutool.core.util.StrUtil.isBlank;
+import static cn.iocoder.yudao.module.amazon.utils.AmazonDateTimeUtils.parseOptional;
+import static cn.iocoder.yudao.module.amazon.utils.AmazonDateTimeUtils.validateRange;
+import static cn.iocoder.yudao.module.amazon.utils.AmazonQueryUtils.buildQuery;
+import static cn.iocoder.yudao.module.amazon.utils.AmazonQueryUtils.join;
+import static cn.iocoder.yudao.module.amazon.utils.AmazonQueryUtils.putIfNotBlank;
 
 /**
  * Amazon Reports 服务实现。
@@ -47,14 +51,14 @@ public class AmazonReportsServiceImpl implements AmazonReportsService {
     @Resource
     private AmazonOAuthService amazonOAuthService;
     @Resource
-    private AmazonShopMapper amazonShopMapper;
+    private AmazonShopService amazonShopService;
     @Resource
     private AmazonSellingPartnerClient amazonSellingPartnerClient;
 
     /** {@inheritDoc} */
     @Override
     public Map<String, Object> createReport(AmazonReportCreateReqVO request) {
-        validateDateRange(request.getDataStartTime(), request.getDataEndTime(), "dataStartTime", "dataEndTime");
+        validateRange(request.getDataStartTime(), request.getDataEndTime(), "dataStartTime", "dataEndTime");
         return execute(request.getShopId(), request.getCountryCode(), (shop, marketplace, accessToken) -> {
             Map<String, Object> body = new LinkedHashMap<>();
             body.put("reportType", request.getReportType().getAvailableReport());
@@ -176,8 +180,8 @@ public class AmazonReportsServiceImpl implements AmazonReportsService {
      * @return 调用结果
      */
     private <T> T execute(Long shopId, String countryCode, ReportsAction<T> action) {
-        AmazonShopDO shop = requireShop(shopId);
-        AmazonMarketplaceEnum marketplace = requireMarketplace(countryCode);
+        AmazonShopDO shop = amazonShopService.requireShop(shopId);
+        AmazonMarketplaceEnum marketplace = amazonShopService.requireMarketplace(countryCode);
         return action.execute(shop, marketplace, amazonOAuthService.getSellerAccessToken(shop.getId()));
     }
 
@@ -195,10 +199,10 @@ public class AmazonReportsServiceImpl implements AmazonReportsService {
         } else {
             query.put("reportTypes", joinReportTypes(request.getReportTypes()));
             query.put("marketplaceIds", marketplace.getMarketplaceId());
-            put(query, "processingStatuses", join(request.getProcessingStatuses()));
-            put(query, "pageSize", request.getPageSize() == null ? null : request.getPageSize().toString());
-            put(query, "createdSince", request.getCreatedSince());
-            put(query, "createdUntil", request.getCreatedUntil());
+            putIfNotBlank(query, "processingStatuses", join(request.getProcessingStatuses()));
+            putIfNotBlank(query, "pageSize", request.getPageSize() == null ? null : request.getPageSize().toString());
+            putIfNotBlank(query, "createdSince", request.getCreatedSince());
+            putIfNotBlank(query, "createdUntil", request.getCreatedUntil());
         }
         return URI.create(marketplace.getEndpoint() + REPORTS_PATH + "/reports?" + buildQuery(query));
     }
@@ -232,7 +236,7 @@ public class AmazonReportsServiceImpl implements AmazonReportsService {
         if (isEmpty(request.getReportTypes())) {
             throw new IllegalArgumentException("reportTypes 与 nextToken 必须传入一个");
         }
-        validateDateRange(request.getCreatedSince(), request.getCreatedUntil(), "createdSince", "createdUntil");
+        validateRange(request.getCreatedSince(), request.getCreatedUntil(), "createdSince", "createdUntil");
     }
 
     /**
@@ -244,7 +248,7 @@ public class AmazonReportsServiceImpl implements AmazonReportsService {
         if (!REPORT_SCHEDULE_PERIODS.contains(request.getPeriod())) {
             throw new IllegalArgumentException("period 必须为 Amazon 支持的 ISO 8601 周期");
         }
-        parseDateTime(request.getNextReportCreationTime(), "nextReportCreationTime");
+        parseOptional(request.getNextReportCreationTime(), "nextReportCreationTime");
     }
 
     /**
@@ -256,90 +260,6 @@ public class AmazonReportsServiceImpl implements AmazonReportsService {
         if (isEmpty(request.getReportTypes())) {
             throw new IllegalArgumentException("reportTypes 不能为空");
         }
-    }
-
-    /**
-     * 验证可选 ISO 8601 日期时间区间。
-     *
-     * @param start 起始时间
-     * @param end 结束时间
-     * @param startName 起始参数名
-     * @param endName 结束参数名
-     */
-    private void validateDateRange(String start, String end, String startName, String endName) {
-        OffsetDateTime startTime = parseDateTime(start, startName);
-        OffsetDateTime endTime = parseDateTime(end, endName);
-        if (startTime != null && endTime != null && endTime.isBefore(startTime)) {
-            throw new IllegalArgumentException(endName + " 不能早于 " + startName);
-        }
-    }
-
-    /**
-     * 解析可选 ISO 8601 日期时间。
-     *
-     * @param value 待解析时间
-     * @param name 参数名称
-     * @return 解析结果；空值返回 {@code null}
-     */
-    private OffsetDateTime parseDateTime(String value, String name) {
-        if (isBlank(value)) {
-            return null;
-        }
-        try {
-            return OffsetDateTime.parse(value);
-        } catch (DateTimeParseException exception) {
-            throw new IllegalArgumentException(name + " 必须为 ISO 8601 日期时间格式", exception);
-        }
-    }
-
-    /**
-     * 查询当前租户下的 Amazon 店铺，确保店铺授权不跨租户使用。
-     *
-     * @param shopId 店铺编号
-     * @return 当前租户的 Amazon 店铺
-     */
-    private AmazonShopDO requireShop(Long shopId) {
-        AmazonShopDO shop = amazonShopMapper.selectById(shopId);
-        if (shop == null) {
-            throw new IllegalArgumentException("Amazon 店铺不存在: " + shopId);
-        }
-        return shop;
-    }
-
-    /**
-     * 解析国家代码对应的 Amazon Marketplace 配置。
-     *
-     * @param countryCode 国家代码
-     * @return 目标 Marketplace 配置
-     */
-    private AmazonMarketplaceEnum requireMarketplace(String countryCode) {
-        AmazonMarketplaceEnum marketplace = AmazonMarketplaceEnum.fromCountryCode(countryCode);
-        if (marketplace == null) {
-            throw new IllegalArgumentException("不支持的 Amazon 国家代码: " + countryCode);
-        }
-        return marketplace;
-    }
-
-    /**
-     * 按 RFC 3986 编码查询参数。
-     *
-     * @param query 待编码的查询参数
-     * @return URI 查询字符串
-     */
-    private String buildQuery(Map<String, String> query) {
-        List<String> entries = new ArrayList<>();
-        query.forEach((key, value) -> entries.add(urlEncode(key) + "=" + urlEncode(value)));
-        return String.join("&", entries);
-    }
-
-    /**
-     * 使用 UTF-8 对查询参数进行 RFC 3986 百分号编码。
-     *
-     * @param value 待编码的参数值
-     * @return 编码后的参数值
-     */
-    private String urlEncode(String value) {
-        return URLEncoder.encode(value, StandardCharsets.UTF_8).replace("+", "%20").replace("%7E", "~");
     }
 
     /**
@@ -356,19 +276,6 @@ public class AmazonReportsServiceImpl implements AmazonReportsService {
     }
 
     /**
-     * 仅在值非空时写入可选查询参数。
-     *
-     * @param query 待写入的查询参数
-     * @param key 参数名称
-     * @param value 参数值
-     */
-    private void put(Map<String, String> query, String key, String value) {
-        if (!isBlank(value)) {
-            query.put(key, value);
-        }
-    }
-
-    /**
      * 将报表类型枚举转换为 Amazon 要求的逗号分隔参数。
      *
      * @param values 参数值列表
@@ -377,36 +284,6 @@ public class AmazonReportsServiceImpl implements AmazonReportsService {
     private String joinReportTypes(List<AmazonReportTypeEnum> values) {
         return isEmpty(values) ? null : values.stream().map(AmazonReportTypeEnum::getAvailableReport)
                 .collect(java.util.stream.Collectors.joining(","));
-    }
-
-    /**
-     * 将字符串列表转换为 Amazon 要求的逗号分隔参数。
-     *
-     * @param values 参数值列表
-     * @return 逗号分隔值；空列表返回 {@code null}
-     */
-    private String join(List<String> values) {
-        return isEmpty(values) ? null : String.join(",", values);
-    }
-
-    /**
-     * 判断字符串是否为空白。
-     *
-     * @param value 待判断字符串
-     * @return 字符串为空或仅包含空白字符时返回 {@code true}
-     */
-    private boolean isBlank(String value) {
-        return value == null || value.isBlank();
-    }
-
-    /**
-     * 判断集合是否为空。
-     *
-     * @param values 待判断集合
-     * @return 集合为 {@code null} 或不含元素时返回 {@code true}
-     */
-    private boolean isEmpty(List<?> values) {
-        return values == null || values.isEmpty();
     }
 
     /**
