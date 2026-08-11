@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -20,10 +19,6 @@ public class AmazonOrdersListReqVO {
     @Schema(description = "已完成 Seller 授权的店铺编号", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
     @NotNull(message = "店铺编号不能为空")
     private Long shopId;
-
-    @Schema(description = "查询站点所属国家代码", requiredMode = Schema.RequiredMode.REQUIRED, example = "US")
-    @NotBlank(message = "国家代码不能为空")
-    private String countryCode;
 
     @Schema(description = "创建时间下限，ISO 8601 格式", example = "2026-08-01T00:00:00Z")
     private String createdAfter;

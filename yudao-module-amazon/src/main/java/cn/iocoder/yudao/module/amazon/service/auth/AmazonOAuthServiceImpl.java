@@ -39,7 +39,8 @@ public class AmazonOAuthServiceImpl implements AmazonOAuthService {
 
     private static final String STATE_KEY_PREFIX = "amazon:oauth:state:";
     private static final String TOKEN_LOCK_PREFIX = "amazon:oauth:token:lock:";
-    private static final long REFRESH_BEFORE_SECONDS = 120;
+    /** access token 距过期不足五分钟时提前刷新，避免请求执行期间失效。 */
+    private static final long REFRESH_BEFORE_SECONDS = TimeUnit.MINUTES.toSeconds(5);
 
     @Resource
     private AwsProperties properties;
@@ -261,6 +262,13 @@ public class AmazonOAuthServiceImpl implements AmazonOAuthService {
         return shop;
     }
 
+    /**
+     * 判断 access token 是否仍可安全复用。
+     *
+     * @param token access token
+     * @param expiresAt access token 过期时间
+     * @return 非空且距离过期超过五分钟时返回 {@code true}
+     */
     private boolean isUsable(String token, LocalDateTime expiresAt) {
         return !isBlank(token) && expiresAt != null && expiresAt.isAfter(LocalDateTime.now().plusSeconds(REFRESH_BEFORE_SECONDS));
     }

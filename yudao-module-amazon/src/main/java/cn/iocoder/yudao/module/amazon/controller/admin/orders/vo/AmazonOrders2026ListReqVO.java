@@ -1,7 +1,6 @@
 package cn.iocoder.yudao.module.amazon.controller.admin.orders.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -18,9 +17,6 @@ public class AmazonOrders2026ListReqVO {
     @Schema(description = "已完成 Seller 授权的店铺编号", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
     @NotNull(message = "店铺编号不能为空")
     private Long shopId;
-    @Schema(description = "查询站点所属国家代码", requiredMode = Schema.RequiredMode.REQUIRED, example = "US")
-    @NotBlank(message = "国家代码不能为空")
-    private String countryCode;
     @Schema(description = "创建时间下限，ISO 8601 格式")
     private String createdAfter;
     @Schema(description = "创建时间上限，ISO 8601 格式")

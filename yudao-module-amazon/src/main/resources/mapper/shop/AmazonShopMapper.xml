@@ -6,6 +6,7 @@
                type="cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopWithMarketplacesDO">
         <association property="shop" javaType="cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO">
             <id property="id" column="shop_id"/>
+            <result property="region" column="shop_region"/>
             <result property="marketplaceId" column="shop_marketplace_id"/>
         </association>
         <collection property="participations"
@@ -20,6 +21,7 @@
 
     <select id="selectEnabledWithMarketplaces" resultMap="AmazonShopWithMarketplacesResultMap">
         SELECT s.id AS shop_id,
+               s.region AS shop_region,
                s.marketplace_id AS shop_marketplace_id,
                p.id AS participation_id,
                p.shop_id AS participation_shop_id,

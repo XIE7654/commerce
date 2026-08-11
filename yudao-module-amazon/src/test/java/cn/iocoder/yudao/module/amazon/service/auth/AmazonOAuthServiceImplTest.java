@@ -6,9 +6,12 @@ import cn.iocoder.yudao.module.amazon.sdk.AmazonOAuthClient;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * {@link AmazonOAuthServiceImpl} Seller Token 端点选择测试。
@@ -47,6 +50,19 @@ class AmazonOAuthServiceImplTest {
 
         assertEquals("https://api.amazon.com/auth/o2/token", client.requestedUrl);
         assertEquals("seller", client.requestedType);
+    }
+
+    @Test
+    void accessTokenExpiringWithinFiveMinutesIsNotUsable() {
+        AmazonOAuthServiceImpl service = new AmazonOAuthServiceImpl();
+
+        boolean expiringSoon = ReflectionTestUtils.invokeMethod(service, "isUsable", "access-token",
+                LocalDateTime.now().plusMinutes(4).plusSeconds(59));
+        boolean usable = ReflectionTestUtils.invokeMethod(service, "isUsable", "access-token",
+                LocalDateTime.now().plusMinutes(5).plusSeconds(1));
+
+        assertFalse(expiringSoon);
+        assertTrue(usable);
     }
 
     /** 记录 OAuth 请求参数并返回固定成功响应的测试客户端。 */
