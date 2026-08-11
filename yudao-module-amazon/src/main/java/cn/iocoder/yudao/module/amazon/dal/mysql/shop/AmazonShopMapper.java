@@ -6,6 +6,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
+import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopWithMarketplacesDO;
 import org.apache.ibatis.annotations.Mapper;
 import cn.iocoder.yudao.module.amazon.controller.admin.shop.vo.*;
 
@@ -16,6 +17,9 @@ import cn.iocoder.yudao.module.amazon.controller.admin.shop.vo.*;
  */
 @Mapper
 public interface AmazonShopMapper extends BaseMapperX<AmazonShopDO> {
+
+    /** 一次查询启用店铺及其参与销售的 Marketplace，并按店铺聚合结果。 */
+    List<AmazonShopWithMarketplacesDO> selectEnabledWithMarketplaces();
 
     /**
      * 查询当前租户下所有启用的 Amazon 店铺。

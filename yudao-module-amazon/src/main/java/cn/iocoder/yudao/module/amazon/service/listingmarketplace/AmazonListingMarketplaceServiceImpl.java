@@ -18,6 +18,7 @@ import cn.iocoder.yudao.module.amazon.dal.dataobject.listingmarketplace.AmazonLi
 import cn.iocoder.yudao.module.amazon.dal.dataobject.listingstatus.AmazonListingStatusDO;
 import cn.iocoder.yudao.module.amazon.dal.dataobject.seller.AmazonShopMarketplaceDO;
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
+import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopWithMarketplacesDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 
@@ -27,7 +28,6 @@ import cn.iocoder.yudao.module.amazon.dal.mysql.listingimage.AmazonListingImageM
 import cn.iocoder.yudao.module.amazon.dal.mysql.listingissue.AmazonListingIssueMapper;
 import cn.iocoder.yudao.module.amazon.dal.mysql.listingmarketplace.AmazonListingMarketplaceMapper;
 import cn.iocoder.yudao.module.amazon.dal.mysql.listingstatus.AmazonListingStatusMapper;
-import cn.iocoder.yudao.module.amazon.dal.mysql.seller.AmazonShopMarketplaceParticipationMapper;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
 import cn.iocoder.yudao.module.amazon.service.listings.AmazonListingsService;
@@ -68,8 +68,6 @@ public class AmazonListingMarketplaceServiceImpl implements AmazonListingMarketp
     @Resource
     private AmazonShopMapper shopMapper;
     @Resource
-    private AmazonShopMarketplaceParticipationMapper marketplaceParticipationMapper;
-    @Resource
     private AmazonListingsService amazonListingsService;
     @Resource
     private RabbitTemplate rabbitTemplate;
@@ -86,11 +84,11 @@ public class AmazonListingMarketplaceServiceImpl implements AmazonListingMarketp
     @Override
     public AmazonListingMarketplaceSyncRespVO syncAllAvailableListings() {
         AmazonListingMarketplaceSyncRespVO result = new AmazonListingMarketplaceSyncRespVO();
-        List<AmazonShopDO> shops = shopMapper.selectEnabledList();
+        List<AmazonShopWithMarketplacesDO> shops = shopMapper.selectEnabledWithMarketplaces();
         result.setShopCount(shops.size());
-        for (AmazonShopDO shop : shops) {
-            List<AmazonShopMarketplaceDO> participations = marketplaceParticipationMapper
-                    .selectParticipatingByShopId(shop.getId());
+        for (AmazonShopWithMarketplacesDO shopWithMarketplaces : shops) {
+            AmazonShopDO shop = shopWithMarketplaces.getShop();
+            List<AmazonShopMarketplaceDO> participations = shopWithMarketplaces.getParticipations();
             List<MarketplaceTarget> targets = resolveMarketplaceTargets(shop, participations, result);
             if (targets.isEmpty() && participations.isEmpty()) {
                 syncDefaultMarketplace(shop, result);
