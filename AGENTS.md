@@ -34,4 +34,4 @@
 
 ## Amazon SDK 参考文档
 
-- Amazon SDK 的参考文档位于 `sdk docs/` 目录下。
+- Amazon SDK 的参考文档位于 `docs/` 目录下。

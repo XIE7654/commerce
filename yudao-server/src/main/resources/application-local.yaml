@@ -3,18 +3,33 @@ server:
 
 # Amazon Seller / Ads OAuth 配置（本地环境留空）
 aws:
-  appId:
-  clientId:
-  clientSecret:
-  adClientId:
-  adClientSecret:
-  sellerAuthLoginUri:
-  adAuthLoginUri:
-  stateExpires:
-  cryptoKey:
-  refreshTokenExpires:
-  storeTokenUrl:
-  adTokenUrl:
+  sandboxMode: false # false-生产模式；true-沙盒模式
+  prod:
+    appId:
+    clientId:
+    clientSecret:
+    adClientId:
+    adClientSecret:
+    sellerAuthLoginUri:
+    adAuthLoginUri:
+    stateExpires:
+    cryptoKey:
+    refreshTokenExpires:
+    storeTokenUrl:
+    adTokenUrl:
+  sandbox:
+    appId:
+    clientId:
+    clientSecret:
+    adClientId:
+    adClientSecret:
+    sellerAuthLoginUri:
+    adAuthLoginUri:
+    stateExpires:
+    cryptoKey:
+    refreshTokenExpires:
+    storeTokenUrl:
+    adTokenUrl:
 
 --- #################### 数据库相关配置 ####################
 spring:
