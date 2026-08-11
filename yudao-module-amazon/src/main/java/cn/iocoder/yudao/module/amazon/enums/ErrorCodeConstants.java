@@ -13,4 +13,5 @@ public interface ErrorCodeConstants {
 
     ErrorCode LISTING_MARKETPLACE_NOT_EXISTS = new ErrorCode(1_301_002_000, "Listing信息表不存在");
 
+    ErrorCode REPORT_REQUEST_NOT_EXISTS = new ErrorCode(1_301_003_000, "Amazon 报表请求及异步处理任务不存在");
 }
