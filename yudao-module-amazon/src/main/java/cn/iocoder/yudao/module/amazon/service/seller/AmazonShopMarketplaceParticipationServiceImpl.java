@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
+import cn.iocoder.yudao.module.amazon.sdk.sellers.dto.MarketplaceParticipationDto;
 
 import static cn.iocoder.yudao.module.amazon.utils.AmazonResponseUtils.getList;
 import static cn.iocoder.yudao.module.amazon.utils.AmazonResponseUtils.getMap;
@@ -39,6 +41,22 @@ public class AmazonShopMarketplaceParticipationServiceImpl implements AmazonShop
             }
             saveParticipation(shopId, marketplaceId, marketplace, participation);
         }
+    }
+
+    /** 将 SDK DTO 转为领域同步所需的结构，保持旧数据处理逻辑集中。 */
+    @Override
+    public void syncMarketplaceParticipations(Long shopId, List<MarketplaceParticipationDto> response) {
+        if (response == null) return;
+        List<Map<String, Object>> items = new ArrayList<>();
+        for (MarketplaceParticipationDto dto : response) {
+            Map<String, Object> item = new java.util.LinkedHashMap<>(); item.put("storeName", dto.getStoreName());
+            if (dto.getMarketplace() != null) {
+                Map<String, Object> marketplace = new java.util.LinkedHashMap<>(); marketplace.put("id", dto.getMarketplace().getId()); marketplace.put("name", dto.getMarketplace().getName()); marketplace.put("countryCode", dto.getMarketplace().getCountryCode()); marketplace.put("defaultCurrencyCode", dto.getMarketplace().getDefaultCurrencyCode()); marketplace.put("defaultLanguageCode", dto.getMarketplace().getDefaultLanguageCode()); marketplace.put("domainName", dto.getMarketplace().getDomainName()); item.put("marketplace", marketplace);
+            }
+            if (dto.getParticipation() != null) { Map<String, Object> participation = new java.util.LinkedHashMap<>(); participation.put("isParticipating", dto.getParticipation().getIsParticipating()); participation.put("hasSuspendedListings", dto.getParticipation().getHasSuspendedListings()); item.put("participation", participation); }
+            items.add(item);
+        }
+        syncMarketplaceParticipations(shopId, java.util.Map.of("payload", items));
     }
 
     /**

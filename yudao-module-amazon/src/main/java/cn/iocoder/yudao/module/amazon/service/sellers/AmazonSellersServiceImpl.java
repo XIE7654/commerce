@@ -4,8 +4,11 @@ import cn.iocoder.yudao.module.amazon.controller.admin.sellers.vo.AmazonSellersR
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
-import cn.iocoder.yudao.module.amazon.sdk.AmazonApiCategory;
-import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
+import cn.iocoder.yudao.module.amazon.sdk.sellers.AmazonSellersApi;
+import cn.iocoder.yudao.module.amazon.sdk.sellers.AmazonSellersRequest;
+import cn.iocoder.yudao.module.amazon.sdk.sellers.AmazonSellersResponse;
+import cn.iocoder.yudao.module.amazon.sdk.sellers.dto.AccountDto;
+import cn.iocoder.yudao.module.amazon.sdk.sellers.dto.MarketplaceParticipationDto;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
 import cn.iocoder.yudao.module.amazon.service.seller.AmazonSellerAccountService;
 import cn.iocoder.yudao.module.amazon.service.seller.AmazonShopMarketplaceParticipationService;
@@ -13,8 +16,7 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.net.URI;
-import java.util.Map;
+import java.util.List;
 
 /**
  * Amazon Sellers 服务实现。
@@ -26,7 +28,7 @@ public class AmazonSellersServiceImpl implements AmazonSellersService {
     @Resource
     private AmazonShopMapper amazonShopMapper;
     @Resource
-    private AmazonSellingPartnerClient amazonSellingPartnerClient;
+    private AmazonSellersApi amazonSellersApi;
     @Resource
     private AmazonSellerAccountService amazonSellerAccountService;
     @Resource
@@ -36,16 +38,16 @@ public class AmazonSellersServiceImpl implements AmazonSellersService {
      * {@inheritDoc}
      */
     @Override
-    public Map<String, Object> getMarketplaceParticipations(AmazonSellersReqVO request) {
-        return execute(request, "/sellers/v1/marketplaceParticipations", "getMarketplaceParticipations", "marketplace-participations");
+    public AmazonSellersResponse<List<MarketplaceParticipationDto>> getMarketplaceParticipations(AmazonSellersReqVO request) {
+        return amazonSellersApi.getMarketplaceParticipations(buildSdkRequest(request));
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Map<String, Object> getAccount(AmazonSellersReqVO request) {
-        return execute(request, "/sellers/v1/account", "getAccount", "account");
+    public AmazonSellersResponse<AccountDto> getAccount(AmazonSellersReqVO request) {
+        return amazonSellersApi.getAccount(buildSdkRequest(request));
     }
 
     /**
@@ -53,31 +55,30 @@ public class AmazonSellersServiceImpl implements AmazonSellersService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Map<String, Object> syncAccount(AmazonSellersReqVO request) {
-        Map<String, Object> accountResponse = getAccount(request);
-        amazonSellerAccountService.syncSellerAccount(request.getShopId(), accountResponse);
+    public AmazonSellersResponse<AccountDto> syncAccount(AmazonSellersReqVO request) {
+        AmazonSellersResponse<AccountDto> accountResponse = getAccount(request);
+        amazonSellerAccountService.syncSellerAccount(request.getShopId(), accountResponse.getData());
 
         // Marketplace 参与状态不包含在 Account 响应中，需通过独立的 Sellers 接口获取。
-        Map<String, Object> marketplaceResponse = getMarketplaceParticipations(request);
-        marketplaceParticipationService.syncMarketplaceParticipations(request.getShopId(), marketplaceResponse);
+        AmazonSellersResponse<List<MarketplaceParticipationDto>> marketplaceResponse = getMarketplaceParticipations(request);
+        marketplaceParticipationService.syncMarketplaceParticipations(request.getShopId(), marketplaceResponse.getData());
         return accountResponse;
     }
 
     /**
-     * 使用店铺授权调用 Sellers 资源，并按店铺所属区域选择 Amazon SP-API 端点。
+     * 将店铺上下文转换为 SDK 请求，授权令牌仅在服务层获取，避免暴露给 Controller。
      *
-     * @param request       店铺参数
-     * @param path          Sellers 资源路径
-     * @param operationName Amazon 操作名称
-     * @param storageName   响应归档名称
-     * @return Amazon 原始 JSON 响应
+     * @param request 前端传入的店铺参数
+     * @return 包含端点和授权信息的 SDK 请求
      */
-    private Map<String, Object> execute(AmazonSellersReqVO request, String path, String operationName, String storageName) {
+    private AmazonSellersRequest buildSdkRequest(AmazonSellersReqVO request) {
         AmazonShopDO shop = requireShop(request.getShopId());
         AmazonMarketplaceEnum marketplace = requireMarketplace(shop.getRegion());
-        return amazonSellingPartnerClient.getByCategory(URI.create(marketplace.getEndpoint() + path),
-                amazonOAuthService.getSellerAccessToken(shop.getId()), AmazonApiCategory.SELLERS, operationName, storageName,
-                shop.getId(), null, null);
+        AmazonSellersRequest sdkRequest = new AmazonSellersRequest();
+        sdkRequest.setShopId(shop.getId());
+        sdkRequest.setEndpoint(marketplace.getEndpoint());
+        sdkRequest.setAccessToken(amazonOAuthService.getSellerAccessToken(shop.getId()));
+        return sdkRequest;
     }
 
     /**

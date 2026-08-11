@@ -6,6 +6,7 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
+import cn.iocoder.yudao.module.amazon.sdk.sellers.dto.AccountDto;
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
@@ -67,6 +68,32 @@ public class AmazonSellerAccountServiceImpl implements AmazonSellerAccountServic
         } else {
             amazonSellerAccountMapper.updateById(account);
         }
+    }
+
+    /** 将 Sellers SDK 的账户 DTO 转为领域字段并保存，避免领域层继续依赖原始 JSON。 */
+    @Override
+    public void syncSellerAccount(Long shopId, AccountDto account) {
+        if (account == null) return;
+        Map<String, Object> response = new LinkedHashMap<>();
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("businessType", account.getBusinessType()); payload.put("sellingPlan", account.getSellingPlan());
+        if (account.getBusiness() != null) {
+            Map<String, Object> business = new LinkedHashMap<>();
+            business.put("name", account.getBusiness().getName()); business.put("nonLatinName", account.getBusiness().getNonLatinName());
+            business.put("companyRegistrationNumber", account.getBusiness().getCompanyRegistrationNumber()); business.put("companyTaxIdentificationNumber", account.getBusiness().getCompanyTaxIdentificationNumber());
+            if (account.getBusiness().getRegisteredBusinessAddress() != null) business.put("registeredBusinessAddress", addressMap(account.getBusiness().getRegisteredBusinessAddress()));
+            payload.put("business", business);
+        }
+        if (account.getPrimaryContact() != null) {
+            Map<String, Object> contact = new LinkedHashMap<>(); contact.put("name", account.getPrimaryContact().getName()); contact.put("nonLatinName", account.getPrimaryContact().getNonLatinName());
+            if (account.getPrimaryContact().getAddress() != null) contact.put("address", addressMap(account.getPrimaryContact().getAddress())); payload.put("primaryContact", contact);
+        }
+        response.put("payload", payload);
+        syncSellerAccount(shopId, response);
+    }
+
+    private Map<String, Object> addressMap(cn.iocoder.yudao.module.amazon.sdk.sellers.dto.AddressDto address) {
+        Map<String, Object> result = new LinkedHashMap<>(); result.put("addressLine1", address.getAddressLine1()); result.put("addressLine2", address.getAddressLine2()); result.put("countryCode", address.getCountryCode()); result.put("stateOrProvinceCode", address.getStateOrProvinceCode()); result.put("city", address.getCity()); result.put("postalCode", address.getPostalCode()); return result;
     }
 
     /**
