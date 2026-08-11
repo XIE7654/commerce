@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.amazon.service.listingmarketplace;
 
 import cn.hutool.core.util.StrUtil;
 import org.springframework.stereotype.Service;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import jakarta.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
 
@@ -31,6 +32,8 @@ import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
 import cn.iocoder.yudao.module.amazon.service.listings.AmazonListingsService;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiResponse;
+import cn.iocoder.yudao.module.amazon.mq.AmazonListingMarketplaceSyncMessage;
+import cn.iocoder.yudao.module.amazon.mq.AmazonListingMarketplaceSyncRabbitMQConfig;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.framework.common.util.json.JsonUtils.toJsonString;
@@ -68,6 +71,16 @@ public class AmazonListingMarketplaceServiceImpl implements AmazonListingMarketp
     private AmazonShopMarketplaceParticipationMapper marketplaceParticipationMapper;
     @Resource
     private AmazonListingsService amazonListingsService;
+    @Resource
+    private RabbitTemplate rabbitTemplate;
+
+    /** 将全量同步任务投递到 RabbitMQ，由消费者异步执行。 */
+    @Override
+    public void enqueueSyncAllAvailableListings() {
+        rabbitTemplate.convertAndSend(AmazonListingMarketplaceSyncRabbitMQConfig.EXCHANGE_NAME,
+                AmazonListingMarketplaceSyncRabbitMQConfig.ROUTING_KEY,
+                new AmazonListingMarketplaceSyncMessage());
+    }
 
     /** {@inheritDoc} */
     @Override
@@ -78,15 +91,43 @@ public class AmazonListingMarketplaceServiceImpl implements AmazonListingMarketp
         for (AmazonShopDO shop : shops) {
             List<AmazonShopMarketplaceDO> participations = marketplaceParticipationMapper
                     .selectParticipatingByShopId(shop.getId());
-            if (participations.isEmpty()) {
+            List<MarketplaceTarget> targets = resolveMarketplaceTargets(shop, participations, result);
+            if (targets.isEmpty() && participations.isEmpty()) {
                 syncDefaultMarketplace(shop, result);
                 continue;
             }
-            for (AmazonShopMarketplaceDO participation : participations) {
-                syncMarketplace(shop, participation.getMarketplaceId(), participation.getCountryCode(), result);
+            if (!targets.isEmpty()) {
+                syncMarketplaces(shop, targets, result);
             }
         }
         return result;
+    }
+
+    /** 从店铺参与记录整理站点，并为缺失国家代码的 Marketplace ID 尝试补全配置。 */
+    private List<MarketplaceTarget> resolveMarketplaceTargets(AmazonShopDO shop,
+                                                               List<AmazonShopMarketplaceDO> participations,
+                                                               AmazonListingMarketplaceSyncRespVO result) {
+        Map<String, String> participationCountries = new LinkedHashMap<>();
+        for (AmazonShopMarketplaceDO participation : participations) {
+            if (StrUtil.isNotBlank(participation.getMarketplaceId())) {
+                participationCountries.put(participation.getMarketplaceId(), participation.getCountryCode());
+            }
+        }
+        Set<String> ids = participationCountries.keySet();
+        List<MarketplaceTarget> targets = new ArrayList<>();
+        for (String id : ids) {
+            String countryCode = participationCountries.get(id);
+            if (StrUtil.isBlank(countryCode)) {
+                AmazonMarketplaceEnum marketplace = AmazonMarketplaceEnum.fromMarketplaceId(id);
+                countryCode = marketplace == null ? null : marketplace.getCountryCode();
+            }
+            if (StrUtil.isBlank(countryCode)) {
+                result.getFailures().add("店铺 " + shop.getId() + " 的站点 " + id + " 缺少有效国家代码");
+            } else {
+                targets.add(new MarketplaceTarget(id, countryCode));
+            }
+        }
+        return targets;
     }
 
     @Override
@@ -151,39 +192,53 @@ public class AmazonListingMarketplaceServiceImpl implements AmazonListingMarketp
             result.getFailures().add("店铺 " + shop.getId() + " 缺少有效的默认 Marketplace 配置");
             return;
         }
-        syncMarketplace(shop, marketplace.getMarketplaceId(), marketplace.getCountryCode(), result);
+        syncMarketplaces(shop, List.of(new MarketplaceTarget(marketplace.getMarketplaceId(), marketplace.getCountryCode())), result);
     }
 
     /**
-     * 分页查询一个店铺站点的 Listings，并将每页结果保存为本地 Listing 与站点信息。
+     * 分页查询一个店铺多个站点的 Listings，并将每页结果保存为本地 Listing 与站点信息。
      *
      * @param shop 启用的 Amazon 店铺
-     * @param marketplaceId 当前同步的 Amazon Marketplace ID
-     * @param countryCode 当前同步站点的国家代码
+     * @param targets 当前同步的 Amazon Marketplace 及国家代码
      * @param result 用于累计同步统计与失败信息
      */
-    private void syncMarketplace(AmazonShopDO shop, String marketplaceId, String countryCode,
-                                 AmazonListingMarketplaceSyncRespVO result) {
-        if (StrUtil.isBlank(countryCode)) {
-            result.getFailures().add("店铺 " + shop.getId() + " 的站点 " + marketplaceId
-                    + " 缺少国家代码");
+    private void syncMarketplaces(AmazonShopDO shop, List<MarketplaceTarget> targets,
+                                  AmazonListingMarketplaceSyncRespVO result) {
+        if (targets.isEmpty()) {
             return;
         }
+        // Listings Items 仅支持同一销售区域的多个站点；同店跨区域时按区域拆分请求。
+        Map<String, List<MarketplaceTarget>> targetsByRegion = new LinkedHashMap<>();
+        for (MarketplaceTarget target : targets) {
+            AmazonMarketplaceEnum marketplace = AmazonMarketplaceEnum.fromMarketplaceId(target.marketplaceId());
+            String salesRegion = marketplace == null ? target.countryCode() : marketplace.getSalesRegion();
+            targetsByRegion.computeIfAbsent(salesRegion, ignored -> new ArrayList<>()).add(target);
+        }
+        for (List<MarketplaceTarget> regionalTargets : targetsByRegion.values()) {
+            syncRegionalMarketplaces(shop, regionalTargets, result);
+        }
+    }
+
+    /** 批量分页同步同一销售区域的站点，确保其可共用同一个 SP-API 端点。 */
+    private void syncRegionalMarketplaces(AmazonShopDO shop, List<MarketplaceTarget> targets,
+                                          AmazonListingMarketplaceSyncRespVO result) {
+        List<String> marketplaceIds = targets.stream().map(MarketplaceTarget::marketplaceId).toList();
+        List<String> countryCodes = targets.stream().map(MarketplaceTarget::countryCode).distinct().toList();
         try {
             String pageToken = null;
             Set<String> pageTokens = new HashSet<>();
             do {
                 AmazonApiResponse<Map<String, Object>> response = amazonListingsService.searchListingsItems(
-                        buildSearchRequest(shop.getId(), countryCode, pageToken));
+                        buildSearchRequest(shop.getId(), countryCodes, pageToken));
                 Map<String, Object> payload = response.getData();
                 for (Object item : getList(payload, "items")) {
-                    saveListingItem(shop.getId(), marketplaceId, item, result);
+                    saveListingItem(shop.getId(), marketplaceIds, item, result);
                 }
                 pageToken = getString(payload, "nextPageToken");
             } while (StrUtil.isNotBlank(pageToken) && pageTokens.add(pageToken));
-            result.setMarketplaceCount(result.getMarketplaceCount() + 1);
+            result.setMarketplaceCount(result.getMarketplaceCount() + targets.size());
         } catch (RuntimeException ex) {
-            result.getFailures().add("店铺 " + shop.getId() + " 的站点 " + marketplaceId
+            result.getFailures().add("店铺 " + shop.getId() + " 的站点 " + String.join(",", marketplaceIds)
                     + " 同步失败: " + StrUtil.blankToDefault(ex.getMessage(), ex.getClass().getSimpleName()));
         }
     }
@@ -196,10 +251,10 @@ public class AmazonListingMarketplaceServiceImpl implements AmazonListingMarketp
      * @param pageToken Amazon 分页 Token，首页为 {@code null}
      * @return Listings 查询请求
      */
-    private AmazonListingsSearchReqVO buildSearchRequest(Long shopId, String countryCode, String pageToken) {
+    private AmazonListingsSearchReqVO buildSearchRequest(Long shopId, List<String> countryCodes, String pageToken) {
         AmazonListingsSearchReqVO request = new AmazonListingsSearchReqVO();
         request.setShopId(shopId);
-        request.setCountryCode(countryCode);
+        request.setCountryCodes(countryCodes);
         request.setIncludedData(List.of("summaries", "attributes", "issues"));
         request.setSortBy("lastUpdatedDate");
         request.setSortOrder("DESC");
@@ -212,11 +267,11 @@ public class AmazonListingMarketplaceServiceImpl implements AmazonListingMarketp
      * 保存一个 Amazon Listings Item 的全部 summaries；同一 SKU 在不同站点各保存一条站点记录。
      *
      * @param shopId 店铺编号
-     * @param requestedMarketplaceId 本轮请求的站点，用于过滤异常返回的其它站点数据
+     * @param requestedMarketplaceIds 本轮请求的站点，用于过滤异常返回的其它站点数据
      * @param item Amazon Listings Item 原始对象
      * @param result 用于累计已保存记录数
      */
-    private void saveListingItem(Long shopId, String requestedMarketplaceId, Object item,
+    private void saveListingItem(Long shopId, List<String> requestedMarketplaceIds, Object item,
                                  AmazonListingMarketplaceSyncRespVO result) {
         if (!(item instanceof Map<?, ?> rawItem)) {
             return;
@@ -233,13 +288,17 @@ public class AmazonListingMarketplaceServiceImpl implements AmazonListingMarketp
             }
             Map<String, Object> summary = toMap(rawSummary);
             String marketplaceId = getString(summary, "marketplaceId");
-            if (!requestedMarketplaceId.equals(marketplaceId)) {
+            if (!requestedMarketplaceIds.contains(marketplaceId)) {
                 continue;
             }
             AmazonListingMarketplaceDO listingMarketplace = saveListingMarketplace(listing.getId(), marketplaceId, summary);
             saveListingDetails(listingMarketplace.getId(), summary, listingItem);
             result.setListingMarketplaceCount(result.getListingMarketplaceCount() + 1);
         }
+    }
+
+    /** 同步目标站点及其所属国家代码。 */
+    private record MarketplaceTarget(String marketplaceId, String countryCode) {
     }
 
     /**
