@@ -160,6 +160,15 @@ spring:
     port: 5672 # RabbitMQ 服务的端口
     username: rabbit # RabbitMQ 服务的账号
     password: rabbit # RabbitMQ 服务的密码
+    listener:
+      simple:
+        default-requeue-rejected: false # 重试耗尽后拒绝消息，由主队列投递到死信队列
+        retry:
+          enabled: true # Temu 接口瞬时失败时自动重试
+          max-attempts: 3
+          initial-interval: 1000ms
+          multiplier: 2
+          max-interval: 10000ms
   # Kafka 配置项，对应 KafkaProperties 配置类
   kafka:
     bootstrap-servers: 127.0.0.1:9092 # 指定 Kafka Broker 地址，可以设置多个，以逗号分隔

@@ -6,6 +6,8 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
 import cn.iocoder.yudao.module.temu.dal.dataobject.order.TemuOrderDO;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Mapper;
 import cn.iocoder.yudao.module.temu.controller.admin.order.vo.*;
 
@@ -27,6 +29,15 @@ public interface TemuOrderMapper extends BaseMapperX<TemuOrderDO> {
     default TemuOrderDO selectByShopIdAndOrderSn(Long shopId, String orderSn) {
         return selectOne(TemuOrderDO::getShopId, shopId, TemuOrderDO::getOrderSn, orderSn);
     }
+
+    /**
+     * 查询店铺已同步订单的最新 Temu 更新时间。
+     *
+     * @param shopId 店铺编号
+     * @return 最新 Temu 更新时间；尚未同步订单时返回 {@code null}
+     */
+    @Select("SELECT MAX(temu_update_time) FROM temu_order WHERE shop_id = #{shopId} AND deleted = 0")
+    java.time.LocalDateTime selectLatestTemuUpdateTimeByShopId(@Param("shopId") Long shopId);
 
     /**
      * 分页查询订单管理模块的本地同步订单。
