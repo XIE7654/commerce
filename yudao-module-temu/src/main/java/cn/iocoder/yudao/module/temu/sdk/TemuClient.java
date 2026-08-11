@@ -234,6 +234,23 @@ public class TemuClient {
     public WebhookApi getWebhook() { return webhook; }
 
     /**
+     * 将 Temu 响应 JSON 节点转换为指定 DTO，统一复用 SDK 的 JSON 配置。
+     *
+     * @param node Temu 响应中的 JSON 节点
+     * @param targetType 目标 DTO 类型
+     * @param <T> 目标 DTO 类型
+     * @return 转换后的 DTO
+     * @throws IllegalArgumentException 节点结构与目标 DTO 不兼容时抛出
+     */
+    public <T> T convertNode(JsonNode node, Class<T> targetType) {
+        try {
+            return objectMapper.treeToValue(node, targetType);
+        } catch (JacksonException exception) {
+            throw new IllegalArgumentException("Temu 响应 JSON 转换失败", exception);
+        }
+    }
+
+    /**
      * 调用 Temu Router 接口。
      *
      * @param apiType Temu 接口 type

@@ -1,9 +1,14 @@
 package cn.iocoder.yudao.module.temu.sdk.api;
 
 import cn.iocoder.yudao.module.temu.sdk.TemuClient;
+import cn.iocoder.yudao.module.temu.sdk.TemuApiResponse;
+import cn.iocoder.yudao.module.temu.sdk.product.CatsGetReqVO;
+import cn.iocoder.yudao.module.temu.sdk.product.dto.CatsGetCategoryDto;
 import tools.jackson.databind.JsonNode;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /** Product 业务接口服务。 */
@@ -70,10 +75,31 @@ public class ProductApi extends TemuApiService {
 
     /**
      * 调用 bg.local.goods.cats.get。
-     * @param params 接口业务参数，字段名使用 Temu API 的 camelCase 名称
-     * @return Temu JSON 响应
+     *
+     * @param request 分类查询参数
+     * @return 结构化的 Temu 分类响应
      */
-    public JsonNode catsGet(Map<String, Object> params) { return call("bg.local.goods.cats.get", params); }
+    public TemuApiResponse<List<CatsGetCategoryDto>> catsGet(CatsGetReqVO request) {
+        Map<String, Object> params = new java.util.LinkedHashMap<>();
+        params.put("language", request.getLanguage());
+        params.put("parentCatId", request.getParentCatId());
+        return toResponse(call("bg.local.goods.cats.get", params), this::toCategories);
+    }
+
+    /**
+     * 将分类结果数组转换为分类 DTO 列表。
+     *
+     * @param items Temu 分类结果数组
+     * @return 分类 DTO 列表
+     */
+    private List<CatsGetCategoryDto> toCategories(JsonNode items) {
+        if (!items.isArray()) {
+            return Collections.emptyList();
+        }
+        List<CatsGetCategoryDto> categories = new ArrayList<>(items.size());
+        items.forEach(item -> categories.add(client.convertNode(item, CatsGetCategoryDto.class)));
+        return categories;
+    }
 
     /**
      * 调用 bg.local.goods.compliance.extra.template.get。

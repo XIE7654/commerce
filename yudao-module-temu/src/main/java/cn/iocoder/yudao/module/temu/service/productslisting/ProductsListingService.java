@@ -9,7 +9,11 @@ import cn.iocoder.yudao.module.temu.controller.admin.productslisting.vo.Products
 import cn.iocoder.yudao.module.temu.controller.admin.productslisting.vo.ProductsListingImageUploadReqVO;
 import cn.iocoder.yudao.module.temu.controller.admin.productslisting.vo.ProductsListingPropertyRecommendReqVO;
 import cn.iocoder.yudao.module.temu.controller.admin.productslisting.vo.ProductsListingSpecIdReqVO;
+import cn.iocoder.yudao.module.temu.sdk.TemuApiResponse;
+import cn.iocoder.yudao.module.temu.sdk.product.dto.CatsGetCategoryDto;
 import tools.jackson.databind.JsonNode;
+
+import java.util.List;
 
 /**
  * Products Listing 商品刊登业务 Service。
@@ -22,7 +26,7 @@ public interface ProductsListingService {
      * @param request 分类查询参数
      * @return Temu 官方分类响应
      */
-    JsonNode getGoodsCategories(ProductsListingCategoryReqVO request);
+    TemuApiResponse<List<CatsGetCategoryDto>> getGoodsCategories(ProductsListingCategoryReqVO request);
 
     /**
      * 查询分类商品模板。
