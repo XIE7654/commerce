@@ -183,7 +183,8 @@ public class AmazonListingsApi {
     /** 创建所有 Listings 请求共有的 Marketplace 参数。 */
     private Map<String, String> baseQuery(AmazonListingsRequest request) {
         Map<String, String> query = new TreeMap<>();
-        query.put("marketplaceIds", request.getMarketplaceId());
+        // Listings 搜索支持同一区域多个 Marketplace；单商品接口仍回退到原有的单站点字段。
+        query.put("marketplaceIds", isEmpty(request.getMarketplaceIds()) ? request.getMarketplaceId() : join(request.getMarketplaceIds()));
         return query;
     }
 

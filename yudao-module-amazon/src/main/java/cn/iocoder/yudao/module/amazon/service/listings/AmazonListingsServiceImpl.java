@@ -16,6 +16,8 @@ import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /** Amazon Listings Items 服务实现。 */
@@ -34,7 +36,7 @@ public class AmazonListingsServiceImpl implements AmazonListingsService {
     /** {@inheritDoc} */
     @Override
     public AmazonApiResponse<Map<String, Object>> searchListingsItems(AmazonListingsSearchReqVO request) {
-        AmazonListingsRequest sdkRequest = buildSdkRequest(request.getShopId(), request.getCountryCode());
+        AmazonListingsRequest sdkRequest = buildSearchSdkRequest(request);
         sdkRequest.setIncludedData(request.getIncludedData());
         sdkRequest.setIdentifiers(request.getIdentifiers());
         sdkRequest.setIdentifiersType(request.getIdentifiersType());
@@ -120,6 +122,22 @@ public class AmazonListingsServiceImpl implements AmazonListingsService {
     }
 
     /**
+     * 构造 Listings 搜索请求，支持同一销售区域内多个 Marketplace。
+     *
+     * <p>静态沙盒的 Listings Items Mock 需要同时传递 US 和 CA Marketplace；生产环境也可
+     * 使用该能力批量查询同一区域站点。跨区域不能共用 SP-API 端点，故在此提前拦截。</p>
+     *
+     * @param request 搜索请求参数
+     * @return 包含多个 Marketplace ID 的 SDK 请求
+     */
+    private AmazonListingsRequest buildSearchSdkRequest(AmazonListingsSearchReqVO request) {
+        List<AmazonMarketplaceEnum> marketplaces = requireSearchMarketplaces(request.getCountryCode(), request.getCountryCodes());
+        AmazonListingsRequest sdkRequest = buildSdkRequest(request.getShopId(), marketplaces.getFirst().getCountryCode());
+        sdkRequest.setMarketplaceIds(marketplaces.stream().map(AmazonMarketplaceEnum::getMarketplaceId).toList());
+        return sdkRequest;
+    }
+
+    /**
      * 复制单商品请求共有字段，确保 SDK 路径与查询参数使用相同的 SKU 和返回数据集。
      *
      * @param request 单商品 Listings 请求
@@ -172,5 +190,35 @@ public class AmazonListingsServiceImpl implements AmazonListingsService {
             throw new IllegalArgumentException("不支持的 Amazon 国家代码: " + countryCode);
         }
         return marketplace;
+    }
+
+    /**
+     * 解析 Listings 搜索的站点列表，并验证它们共用同一个 SP-API 区域端点。
+     *
+     * @param countryCode 兼容旧接口的单个国家代码
+     * @param countryCodes 多站点国家代码
+     * @return 已解析的 Marketplace 列表
+     */
+    private List<AmazonMarketplaceEnum> requireSearchMarketplaces(String countryCode, List<String> countryCodes) {
+        if (countryCode != null && !countryCode.isBlank() && countryCodes != null && !countryCodes.isEmpty()) {
+            throw new IllegalArgumentException("countryCode 与 countryCodes 不能同时传入");
+        }
+        List<String> requestedCodes = countryCodes == null || countryCodes.isEmpty()
+                ? (countryCode == null || countryCode.isBlank() ? List.of() : List.of(countryCode)) : countryCodes;
+        if (requestedCodes.isEmpty()) {
+            throw new IllegalArgumentException("countryCode 或 countryCodes 至少传入一个");
+        }
+        List<AmazonMarketplaceEnum> marketplaces = new ArrayList<>();
+        String salesRegion = null;
+        for (String requestedCode : requestedCodes) {
+            AmazonMarketplaceEnum marketplace = requireMarketplace(requestedCode);
+            if (salesRegion == null) {
+                salesRegion = marketplace.getSalesRegion();
+            } else if (!salesRegion.equals(marketplace.getSalesRegion())) {
+                throw new IllegalArgumentException("Listings 搜索的多个站点必须属于同一销售区域");
+            }
+            marketplaces.add(marketplace);
+        }
+        return marketplaces;
     }
 }

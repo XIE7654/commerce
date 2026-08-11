@@ -18,6 +18,7 @@ public class AmazonListingsRequest {
     private String accessToken;
     private String countryCode;
     private String marketplaceId;
+    private List<String> marketplaceIds;
     private String sellerId;
     private String sku;
     private List<String> includedData;

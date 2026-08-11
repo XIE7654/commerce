@@ -5,11 +5,26 @@ Content-Type: application/json
 tenant-id: {{adminTenantId}}
 
 {
-  "shopId": 1,
+  "shopId": 2,
   "countryCode": "US",
   "sortBy": "lastUpdatedDate",
   "sortOrder": "DESC",
   "pageSize": 10
+}
+
+### 查询 Amazon Listings Items（静态沙盒 Mock）
+POST {{baseUrl}}/amazon/listings/search
+Authorization: Bearer {{token}}
+Content-Type: application/json
+tenant-id: {{adminTenantId}}
+
+{
+  "shopId": 2,
+  "countryCodes": ["US", "CA"],
+  "identifiers": ["GM-ZDPI-9B4E", "HW-ZDPI-9B4E", "TC-ZDPI-9B4E"],
+  "identifiersType": "SKU",
+  "includedData": ["summaries", "offers", "fulfillmentAvailability", "issues"],
+  "pageSize": 1
 }
 
 ### 创建或全量更新 Amazon Listings Item
