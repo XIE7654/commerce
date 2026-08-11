@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.amazon.service.fulfillment;
 import cn.iocoder.yudao.module.amazon.controller.admin.fulfillment.vo.AmazonFulfillmentApiReqVO;
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
+import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiCategory;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
@@ -25,6 +26,8 @@ public abstract class AmazonFulfillmentApiServiceSupport {
     private static final Pattern PATH_PARAM_PATTERN = Pattern.compile("\\{([^}]+)}");
 
     @Resource
+    private AmazonMarketplaceProvider amazonMarketplaceProvider;
+    @Resource
     private AmazonOAuthService amazonOAuthService;
     @Resource
     private AmazonShopService amazonShopService;
@@ -46,7 +49,7 @@ public abstract class AmazonFulfillmentApiServiceSupport {
         AmazonShopDO shop = amazonShopService.requireShop(request.getShopId());
         AmazonMarketplaceEnum marketplace = amazonShopService.requireMarketplace(request.getCountryCode());
         String query = buildQuery(request.getQuery());
-        URI uri = URI.create(marketplace.getEndpoint() + buildPath(definition.path(), request.getPathParams())
+        URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + buildPath(definition.path(), request.getPathParams())
                 + (query.isEmpty() ? "" : "?" + query));
         String token = amazonOAuthService.getSellerAccessToken(shop.getId());
         if (definition.method() == HttpMethod.GET) {

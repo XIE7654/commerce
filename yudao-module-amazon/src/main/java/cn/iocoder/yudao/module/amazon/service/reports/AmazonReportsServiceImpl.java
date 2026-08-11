@@ -8,6 +8,7 @@ import cn.iocoder.yudao.module.amazon.controller.admin.reports.vo.AmazonReportSc
 import cn.iocoder.yudao.module.amazon.controller.admin.reports.vo.AmazonReportsListReqVO;
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
+import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.enums.AmazonReportTypeEnum;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiCategory;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
@@ -49,6 +50,8 @@ public class AmazonReportsServiceImpl implements AmazonReportsService {
             "P7D", "P14D", "P15D", "P18D", "P30D", "P1M");
 
     @Resource
+    private AmazonMarketplaceProvider amazonMarketplaceProvider;
+    @Resource
     private AmazonOAuthService amazonOAuthService;
     @Resource
     private AmazonShopService amazonShopService;
@@ -68,7 +71,7 @@ public class AmazonReportsServiceImpl implements AmazonReportsService {
             if (request.getReportOptions() != null && !request.getReportOptions().isEmpty()) {
                 body.put("reportOptions", request.getReportOptions());
             }
-            return amazonSellingPartnerClient.createReport(URI.create(marketplace.getEndpoint() + REPORTS_PATH + "/reports"),
+            return amazonSellingPartnerClient.createReport(URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + REPORTS_PATH + "/reports"),
                     accessToken, body, shop.getId(), request.getCountryCode(), marketplace.getMarketplaceId());
         });
     }
@@ -110,7 +113,7 @@ public class AmazonReportsServiceImpl implements AmazonReportsService {
         validateScheduleListRequest(request);
         return execute(request.getShopId(), request.getCountryCode(), (shop, marketplace, accessToken) -> {
             Map<String, String> query = Map.of("reportTypes", joinReportTypes(request.getReportTypes()));
-            URI uri = URI.create(marketplace.getEndpoint() + REPORTS_PATH + "/schedules?" + buildQuery(query));
+            URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + REPORTS_PATH + "/schedules?" + buildQuery(query));
             return amazonSellingPartnerClient.getReports(uri, accessToken, "getReportSchedules", "report-schedules", shop.getId(),
                     request.getCountryCode(), marketplace.getMarketplaceId());
         });
@@ -129,7 +132,7 @@ public class AmazonReportsServiceImpl implements AmazonReportsService {
             if (request.getReportOptions() != null && !request.getReportOptions().isEmpty()) {
                 body.put("reportOptions", request.getReportOptions());
             }
-            return amazonSellingPartnerClient.mutateByCategory(URI.create(marketplace.getEndpoint() + REPORTS_PATH + "/schedules"),
+            return amazonSellingPartnerClient.mutateByCategory(URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + REPORTS_PATH + "/schedules"),
                     accessToken, HttpMethod.POST, body, AmazonApiCategory.REPORTS, "createReportSchedule", "report-schedule",
                     shop.getId(), request.getCountryCode(), marketplace.getMarketplaceId());
         });
@@ -204,7 +207,7 @@ public class AmazonReportsServiceImpl implements AmazonReportsService {
             putIfNotBlank(query, "createdSince", request.getCreatedSince());
             putIfNotBlank(query, "createdUntil", request.getCreatedUntil());
         }
-        return URI.create(marketplace.getEndpoint() + REPORTS_PATH + "/reports?" + buildQuery(query));
+        return URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + REPORTS_PATH + "/reports?" + buildQuery(query));
     }
 
     /**
@@ -216,7 +219,7 @@ public class AmazonReportsServiceImpl implements AmazonReportsService {
      * @return 可直接发起请求的 URI
      */
     private URI buildIdUri(AmazonMarketplaceEnum marketplace, String resourcePath, String id) {
-        return URI.create(marketplace.getEndpoint() + REPORTS_PATH + resourcePath
+        return URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + REPORTS_PATH + resourcePath
                 + UriUtils.encodePathSegment(id, StandardCharsets.UTF_8));
     }
 

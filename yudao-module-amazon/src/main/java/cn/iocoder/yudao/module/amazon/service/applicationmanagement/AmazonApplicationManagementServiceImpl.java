@@ -4,6 +4,7 @@ import cn.iocoder.yudao.module.amazon.controller.admin.applicationmanagement.vo.
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
+import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiCategory;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
@@ -20,6 +21,8 @@ public class AmazonApplicationManagementServiceImpl implements AmazonApplication
     private static final String PATH = "/applications/2023-11-30/clientSecret";
 
     @Resource
+    private AmazonMarketplaceProvider amazonMarketplaceProvider;
+    @Resource
     private AmazonOAuthService amazonOAuthService;
     @Resource
     private AmazonShopMapper amazonShopMapper;
@@ -32,7 +35,7 @@ public class AmazonApplicationManagementServiceImpl implements AmazonApplication
         AmazonShopDO shop = requireShop(request.getShopId());
         AmazonMarketplaceEnum marketplace = requireMarketplace(request.getCountryCode());
         // Amazon 以 204 表示轮换请求已受理，新密钥只会发送到开发者注册的队列。
-        amazonSellingPartnerClient.mutateByCategoryOptional(URI.create(marketplace.getEndpoint() + PATH),
+        amazonSellingPartnerClient.mutateByCategoryOptional(URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + PATH),
                 amazonOAuthService.getSellerAccessToken(shop.getId()), HttpMethod.POST, null,
                 AmazonApiCategory.APPLICATION_MANAGEMENT, "rotateApplicationClientSecret", "client-secret", shop.getId(),
                 request.getCountryCode(), marketplace.getMarketplaceId());

@@ -16,11 +16,11 @@ Content-Type: application/json
 tenant-id: {{adminTenantId}}
 
 {
-  "refreshToken": "{{amazonRefreshToken}}",
+  "refreshToken": "Atzr|IwEBIPYe-W2nrNF1R336LFEoO_Rbv_bYb743OAIEzjiHt51kxRvj4XqUd9lKOdlStwJ5LEF-zGsQHNdS8n0MA4HyYVye0MSVH-R25FYnVKgHTlW6SxH55EeQltu5xdVoYDcrQoUbNcAxX2VEmww2S2Y8Tl9dN7JkOhW7aiPbHTwdmvmB3CYtZShegmNTfbudgobYjjB3lhPQP_tpDFioJ_NvhPJKLWvubwRmwfZaZlGvijigdQIOjDP2bME4XPFTdKOQiplCGbTp00fqEVPubpQAOFM6QSXGTBIA-jN5pYRFj-yueY9-tpIk9m_KTDVSbF_eQEc",
   "countryCode": "US"
 }
 
 ### 获取 Amazon Seller access token
-GET {{baseUrl}}/amazon/auth/seller-token?shopId=1
+GET {{baseUrl}}/amazon/auth/seller-token?shopId=2
 Authorization: Bearer {{token}}
 tenant-id: {{adminTenantId}}

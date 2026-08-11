@@ -4,6 +4,7 @@ import cn.iocoder.yudao.module.amazon.controller.admin.fbainventory.vo.FbaInvent
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
+import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
 import jakarta.annotation.Resource;
@@ -25,6 +26,8 @@ import java.util.TreeMap;
 @Service
 public class FbaInventoryServiceImpl implements FbaInventoryService {
 
+    @Resource
+    private AmazonMarketplaceProvider amazonMarketplaceProvider;
     @Resource
     private AmazonOAuthService amazonOAuthService;
     @Resource
@@ -80,7 +83,7 @@ public class FbaInventoryServiceImpl implements FbaInventoryService {
         put(query, "sellerSkus", join(request.getSellerSkus()));
         put(query, "sellerSku", request.getSellerSku());
         put(query, "nextToken", request.getNextToken());
-        return URI.create(marketplace.getEndpoint() + "/fba/inventory/v1/summaries?" + buildQuery(query));
+        return URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + "/fba/inventory/v1/summaries?" + buildQuery(query));
     }
 
     /**

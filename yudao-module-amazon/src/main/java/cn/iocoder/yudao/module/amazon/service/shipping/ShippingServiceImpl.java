@@ -4,6 +4,7 @@ import cn.iocoder.yudao.module.amazon.controller.admin.shipping.vo.ShippingReque
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
+import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiCategory;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 /** Shipping 服务实现，负责路径替换、V2 必填业务头及店铺授权隔离。 */
 @Service
 public class ShippingServiceImpl implements ShippingService {
+    @Resource private AmazonMarketplaceProvider amazonMarketplaceProvider;
     @Resource private AmazonOAuthService amazonOAuthService;
     @Resource private AmazonShopMapper amazonShopMapper;
     @Resource private AmazonSellingPartnerClient amazonSellingPartnerClient;
@@ -36,7 +38,7 @@ public class ShippingServiceImpl implements ShippingService {
         Map<String, String> headers = new LinkedHashMap<>();
         if (versionTwo) headers.put("x-amzn-shipping-business-id", request.getShippingBusinessId());
         if (!blank(request.getIdempotencyKey())) headers.put("x-amzn-IdempotencyKey", request.getIdempotencyKey());
-        URI uri = URI.create(marketplace.getEndpoint() + path + query(request.getQuery()));
+        URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + path + query(request.getQuery()));
         return amazonSellingPartnerClient.executeByCategory(uri, amazonOAuthService.getSellerAccessToken(shop.getId()), HttpMethod.valueOf(method), request.getBody(), headers, AmazonApiCategory.SHIPPING, operation, "shipping-" + operation, shop.getId(), request.getCountryCode(), marketplace.getMarketplaceId());
     }
     /** 编码并校验路径编号，避免保留字符被解释为额外路径。 */

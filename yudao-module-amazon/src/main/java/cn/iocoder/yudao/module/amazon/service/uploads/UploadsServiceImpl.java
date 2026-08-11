@@ -4,6 +4,7 @@ import cn.iocoder.yudao.module.amazon.controller.admin.uploads.vo.UploadsCreateD
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
+import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiCategory;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
@@ -26,6 +27,8 @@ public class UploadsServiceImpl implements UploadsService {
     private static final String PATH = "/uploads/2020-11-01/uploadDestinations/";
 
     @Resource
+    private AmazonMarketplaceProvider amazonMarketplaceProvider;
+    @Resource
     private AmazonOAuthService amazonOAuthService;
     @Resource
     private AmazonShopMapper amazonShopMapper;
@@ -43,7 +46,7 @@ public class UploadsServiceImpl implements UploadsService {
         if (request.getContentType() != null && !request.getContentType().isBlank()) {
             query.put("contentType", request.getContentType());
         }
-        URI uri = URI.create(marketplace.getEndpoint() + PATH + encodeResource(request.getResource()) + "?" + query(query));
+        URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + PATH + encodeResource(request.getResource()) + "?" + query(query));
         String marketplaceId = request.getMarketplaceIds().get(0);
         return amazonSellingPartnerClient.executeByCategory(uri, amazonOAuthService.getSellerAccessToken(shop.getId()),
                 HttpMethod.POST, null, Map.of(), AmazonApiCategory.UPLOADS, "createUploadDestinationForResource",

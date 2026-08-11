@@ -4,6 +4,7 @@ import cn.iocoder.yudao.module.amazon.controller.admin.datakiosk.vo.*;
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
+import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiCategory;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 @Service
 public class DataKioskServiceImpl implements DataKioskService {
     private static final String BASE_PATH = "/dataKiosk/2023-11-15";
+    @Resource private AmazonMarketplaceProvider amazonMarketplaceProvider;
     @Resource private AmazonOAuthService amazonOAuthService;
     @Resource private AmazonShopMapper amazonShopMapper;
     @Resource private AmazonSellingPartnerClient amazonSellingPartnerClient;
@@ -34,7 +36,7 @@ public class DataKioskServiceImpl implements DataKioskService {
     /** 使用店铺卖家令牌调用 Data Kiosk；取消任务按模型规范接受 204 空响应。 */
     private Map<String, Object> invoke(DataKioskBaseReqVO request, String path, HttpMethod method, Object body, String operation, boolean allowEmptyResponse) {
         AmazonShopDO shop = requireShop(request.getShopId()); AmazonMarketplaceEnum marketplace = requireMarketplace(request.getCountryCode());
-        URI uri = URI.create(marketplace.getEndpoint() + path); String token = amazonOAuthService.getSellerAccessToken(shop.getId());
+        URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + path); String token = amazonOAuthService.getSellerAccessToken(shop.getId());
         return allowEmptyResponse ? amazonSellingPartnerClient.mutateByCategoryOptional(uri, token, method, body, AmazonApiCategory.DATA_KIOSK, operation, operation, shop.getId(), request.getCountryCode(), marketplace.getMarketplaceId()) : method == HttpMethod.GET ? amazonSellingPartnerClient.getByCategory(uri, token, AmazonApiCategory.DATA_KIOSK, operation, operation, shop.getId(), request.getCountryCode(), marketplace.getMarketplaceId()) : amazonSellingPartnerClient.mutateByCategory(uri, token, method, body, AmazonApiCategory.DATA_KIOSK, operation, operation, shop.getId(), request.getCountryCode(), marketplace.getMarketplaceId());
     }
     /** 构造编码后的查询串，防止分页令牌等保留字符改变请求含义。 */

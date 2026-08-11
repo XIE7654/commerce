@@ -15,6 +15,9 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
 @ConfigurationProperties(prefix = "aws")
 public class AwsProperties {
 
+    /** Seller OAuth Token 未单独配置时的默认 Login with Amazon 端点；SP-API 沙盒域名不在此配置。 */
+    private static final String DEFAULT_SELLER_TOKEN_URL = "https://api.amazon.com/auth/o2/token";
+
     /** 是否启用沙盒模式；true 时读取 sandbox，false 时读取 prod。 */
     private boolean sandboxMode = false;
     /** 正式环境 Seller 与 Ads OAuth 配置。 */
@@ -67,8 +70,14 @@ public class AwsProperties {
         return refreshTokenExpires == null ? 3100 : refreshTokenExpires;
     }
 
+    /**
+     * 获取当前生效的 Seller OAuth Token 端点。
+     *
+     * @return 配置的 storeTokenUrl；未配置时返回默认 Login with Amazon 端点
+     */
     public String getStoreTokenUrl() {
-        return active().getStoreTokenUrl();
+        String tokenUrl = active().getStoreTokenUrl();
+        return tokenUrl == null || tokenUrl.isBlank() ? DEFAULT_SELLER_TOKEN_URL : tokenUrl;
     }
 
     public String getAdTokenUrl() {
@@ -110,7 +119,7 @@ public class AwsProperties {
         private String cryptoKey;
         /** refresh token 业务有效期，单位天；未配置时默认 3100。 */
         private Long refreshTokenExpires;
-        /** Seller token endpoint。 */
+        /** Seller LWA token endpoint，可配置代理；未配置时默认使用 Login with Amazon 全局端点。 */
         private String storeTokenUrl;
         /** Ads token endpoint。 */
         private String adTokenUrl;

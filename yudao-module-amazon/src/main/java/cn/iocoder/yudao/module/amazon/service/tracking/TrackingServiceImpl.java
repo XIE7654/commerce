@@ -4,6 +4,7 @@ import cn.iocoder.yudao.module.amazon.controller.admin.tracking.vo.TrackingShipm
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
+import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiCategory;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
@@ -25,6 +26,8 @@ public class TrackingServiceImpl implements TrackingService {
 
     private static final String PATH = "/tracking/2026-01-30/shipments/track";
 
+    @Resource
+    private AmazonMarketplaceProvider amazonMarketplaceProvider;
     @Resource
     private AmazonOAuthService amazonOAuthService;
     @Resource
@@ -50,7 +53,7 @@ public class TrackingServiceImpl implements TrackingService {
         if (!blank(request.getAcceptLanguage())) {
             headers.put("Accept-Language", request.getAcceptLanguage());
         }
-        URI uri = URI.create(marketplace.getEndpoint() + PATH + "?" + query(query));
+        URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + PATH + "?" + query(query));
         return amazonSellingPartnerClient.executeByCategory(uri, amazonOAuthService.getSellerAccessToken(shop.getId()),
                 HttpMethod.GET, null, headers, AmazonApiCategory.TRACKING, "getShipmentTracking", "shipment-tracking",
                 shop.getId(), request.getCountryCode(), marketplace.getMarketplaceId());

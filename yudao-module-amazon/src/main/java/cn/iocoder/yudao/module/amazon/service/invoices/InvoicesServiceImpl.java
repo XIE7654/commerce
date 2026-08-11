@@ -4,6 +4,7 @@ import cn.iocoder.yudao.module.amazon.controller.admin.invoices.vo.InvoicesReque
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
+import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiCategory;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
@@ -25,6 +26,8 @@ public class InvoicesServiceImpl implements InvoicesService {
 
     private static final String API_PREFIX = "/tax/invoices/2024-06-19";
 
+    @Resource
+    private AmazonMarketplaceProvider amazonMarketplaceProvider;
     @Resource
     private AmazonOAuthService amazonOAuthService;
     @Resource
@@ -178,7 +181,7 @@ public class InvoicesServiceImpl implements InvoicesService {
                 .filter(entry -> !isBlank(entry.getValue()))
                 .map(entry -> encode(entry.getKey()) + "=" + encode(entry.getValue()))
                 .collect(Collectors.joining("&"));
-        return URI.create(marketplace.getEndpoint() + API_PREFIX + path
+        return URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + API_PREFIX + path
                 + (queryString.isEmpty() ? "" : "?" + queryString));
     }
 

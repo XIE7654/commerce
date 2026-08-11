@@ -4,6 +4,7 @@ import cn.iocoder.yudao.module.amazon.controller.admin.services.vo.ServicesReqVO
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
+import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiCategory;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 /** Amazon Services 服务实现。 */
 @Service
 public class ServicesServiceImpl implements ServicesService {
+    @Resource private AmazonMarketplaceProvider amazonMarketplaceProvider;
     @Resource private AmazonOAuthService amazonOAuthService; @Resource private AmazonShopMapper amazonShopMapper; @Resource private AmazonSellingPartnerClient amazonSellingPartnerClient;
     /** {@inheritDoc} */ @Override public Map<String,Object> getServiceJobByServiceJobId(ServicesReqVO r){return invoke(r,HttpMethod.GET,"/serviceJobs/"+job(r),"getServiceJobByServiceJobId");}
     /** {@inheritDoc} */ @Override public Map<String,Object> cancelServiceJobByServiceJobId(ServicesReqVO r){return invoke(r,HttpMethod.PUT,"/serviceJobs/"+job(r)+"/cancellations","cancelServiceJobByServiceJobId");}
@@ -39,7 +41,7 @@ public class ServicesServiceImpl implements ServicesService {
     /** {@inheritDoc} */ @Override public Map<String,Object> getAppointmentSlots(ServicesReqVO r){required(r.getAsin(),"asin");required(r.getStoreId(),"storeId");return invoke(r,HttpMethod.GET,"/appointmentSlots","getAppointmentSlots");}
     /** {@inheritDoc} */ @Override public Map<String,Object> createServiceDocumentUploadDestination(ServicesReqVO r){return invoke(r,HttpMethod.POST,"/documents","createServiceDocumentUploadDestination");}
     /** 统一构建 Services API 查询参数；未指定 marketplaceIds 时限制在当前国家默认站点。 */
-    private Map<String,Object> invoke(ServicesReqVO r,HttpMethod method,String path,String operation){AmazonShopDO shop=shop(r.getShopId());AmazonMarketplaceEnum marketplace=marketplace(r.getCountryCode());Map<String,String> query=new LinkedHashMap<>();if(r.getQuery()!=null)query.putAll(r.getQuery());query.put("marketplaceIds",r.getMarketplaceIds()==null||r.getMarketplaceIds().isEmpty()?marketplace.getMarketplaceId():String.join(",",r.getMarketplaceIds()));if("getAppointmentSlots".equals(operation)){query.put("asin",r.getAsin());query.put("storeId",r.getStoreId());}URI uri=URI.create(marketplace.getEndpoint()+"/service/v1"+path+"?"+query(query));String token=amazonOAuthService.getSellerAccessToken(shop.getId());return method==HttpMethod.GET?amazonSellingPartnerClient.getByCategory(uri,token,AmazonApiCategory.SERVICES,operation,operation,shop.getId(),r.getCountryCode(),marketplace.getMarketplaceId()):amazonSellingPartnerClient.mutateByCategoryOptional(uri,token,method,r.getBody(),AmazonApiCategory.SERVICES,operation,operation,shop.getId(),r.getCountryCode(),marketplace.getMarketplaceId());}
+    private Map<String,Object> invoke(ServicesReqVO r,HttpMethod method,String path,String operation){AmazonShopDO shop=shop(r.getShopId());AmazonMarketplaceEnum marketplace=marketplace(r.getCountryCode());Map<String,String> query=new LinkedHashMap<>();if(r.getQuery()!=null)query.putAll(r.getQuery());query.put("marketplaceIds",r.getMarketplaceIds()==null||r.getMarketplaceIds().isEmpty()?marketplace.getMarketplaceId():String.join(",",r.getMarketplaceIds()));if("getAppointmentSlots".equals(operation)){query.put("asin",r.getAsin());query.put("storeId",r.getStoreId());}URI uri=URI.create(amazonMarketplaceProvider.getEndpoint(marketplace)+"/service/v1"+path+"?"+query(query));String token=amazonOAuthService.getSellerAccessToken(shop.getId());return method==HttpMethod.GET?amazonSellingPartnerClient.getByCategory(uri,token,AmazonApiCategory.SERVICES,operation,operation,shop.getId(),r.getCountryCode(),marketplace.getMarketplaceId()):amazonSellingPartnerClient.mutateByCategoryOptional(uri,token,method,r.getBody(),AmazonApiCategory.SERVICES,operation,operation,shop.getId(),r.getCountryCode(),marketplace.getMarketplaceId());}
     /** 将查询字段以 RFC 3986 形式编码，防止日期和分页令牌改变 URI 语义。 */ private String query(Map<String,String> values){return values.entrySet().stream().filter(e->e.getValue()!=null&&!e.getValue().isBlank()).map(e->UriUtils.encodeQueryParam(e.getKey(),StandardCharsets.UTF_8)+"="+UriUtils.encodeQueryParam(e.getValue(),StandardCharsets.UTF_8)).collect(Collectors.joining("&"));}
     /** 校验并编码服务工单编号。 */ private String job(ServicesReqVO r){return id(r.getServiceJobId(),"serviceJobId");}
     /** 校验并编码预约编号。 */ private String appointment(ServicesReqVO r){return id(r.getAppointmentId(),"appointmentId");}

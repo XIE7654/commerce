@@ -5,6 +5,7 @@ import cn.iocoder.yudao.module.amazon.controller.admin.customerfeedback.vo.Custo
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
+import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiCategory;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
@@ -20,6 +21,7 @@ import java.util.Map;
 @Service
 public class CustomerFeedbackServiceImpl implements CustomerFeedbackService {
     private static final String BASE_PATH = "/customerFeedback/2024-06-01";
+    @Resource private AmazonMarketplaceProvider amazonMarketplaceProvider;
     @Resource private AmazonOAuthService amazonOAuthService;
     @Resource private AmazonShopMapper amazonShopMapper;
     @Resource private AmazonSellingPartnerClient amazonSellingPartnerClient;
@@ -45,7 +47,7 @@ public class CustomerFeedbackServiceImpl implements CustomerFeedbackService {
         if (requiresSortBy && (sortBy == null || sortBy.isBlank())) throw new IllegalArgumentException("sortBy 不能为空");
         AmazonShopDO shop = requireShop(shopId); AmazonMarketplaceEnum marketplace = requireMarketplace(countryCode);
         String query = "marketplaceId=" + encode(marketplace.getMarketplaceId()) + (sortBy == null || sortBy.isBlank() ? "" : "&sortBy=" + encode(sortBy));
-        URI uri = URI.create(marketplace.getEndpoint() + BASE_PATH + path + "?" + query);
+        URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + BASE_PATH + path + "?" + query);
         return amazonSellingPartnerClient.getByCategory(uri, amazonOAuthService.getSellerAccessToken(shop.getId()), AmazonApiCategory.CUSTOMER_FEEDBACK, operation, operation, shop.getId(), countryCode, marketplace.getMarketplaceId());
     }
     /** 查询当前租户店铺，确保租户拦截器完成数据隔离。 */

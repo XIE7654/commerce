@@ -4,6 +4,7 @@ import cn.iocoder.yudao.module.amazon.controller.admin.deliverybyamazon.vo.Deliv
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
+import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiCategory;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 @Service
 public class DeliveryByAmazonServiceImpl implements DeliveryByAmazonService {
     private static final String API_PREFIX = "/delivery/2022-07-01";
+    @Resource private AmazonMarketplaceProvider amazonMarketplaceProvider;
     @Resource private AmazonOAuthService amazonOAuthService;
     @Resource private AmazonShopMapper amazonShopMapper;
     @Resource private AmazonSellingPartnerClient amazonSellingPartnerClient;
@@ -31,7 +33,7 @@ public class DeliveryByAmazonServiceImpl implements DeliveryByAmazonService {
     public Map<String, Object> invoke(DeliveryByAmazonRequestVO request, String operation, String method, String resourcePath) {
         AmazonShopDO shop = requireShop(request.getShopId());
         AmazonMarketplaceEnum marketplace = requireMarketplace(request.getCountryCode());
-        URI uri = URI.create(marketplace.getEndpoint() + API_PREFIX + resourcePath + query(request.getQuery()));
+        URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + API_PREFIX + resourcePath + query(request.getQuery()));
         return amazonSellingPartnerClient.executeByCategory(uri, amazonOAuthService.getSellerAccessToken(shop.getId()),
                 HttpMethod.valueOf(method), request.getBody(), Map.of(), AmazonApiCategory.DELIVERY_BY_AMAZON, operation,
                 "delivery-by-amazon-" + operation, shop.getId(), request.getCountryCode(), marketplace.getMarketplaceId());

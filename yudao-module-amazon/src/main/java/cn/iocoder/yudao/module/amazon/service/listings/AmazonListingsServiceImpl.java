@@ -8,6 +8,7 @@ import cn.iocoder.yudao.module.amazon.controller.admin.listings.vo.AmazonListing
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
+import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.sdk.listings.AmazonListingsApi;
 import cn.iocoder.yudao.module.amazon.sdk.listings.AmazonListingsRequest;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiResponse;
@@ -21,6 +22,8 @@ import java.util.Map;
 @Service
 public class AmazonListingsServiceImpl implements AmazonListingsService {
 
+    @Resource
+    private AmazonMarketplaceProvider amazonMarketplaceProvider;
     @Resource
     private AmazonOAuthService amazonOAuthService;
     @Resource
@@ -108,7 +111,7 @@ public class AmazonListingsServiceImpl implements AmazonListingsService {
         AmazonMarketplaceEnum marketplace = requireMarketplace(countryCode);
         AmazonListingsRequest sdkRequest = new AmazonListingsRequest();
         sdkRequest.setShopId(shop.getId());
-        sdkRequest.setEndpoint(marketplace.getEndpoint());
+        sdkRequest.setEndpoint(amazonMarketplaceProvider.getEndpoint(marketplace));
         sdkRequest.setAccessToken(amazonOAuthService.getSellerAccessToken(shop.getId()));
         sdkRequest.setCountryCode(marketplace.getCountryCode());
         sdkRequest.setMarketplaceId(marketplace.getMarketplaceId());

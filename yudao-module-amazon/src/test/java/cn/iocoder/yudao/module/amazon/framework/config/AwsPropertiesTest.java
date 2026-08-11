@@ -39,10 +39,12 @@ class AwsPropertiesTest {
         properties.getSandbox().setAppId("sandbox-app");
         properties.getSandbox().setClientId("sandbox-client");
         properties.getSandbox().setAdTokenUrl("https://sandbox.example.com/token");
+        properties.getSandbox().setStoreTokenUrl("https://sandbox.example.com/auth/o2/token");
 
         assertEquals("sandbox-app", properties.getAppId());
         assertEquals("sandbox-client", properties.getClientId());
         assertEquals("https://sandbox.example.com/token", properties.getAdTokenUrl());
+        assertEquals("https://sandbox.example.com/auth/o2/token", properties.getStoreTokenUrl());
     }
 
     @Test
@@ -51,6 +53,7 @@ class AwsPropertiesTest {
 
         assertEquals(600, properties.getStateExpires());
         assertEquals(3100, properties.getRefreshTokenExpires());
+        assertEquals("https://api.amazon.com/auth/o2/token", properties.getStoreTokenUrl());
     }
 
     @Test

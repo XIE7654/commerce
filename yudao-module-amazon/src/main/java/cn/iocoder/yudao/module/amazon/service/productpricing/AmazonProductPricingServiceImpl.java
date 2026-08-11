@@ -5,6 +5,7 @@ import cn.iocoder.yudao.module.amazon.controller.admin.products.vo.AmazonProduct
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
+import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiCategory;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
@@ -29,6 +30,8 @@ public class AmazonProductPricingServiceImpl implements AmazonProductPricingServ
 
     private static final String PRICING_V0_PATH = "/products/pricing/v0";
 
+    @Resource
+    private AmazonMarketplaceProvider amazonMarketplaceProvider;
     @Resource
     private AmazonProductsService productsService;
     @Resource
@@ -156,7 +159,7 @@ public class AmazonProductPricingServiceImpl implements AmazonProductPricingServ
         }
         AmazonShopDO shop = requireShop(request.getShopId());
         AmazonMarketplaceEnum marketplace = requireMarketplace(request.getCountryCode());
-        URI uri = URI.create(marketplace.getEndpoint() + path);
+        URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + path);
         return amazonSellingPartnerClient.mutateByCategory(uri, amazonOAuthService.getSellerAccessToken(shop.getId()), HttpMethod.POST,
                 request.getBody(), AmazonApiCategory.PRODUCT_PRICING, operationName, storageName, shop.getId(),
                 request.getCountryCode(), marketplace.getMarketplaceId());
@@ -176,7 +179,7 @@ public class AmazonProductPricingServiceImpl implements AmazonProductPricingServ
                                     String operationName, String storageName) {
         AmazonShopDO shop = requireShop(request.getShopId());
         AmazonMarketplaceEnum marketplace = requireMarketplace(request.getCountryCode());
-        URI uri = URI.create(marketplace.getEndpoint() + PRICING_V0_PATH + path + "?" + buildQuery(query));
+        URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + PRICING_V0_PATH + path + "?" + buildQuery(query));
         return amazonSellingPartnerClient.getByCategory(uri, amazonOAuthService.getSellerAccessToken(shop.getId()),
                 AmazonApiCategory.PRODUCT_PRICING, operationName, storageName, shop.getId(), request.getCountryCode(),
                 marketplace.getMarketplaceId());

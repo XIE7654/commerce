@@ -4,6 +4,7 @@ import cn.iocoder.yudao.module.amazon.controller.admin.supplysources.vo.SupplySo
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
+import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiCategory;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
@@ -19,6 +20,7 @@ import java.util.Map;
 @Service
 public class SupplySourcesServiceImpl implements SupplySourcesService {
     private static final String PATH = "/supplySources/2020-07-01/supplySources";
+    @Resource private AmazonMarketplaceProvider amazonMarketplaceProvider;
     @Resource private AmazonOAuthService amazonOAuthService; @Resource private AmazonShopMapper amazonShopMapper; @Resource private AmazonSellingPartnerClient amazonSellingPartnerClient;
     /** {@inheritDoc} */ @Override public Map<String, Object> getSupplySources(SupplySourcesReqVO request) { String query = query(request); return invoke(request, HttpMethod.GET, "", query, "getSupplySources"); }
     /** {@inheritDoc} */ @Override public Map<String, Object> createSupplySource(SupplySourcesReqVO request) { return invoke(request, HttpMethod.POST, "", "", "createSupplySource"); }
@@ -29,7 +31,7 @@ public class SupplySourcesServiceImpl implements SupplySourcesService {
     /** 将请求路由至 Supply Sources；归档操作按规范允许 HTTP 204。 */
     private Map<String, Object> invoke(SupplySourcesReqVO request, HttpMethod method, String suffix, String query, String operation) {
         AmazonShopDO shop = shop(request.getShopId()); AmazonMarketplaceEnum marketplace = marketplace(request.getCountryCode());
-        URI uri = URI.create(marketplace.getEndpoint() + PATH + suffix + query);
+        URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + PATH + suffix + query);
         String token = amazonOAuthService.getSellerAccessToken(shop.getId());
         if (method == HttpMethod.GET) return amazonSellingPartnerClient.getByCategory(uri, token, AmazonApiCategory.SUPPLY_SOURCES, operation, operation, shop.getId(), request.getCountryCode(), marketplace.getMarketplaceId());
         return amazonSellingPartnerClient.mutateByCategoryOptional(uri, token, method, request.getBody(), AmazonApiCategory.SUPPLY_SOURCES, operation, operation, shop.getId(), request.getCountryCode(), marketplace.getMarketplaceId());

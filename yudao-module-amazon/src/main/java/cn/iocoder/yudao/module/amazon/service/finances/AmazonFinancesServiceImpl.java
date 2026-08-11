@@ -4,6 +4,7 @@ import cn.iocoder.yudao.module.amazon.controller.admin.finances.vo.AmazonFinance
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
+import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiCategory;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
@@ -27,6 +28,8 @@ public class AmazonFinancesServiceImpl implements AmazonFinancesService {
     private static final String TRANSFERS_2024 = "/finances/transfers/2024-06-01";
     private static final String INVOICES_2026 = "/finances/invoices/2026-06-25";
 
+    @Resource
+    private AmazonMarketplaceProvider amazonMarketplaceProvider;
     @Resource
     private AmazonOAuthService amazonOAuthService;
     @Resource
@@ -230,7 +233,7 @@ public class AmazonFinancesServiceImpl implements AmazonFinancesService {
     private URI uri(AmazonMarketplaceEnum marketplace, String path, Map<String, String> query) {
         String queryString = query.entrySet().stream().map(entry -> encode(entry.getKey()) + "=" + encode(entry.getValue()))
                 .collect(java.util.stream.Collectors.joining("&"));
-        return URI.create(marketplace.getEndpoint() + path + (queryString.isEmpty() ? "" : "?" + queryString));
+        return URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + path + (queryString.isEmpty() ? "" : "?" + queryString));
     }
 
     /** 将可选字符串加入查询参数。 */

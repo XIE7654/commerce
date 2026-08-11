@@ -4,6 +4,7 @@ import cn.iocoder.yudao.module.amazon.controller.admin.replenishment.vo.Replenis
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
+import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiCategory;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
@@ -17,6 +18,7 @@ import java.util.Map;
 @Service
 public class ReplenishmentServiceImpl implements ReplenishmentService {
     private static final String BASE_PATH = "/replenishment/2022-11-07";
+    @Resource private AmazonMarketplaceProvider amazonMarketplaceProvider;
     @Resource private AmazonOAuthService amazonOAuthService;
     @Resource private AmazonShopMapper amazonShopMapper;
     @Resource private AmazonSellingPartnerClient amazonSellingPartnerClient;
@@ -26,7 +28,7 @@ public class ReplenishmentServiceImpl implements ReplenishmentService {
     /** 按官方模型透传补货筛选条件，并使用当前租户店铺的授权令牌调用 Amazon。 */
     private Map<String, Object> post(ReplenishmentReqVO request, String path, String operation) {
         AmazonShopDO shop = shop(request.getShopId()); AmazonMarketplaceEnum marketplace = marketplace(request.getCountryCode());
-        URI uri = URI.create(marketplace.getEndpoint() + BASE_PATH + path);
+        URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + BASE_PATH + path);
         return amazonSellingPartnerClient.mutateByCategory(uri, amazonOAuthService.getSellerAccessToken(shop.getId()), HttpMethod.POST,
                 request.getBody(), AmazonApiCategory.REPLENISHMENT, operation, operation, shop.getId(), request.getCountryCode(), marketplace.getMarketplaceId());
     }

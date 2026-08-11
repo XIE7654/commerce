@@ -10,6 +10,7 @@ import cn.iocoder.yudao.module.amazon.controller.admin.orders.vo.AmazonOrdersLis
 import cn.iocoder.yudao.module.amazon.controller.admin.orders.vo.AmazonOrders2026ListReqVO;
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
+import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.sdk.orders.AmazonOrdersApi;
 import cn.iocoder.yudao.module.amazon.sdk.orders.AmazonOrdersRequest;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiResponse;
@@ -43,6 +44,8 @@ public class AmazonOrdersServiceImpl implements AmazonOrdersService {
     private static final String ORDERS_PATH = "/orders/v0/orders";
     private static final String ORDERS_2026_PATH = "/orders/2026-01-01/orders";
 
+    @Resource
+    private AmazonMarketplaceProvider amazonMarketplaceProvider;
     @Resource
     private AmazonOAuthService amazonOAuthService;
 
@@ -142,7 +145,7 @@ public class AmazonOrdersServiceImpl implements AmazonOrdersService {
         putIfNotBlank(query, "maxResultsPerPage", request.getMaxResultsPerPage() == null ? null : request.getMaxResultsPerPage().toString());
         putIfNotBlank(query, "paginationToken", request.getPaginationToken());
         putIfNotBlank(query, "includedData", join(request.getIncludedData()));
-        URI uri = URI.create(marketplace.getEndpoint() + ORDERS_2026_PATH + "?" + buildQuery(query));
+        URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + ORDERS_2026_PATH + "?" + buildQuery(query));
         return execute2026(request.getShopId(), request.getCountryCode(), uri, "getOrders2026", "orders-2026");
     }
 
@@ -153,7 +156,7 @@ public class AmazonOrdersServiceImpl implements AmazonOrdersService {
         String orderId = UriUtils.encodePathSegment(request.getOrderId(), StandardCharsets.UTF_8);
         Map<String, String> query = new TreeMap<>();
         putIfNotBlank(query, "includedData", join(request.getIncludedData()));
-        URI uri = URI.create(marketplace.getEndpoint() + ORDERS_2026_PATH + "/" + orderId + "?" + buildQuery(query));
+        URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + ORDERS_2026_PATH + "/" + orderId + "?" + buildQuery(query));
         return execute2026(request.getShopId(), request.getCountryCode(), uri, "getOrder2026", "order-2026");
     }
 
@@ -170,7 +173,7 @@ public class AmazonOrdersServiceImpl implements AmazonOrdersService {
                                                     String storageName) {
         AmazonMarketplaceEnum marketplace = amazonShopService.requireMarketplace(request.getCountryCode());
         String orderId = UriUtils.encodePathSegment(request.getOrderId(), StandardCharsets.UTF_8);
-        URI uri = URI.create(marketplace.getEndpoint() + ORDERS_PATH + "/" + orderId + suffix);
+        URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + ORDERS_PATH + "/" + orderId + suffix);
         return execute(request.getShopId(), request.getCountryCode(), uri, operationName, storageName);
     }
 
@@ -190,7 +193,7 @@ public class AmazonOrdersServiceImpl implements AmazonOrdersService {
         Map<String, String> query = new TreeMap<>();
         putIfNotBlank(query, "NextToken", request.getNextToken());
         String queryString = query.isEmpty() ? "" : "?" + buildQuery(query);
-        URI uri = URI.create(marketplace.getEndpoint() + ORDERS_PATH + "/" + orderId + suffix + queryString);
+        URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + ORDERS_PATH + "/" + orderId + suffix + queryString);
         return execute(request.getShopId(), request.getCountryCode(), uri, operationName, storageName);
     }
 
@@ -209,7 +212,7 @@ public class AmazonOrdersServiceImpl implements AmazonOrdersService {
         AmazonShopDO shop = amazonShopService.requireShop(request.getShopId());
         AmazonMarketplaceEnum marketplace = amazonShopService.requireMarketplace(request.getCountryCode());
         String orderId = UriUtils.encodePathSegment(request.getOrderId(), StandardCharsets.UTF_8);
-        URI uri = URI.create(marketplace.getEndpoint() + ORDERS_PATH + "/" + orderId + suffix);
+        URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + ORDERS_PATH + "/" + orderId + suffix);
         String accessToken = amazonOAuthService.getSellerAccessToken(shop.getId());
         AmazonOrdersRequest sdkRequest = sdkRequest(shop, request.getCountryCode(), marketplace.getMarketplaceId(),
                 accessToken, uri, operationName, operationName);
@@ -290,7 +293,7 @@ public class AmazonOrdersServiceImpl implements AmazonOrdersService {
         putIfNotBlank(query, "EarliestDeliveryDateAfter", request.getEarliestDeliveryDateAfter());
         putIfNotBlank(query, "LatestDeliveryDateBefore", request.getLatestDeliveryDateBefore());
         putIfNotBlank(query, "LatestDeliveryDateAfter", request.getLatestDeliveryDateAfter());
-        return URI.create(marketplace.getEndpoint() + ORDERS_PATH + "?" + buildQuery(query));
+        return URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + ORDERS_PATH + "?" + buildQuery(query));
     }
 
     /**

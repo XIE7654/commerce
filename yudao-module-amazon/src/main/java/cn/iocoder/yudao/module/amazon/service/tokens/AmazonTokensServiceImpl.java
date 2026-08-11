@@ -5,6 +5,7 @@ import cn.iocoder.yudao.module.amazon.controller.admin.tokens.vo.AmazonRestricte
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
+import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
 import jakarta.annotation.Resource;
@@ -20,6 +21,8 @@ public class AmazonTokensServiceImpl implements AmazonTokensService {
 
     private static final String RESTRICTED_DATA_TOKEN_PATH = "/tokens/2021-03-01/restrictedDataToken";
 
+    @Resource
+    private AmazonMarketplaceProvider amazonMarketplaceProvider;
     @Resource
     private AmazonOAuthService amazonOAuthService;
     @Resource
@@ -38,7 +41,7 @@ public class AmazonTokensServiceImpl implements AmazonTokensService {
         }
         body.put("restrictedResources", request.getRestrictedResources());
         Map<String, Object> response = amazonSellingPartnerClient.createRestrictedDataToken(
-                URI.create(marketplace.getEndpoint() + RESTRICTED_DATA_TOKEN_PATH),
+                URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + RESTRICTED_DATA_TOKEN_PATH),
                 amazonOAuthService.getSellerAccessToken(shop.getId()), body, shop.getId(), request.getCountryCode(),
                 marketplace.getMarketplaceId());
         return AmazonRestrictedDataTokenRespVO.of(response);

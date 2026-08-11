@@ -4,6 +4,7 @@ import cn.iocoder.yudao.module.amazon.controller.admin.shipmentinvoicing.vo.Ship
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
+import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiCategory;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
@@ -22,6 +23,8 @@ public class ShipmentInvoicingServiceImpl implements ShipmentInvoicingService {
 
     private static final String API_PREFIX = "/fba/outbound/brazil/v0/shipments/";
 
+    @Resource
+    private AmazonMarketplaceProvider amazonMarketplaceProvider;
     @Resource
     private AmazonOAuthService amazonOAuthService;
     @Resource
@@ -87,7 +90,7 @@ public class ShipmentInvoicingServiceImpl implements ShipmentInvoicingService {
 
     /** 生成货件资源 URI，并对货件编号编码以保持路径边界。 */
     private URI uri(AmazonMarketplaceEnum marketplace, ShipmentInvoicingRequestVO request, String suffix) {
-        return URI.create(marketplace.getEndpoint() + API_PREFIX + encode(requiredShipmentId(request.getShipmentId())) + suffix);
+        return URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + API_PREFIX + encode(requiredShipmentId(request.getShipmentId())) + suffix);
     }
 
     /** 校验货件编号，保证 Service 被非 Controller 调用时也不会构造无效路径。 */

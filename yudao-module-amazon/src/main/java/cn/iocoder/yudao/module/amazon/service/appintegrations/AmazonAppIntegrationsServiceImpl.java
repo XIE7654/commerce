@@ -7,6 +7,7 @@ import cn.iocoder.yudao.module.amazon.controller.admin.appintegrations.vo.Amazon
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
+import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiCategory;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
@@ -26,6 +27,8 @@ public class AmazonAppIntegrationsServiceImpl implements AmazonAppIntegrationsSe
 
     private static final String PATH = "/appIntegrations/2024-04-01/notifications";
 
+    @Resource
+    private AmazonMarketplaceProvider amazonMarketplaceProvider;
     @Resource
     private AmazonOAuthService amazonOAuthService;
     @Resource
@@ -74,7 +77,7 @@ public class AmazonAppIntegrationsServiceImpl implements AmazonAppIntegrationsSe
                                         String operationName, boolean allowEmptyResponse) {
         AmazonShopDO shop = requireShop(request.getShopId());
         AmazonMarketplaceEnum marketplace = requireMarketplace(request.getCountryCode());
-        URI uri = URI.create(marketplace.getEndpoint() + path);
+        URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + path);
         return allowEmptyResponse
                 ? amazonSellingPartnerClient.mutateByCategoryOptional(uri, amazonOAuthService.getSellerAccessToken(shop.getId()),
                 HttpMethod.POST, body, AmazonApiCategory.APP_INTEGRATIONS, operationName, "notification", shop.getId(),

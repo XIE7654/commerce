@@ -4,6 +4,7 @@ import cn.iocoder.yudao.module.amazon.controller.admin.sellers.vo.AmazonSellersR
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
+import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.sdk.sellers.AmazonSellersApi;
 import cn.iocoder.yudao.module.amazon.sdk.sellers.AmazonSellersRequest;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiResponse;
@@ -23,6 +24,8 @@ import java.util.List;
  */
 @Service
 public class AmazonSellersServiceImpl implements AmazonSellersService {
+    @Resource
+    private AmazonMarketplaceProvider amazonMarketplaceProvider;
     @Resource
     private AmazonOAuthService amazonOAuthService;
     @Resource
@@ -76,7 +79,7 @@ public class AmazonSellersServiceImpl implements AmazonSellersService {
         AmazonMarketplaceEnum marketplace = requireMarketplace(shop.getRegion());
         AmazonSellersRequest sdkRequest = new AmazonSellersRequest();
         sdkRequest.setShopId(shop.getId());
-        sdkRequest.setEndpoint(marketplace.getEndpoint());
+        sdkRequest.setEndpoint(amazonMarketplaceProvider.getEndpoint(marketplace));
         sdkRequest.setAccessToken(amazonOAuthService.getSellerAccessToken(shop.getId()));
         return sdkRequest;
     }

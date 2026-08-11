@@ -4,6 +4,7 @@ import cn.iocoder.yudao.module.amazon.controller.admin.sellerwallet.vo.AmazonSel
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
+import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiCategory;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 @Service
 public class AmazonSellerWalletServiceImpl implements AmazonSellerWalletService {
     private static final String PATH = "/finances/transfers/wallet/2024-03-01";
+    @Resource private AmazonMarketplaceProvider amazonMarketplaceProvider;
     @Resource private AmazonOAuthService amazonOAuthService;
     @Resource private AmazonShopMapper amazonShopMapper;
     @Resource private AmazonSellingPartnerClient amazonSellingPartnerClient;
@@ -49,7 +51,7 @@ public class AmazonSellerWalletServiceImpl implements AmazonSellerWalletService 
      * @param storage 响应归档名称
      * @return Amazon 原始 JSON 响应
      */
-    private Map<String, Object> get(AmazonSellerWalletReqVO request, String resource, Map<String, String> parameters, String operation, String storage) { AmazonShopDO shop = shop(request.getShopId()); AmazonMarketplaceEnum marketplace = marketplace(request.getCountryCode()); Map<String, String> query = new TreeMap<>(parameters); query.put("marketplaceId", marketplace.getMarketplaceId()); URI uri = URI.create(marketplace.getEndpoint() + PATH + resource + "?" + query(query)); return amazonSellingPartnerClient.getByCategory(uri, amazonOAuthService.getSellerAccessToken(shop.getId()), AmazonApiCategory.SELLER_WALLET, operation, storage, shop.getId(), request.getCountryCode(), marketplace.getMarketplaceId()); }
+    private Map<String, Object> get(AmazonSellerWalletReqVO request, String resource, Map<String, String> parameters, String operation, String storage) { AmazonShopDO shop = shop(request.getShopId()); AmazonMarketplaceEnum marketplace = marketplace(request.getCountryCode()); Map<String, String> query = new TreeMap<>(parameters); query.put("marketplaceId", marketplace.getMarketplaceId()); URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + PATH + resource + "?" + query(query)); return amazonSellingPartnerClient.getByCategory(uri, amazonOAuthService.getSellerAccessToken(shop.getId()), AmazonApiCategory.SELLER_WALLET, operation, storage, shop.getId(), request.getCountryCode(), marketplace.getMarketplaceId()); }
     /**
      * 调用 Seller Wallet 写接口；数字签名仅随请求转发，由审计服务负责脱敏记录。
      *
@@ -59,7 +61,7 @@ public class AmazonSellerWalletServiceImpl implements AmazonSellerWalletService 
      * @param operation Amazon 操作名称
      * @return Amazon 原始 JSON 响应
      */
-    private Map<String, Object> mutate(AmazonSellerWalletReqVO request, String resource, HttpMethod method, String operation) { AmazonShopDO shop = shop(request.getShopId()); AmazonMarketplaceEnum marketplace = marketplace(request.getCountryCode()); if (method != HttpMethod.DELETE) { if (request.getBody() == null || request.getBody().isEmpty()) throw new IllegalArgumentException("body 不能为空"); require(request.getDestAccountDigitalSignature(), "destAccountDigitalSignature"); require(request.getAmountDigitalSignature(), "amountDigitalSignature"); } URI uri = URI.create(marketplace.getEndpoint() + PATH + resource + "?" + query(Map.of("marketplaceId", marketplace.getMarketplaceId()))); return amazonSellingPartnerClient.mutateSellerWallet(uri, amazonOAuthService.getSellerAccessToken(shop.getId()), method, request.getBody(), method == HttpMethod.DELETE ? Map.of() : Map.of("destAccountDigitalSignature", request.getDestAccountDigitalSignature(), "amountDigitalSignature", request.getAmountDigitalSignature()), operation, shop.getId(), request.getCountryCode(), marketplace.getMarketplaceId()); }
+    private Map<String, Object> mutate(AmazonSellerWalletReqVO request, String resource, HttpMethod method, String operation) { AmazonShopDO shop = shop(request.getShopId()); AmazonMarketplaceEnum marketplace = marketplace(request.getCountryCode()); if (method != HttpMethod.DELETE) { if (request.getBody() == null || request.getBody().isEmpty()) throw new IllegalArgumentException("body 不能为空"); require(request.getDestAccountDigitalSignature(), "destAccountDigitalSignature"); require(request.getAmountDigitalSignature(), "amountDigitalSignature"); } URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + PATH + resource + "?" + query(Map.of("marketplaceId", marketplace.getMarketplaceId()))); return amazonSellingPartnerClient.mutateSellerWallet(uri, amazonOAuthService.getSellerAccessToken(shop.getId()), method, request.getBody(), method == HttpMethod.DELETE ? Map.of() : Map.of("destAccountDigitalSignature", request.getDestAccountDigitalSignature(), "amountDigitalSignature", request.getAmountDigitalSignature()), operation, shop.getId(), request.getCountryCode(), marketplace.getMarketplaceId()); }
     /** 将可选键值对中过滤空值，避免 Amazon 接收到无效空参数。 */
     private Map<String, String> optional(String key1, String value1, String key2, String value2) { Map<String, String> values = new TreeMap<>(); if (!blank(value1)) values.put(key1, value1); if (!blank(value2)) values.put(key2, value2); return values; }
     /** 对路径标识符进行编码并校验其必填性。 */

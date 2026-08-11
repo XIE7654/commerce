@@ -6,7 +6,8 @@ import lombok.Getter;
 /**
  * Amazon Marketplace、SP-API Endpoint 和 AWS Region 配置。
  *
- * <p>国家代码可直接使用，也支持将配置模板中的 {@code {{US}}} 形式解析为对应市场。</p>
+ * <p>国家代码可直接使用，也支持将配置模板中的 {@code {{US}}} 形式解析为对应市场。
+ * 枚举保存生产 SP-API 端点，并通过 {@link #getSandboxEndpoint()} 提供对应沙盒端点。</p>
  */
 @Getter
 @AllArgsConstructor
@@ -50,6 +51,20 @@ public enum AmazonMarketplaceEnum {
     private final String endpoint;
     /** SP-API 对应的 AWS Region。 */
     private final String awsRegion;
+
+    /**
+     * 获取当前区域对应的 SP-API 沙盒端点。
+     *
+     * @return 沙盒环境 SP-API 端点
+     */
+    public String getSandboxEndpoint() {
+        return switch (salesRegion) {
+            case "NA" -> "https://sandbox.sellingpartnerapi-na.amazon.com";
+            case "EU" -> "https://sandbox.sellingpartnerapi-eu.amazon.com";
+            case "FE" -> "https://sandbox.sellingpartnerapi-fe.amazon.com";
+            default -> throw new IllegalArgumentException("不支持的 Amazon 销售区域: " + salesRegion);
+        };
+    }
 
     /**
      * 根据国家代码查找 Marketplace 配置。
