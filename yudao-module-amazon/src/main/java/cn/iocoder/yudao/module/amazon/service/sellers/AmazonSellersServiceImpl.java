@@ -6,7 +6,7 @@ import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
 import cn.iocoder.yudao.module.amazon.sdk.sellers.AmazonSellersApi;
 import cn.iocoder.yudao.module.amazon.sdk.sellers.AmazonSellersRequest;
-import cn.iocoder.yudao.module.amazon.sdk.sellers.AmazonSellersResponse;
+import cn.iocoder.yudao.module.amazon.sdk.AmazonApiResponse;
 import cn.iocoder.yudao.module.amazon.sdk.sellers.dto.AccountDto;
 import cn.iocoder.yudao.module.amazon.sdk.sellers.dto.MarketplaceParticipationDto;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
@@ -38,7 +38,7 @@ public class AmazonSellersServiceImpl implements AmazonSellersService {
      * {@inheritDoc}
      */
     @Override
-    public AmazonSellersResponse<List<MarketplaceParticipationDto>> getMarketplaceParticipations(AmazonSellersReqVO request) {
+    public AmazonApiResponse<List<MarketplaceParticipationDto>> getMarketplaceParticipations(AmazonSellersReqVO request) {
         return amazonSellersApi.getMarketplaceParticipations(buildSdkRequest(request));
     }
 
@@ -46,7 +46,7 @@ public class AmazonSellersServiceImpl implements AmazonSellersService {
      * {@inheritDoc}
      */
     @Override
-    public AmazonSellersResponse<AccountDto> getAccount(AmazonSellersReqVO request) {
+    public AmazonApiResponse<AccountDto> getAccount(AmazonSellersReqVO request) {
         return amazonSellersApi.getAccount(buildSdkRequest(request));
     }
 
@@ -55,12 +55,12 @@ public class AmazonSellersServiceImpl implements AmazonSellersService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public AmazonSellersResponse<AccountDto> syncAccount(AmazonSellersReqVO request) {
-        AmazonSellersResponse<AccountDto> accountResponse = getAccount(request);
+    public AmazonApiResponse<AccountDto> syncAccount(AmazonSellersReqVO request) {
+        AmazonApiResponse<AccountDto> accountResponse = getAccount(request);
         amazonSellerAccountService.syncSellerAccount(request.getShopId(), accountResponse.getData());
 
         // Marketplace 参与状态不包含在 Account 响应中，需通过独立的 Sellers 接口获取。
-        AmazonSellersResponse<List<MarketplaceParticipationDto>> marketplaceResponse = getMarketplaceParticipations(request);
+        AmazonApiResponse<List<MarketplaceParticipationDto>> marketplaceResponse = getMarketplaceParticipations(request);
         marketplaceParticipationService.syncMarketplaceParticipations(request.getShopId(), marketplaceResponse.getData());
         return accountResponse;
     }

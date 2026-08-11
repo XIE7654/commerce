@@ -29,7 +29,7 @@ public class AmazonListingsSearchReqVO {
     @Schema(description = "商品标识符，最多 20 个；与 identifiersType 配套使用", example = "SKU-001,SKU-002")
     @Size(max = 20, message = "商品标识符最多 20 个")
     private List<String> identifiers;
-    @Schema(description = "商品标识符类型", example = "SKU")
+    @Schema(description = "商品标识符类型；传 identifiers 时必填，支持 SKU、ASIN、UPC、EAN 等", example = "SKU")
     private String identifiersType;
     @Schema(description = "仅查询指定变体父 SKU 的子体", example = "PARENT-SKU")
     private String variationParentSku;

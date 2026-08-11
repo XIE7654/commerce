@@ -3,6 +3,8 @@ package cn.iocoder.yudao.module.amazon.controller.admin.orders.vo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.Data;
 
 import java.util.List;
@@ -31,7 +33,9 @@ public class AmazonOrders2026ListReqVO {
     private List<String> fulfillmentStatuses;
     @Schema(description = "履行方筛选")
     private List<String> fulfilledBy;
-    @Schema(description = "每页最大订单数")
+    @Schema(description = "每页最大订单数，取值范围 1-100")
+    @Min(value = 1, message = "每页最大订单数不能小于 1")
+    @Max(value = 100, message = "每页最大订单数不能大于 100")
     private Integer maxResultsPerPage;
     @Schema(description = "上一页返回的分页令牌")
     private String paginationToken;

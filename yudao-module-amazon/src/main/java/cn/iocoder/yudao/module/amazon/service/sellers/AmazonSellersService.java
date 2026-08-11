@@ -1,7 +1,7 @@
 package cn.iocoder.yudao.module.amazon.service.sellers;
 
 import cn.iocoder.yudao.module.amazon.controller.admin.sellers.vo.AmazonSellersReqVO;
-import cn.iocoder.yudao.module.amazon.sdk.sellers.AmazonSellersResponse;
+import cn.iocoder.yudao.module.amazon.sdk.AmazonApiResponse;
 import cn.iocoder.yudao.module.amazon.sdk.sellers.dto.AccountDto;
 import cn.iocoder.yudao.module.amazon.sdk.sellers.dto.MarketplaceParticipationDto;
 import java.util.List;
@@ -14,14 +14,14 @@ public interface AmazonSellersService {
      * @param request 店铺参数
      * @return 包含强类型 Marketplace 数据的统一响应
      */
-    AmazonSellersResponse<List<MarketplaceParticipationDto>> getMarketplaceParticipations(AmazonSellersReqVO request);
+    AmazonApiResponse<List<MarketplaceParticipationDto>> getMarketplaceParticipations(AmazonSellersReqVO request);
     /**
      * 查询当前卖家的账户信息。
      *
      * @param request 店铺参数
      * @return 包含强类型账户数据的统一响应
      */
-    AmazonSellersResponse<AccountDto> getAccount(AmazonSellersReqVO request);
+    AmazonApiResponse<AccountDto> getAccount(AmazonSellersReqVO request);
 
     /**
      * 同步指定店铺的卖家账户档案及 Marketplace 参与状态。
@@ -29,5 +29,5 @@ public interface AmazonSellersService {
      * @param request 店铺参数
      * @return 已同步的强类型账户数据
      */
-    AmazonSellersResponse<AccountDto> syncAccount(AmazonSellersReqVO request);
+    AmazonApiResponse<AccountDto> syncAccount(AmazonSellersReqVO request);
 }

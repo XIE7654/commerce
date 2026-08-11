@@ -30,6 +30,7 @@ import cn.iocoder.yudao.module.amazon.dal.mysql.seller.AmazonShopMarketplacePart
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
 import cn.iocoder.yudao.module.amazon.service.listings.AmazonListingsService;
+import cn.iocoder.yudao.module.amazon.sdk.AmazonApiResponse;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.framework.common.util.json.JsonUtils.toJsonString;
@@ -37,7 +38,6 @@ import static cn.iocoder.yudao.module.amazon.enums.ErrorCodeConstants.*;
 import static cn.iocoder.yudao.module.amazon.utils.AmazonDateTimeUtils.parseOrNull;
 import static cn.iocoder.yudao.module.amazon.utils.AmazonResponseUtils.getList;
 import static cn.iocoder.yudao.module.amazon.utils.AmazonResponseUtils.getMap;
-import static cn.iocoder.yudao.module.amazon.utils.AmazonResponseUtils.getPayload;
 import static cn.iocoder.yudao.module.amazon.utils.AmazonResponseUtils.getString;
 import static cn.iocoder.yudao.module.amazon.utils.AmazonResponseUtils.toMap;
 
@@ -173,9 +173,9 @@ public class AmazonListingMarketplaceServiceImpl implements AmazonListingMarketp
             String pageToken = null;
             Set<String> pageTokens = new HashSet<>();
             do {
-                Map<String, Object> response = amazonListingsService.searchListingsItems(
+                AmazonApiResponse<Map<String, Object>> response = amazonListingsService.searchListingsItems(
                         buildSearchRequest(shop.getId(), countryCode, pageToken));
-                Map<String, Object> payload = getPayload(response);
+                Map<String, Object> payload = response.getData();
                 for (Object item : getList(payload, "items")) {
                     saveListingItem(shop.getId(), marketplaceId, item, result);
                 }

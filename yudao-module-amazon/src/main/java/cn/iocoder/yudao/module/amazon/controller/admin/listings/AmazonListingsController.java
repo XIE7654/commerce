@@ -7,6 +7,7 @@ import cn.iocoder.yudao.module.amazon.controller.admin.listings.vo.AmazonListing
 import cn.iocoder.yudao.module.amazon.controller.admin.listings.vo.AmazonListingsItemPutReqVO;
 import cn.iocoder.yudao.module.amazon.controller.admin.listings.vo.AmazonListingsRestrictionsReqVO;
 import cn.iocoder.yudao.module.amazon.service.listings.AmazonListingsService;
+import cn.iocoder.yudao.module.amazon.sdk.AmazonApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -41,7 +42,7 @@ public class AmazonListingsController {
     @PostMapping("/search")
     @Operation(summary = "查询 Amazon Listings Items")
     @PreAuthorize("@ss.hasPermission('amazon:listings:query')")
-    public CommonResult<Map<String, Object>> search(@Valid @RequestBody AmazonListingsSearchReqVO request) {
+    public CommonResult<AmazonApiResponse<Map<String, Object>>> search(@Valid @RequestBody AmazonListingsSearchReqVO request) {
         return CommonResult.success(amazonListingsService.searchListingsItems(request));
     }
 
@@ -54,7 +55,7 @@ public class AmazonListingsController {
     @PostMapping("/item")
     @Operation(summary = "按 SKU 查询 Amazon Listings Item")
     @PreAuthorize("@ss.hasPermission('amazon:listings:query')")
-    public CommonResult<Map<String, Object>> getItem(@Valid @RequestBody AmazonListingsItemGetReqVO request) {
+    public CommonResult<AmazonApiResponse<Map<String, Object>>> getItem(@Valid @RequestBody AmazonListingsItemGetReqVO request) {
         return CommonResult.success(amazonListingsService.getListingsItem(request));
     }
 
@@ -67,7 +68,7 @@ public class AmazonListingsController {
     @PostMapping("/item/put")
     @Operation(summary = "创建或全量更新 Amazon Listings Item")
     @PreAuthorize("@ss.hasPermission('amazon:listings:update')")
-    public CommonResult<Map<String, Object>> putItem(@Valid @RequestBody AmazonListingsItemPutReqVO request) {
+    public CommonResult<AmazonApiResponse<Map<String, Object>>> putItem(@Valid @RequestBody AmazonListingsItemPutReqVO request) {
         return CommonResult.success(amazonListingsService.putListingsItem(request));
     }
 
@@ -80,7 +81,7 @@ public class AmazonListingsController {
     @PostMapping("/item/patch")
     @Operation(summary = "局部更新 Amazon Listings Item")
     @PreAuthorize("@ss.hasPermission('amazon:listings:update')")
-    public CommonResult<Map<String, Object>> patchItem(@Valid @RequestBody AmazonListingsItemPatchReqVO request) {
+    public CommonResult<AmazonApiResponse<Map<String, Object>>> patchItem(@Valid @RequestBody AmazonListingsItemPatchReqVO request) {
         return CommonResult.success(amazonListingsService.patchListingsItem(request));
     }
 
@@ -93,7 +94,7 @@ public class AmazonListingsController {
     @PostMapping("/item/delete")
     @Operation(summary = "删除 Amazon Listings Item")
     @PreAuthorize("@ss.hasPermission('amazon:listings:delete')")
-    public CommonResult<Map<String, Object>> deleteItem(@Valid @RequestBody AmazonListingsItemGetReqVO request) {
+    public CommonResult<AmazonApiResponse<Map<String, Object>>> deleteItem(@Valid @RequestBody AmazonListingsItemGetReqVO request) {
         return CommonResult.success(amazonListingsService.deleteListingsItem(request));
     }
 
@@ -106,7 +107,7 @@ public class AmazonListingsController {
     @PostMapping("/restrictions")
     @Operation(summary = "查询 Amazon Listings 上架限制")
     @PreAuthorize("@ss.hasPermission('amazon:listings:query')")
-    public CommonResult<Map<String, Object>> getRestrictions(@Valid @RequestBody AmazonListingsRestrictionsReqVO request) {
+    public CommonResult<AmazonApiResponse<Map<String, Object>>> getRestrictions(@Valid @RequestBody AmazonListingsRestrictionsReqVO request) {
         return CommonResult.success(amazonListingsService.getListingsRestrictions(request));
     }
 }

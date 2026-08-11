@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.amazon.controller.admin.listingsrestrictions;
 
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.module.amazon.controller.admin.listings.vo.AmazonListingsRestrictionsReqVO;
+import cn.iocoder.yudao.module.amazon.sdk.AmazonApiResponse;
 import cn.iocoder.yudao.module.amazon.service.listingsrestrictions.AmazonListingsRestrictionsService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -21,9 +22,11 @@ public class AmazonListingsRestrictionsController {
     @Resource
     private AmazonListingsRestrictionsService service;
 
+    /** 查询商品上架限制。 */
     @PostMapping("/get")
     @PreAuthorize("@ss.hasPermission('amazon:listings-restrictions:query')")
-    public CommonResult<Map<String, Object>> get(@Valid @RequestBody AmazonListingsRestrictionsReqVO r) {
-        return CommonResult.success(service.get(r));
+    public CommonResult<AmazonApiResponse<Map<String, Object>>> get(
+            @Valid @RequestBody AmazonListingsRestrictionsReqVO request) {
+        return CommonResult.success(service.get(request));
     }
 }
