@@ -11,7 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import cn.iocoder.yudao.module.amazon.sdk.sellers.AmazonSellersResponse;
+import cn.iocoder.yudao.module.amazon.sdk.AmazonApiResponse;
 import cn.iocoder.yudao.module.amazon.sdk.sellers.dto.AccountDto;
 import cn.iocoder.yudao.module.amazon.sdk.sellers.dto.MarketplaceParticipationDto;
 import java.util.List;
@@ -33,8 +33,23 @@ public class AmazonSellersController {
     @PostMapping("/marketplace-participations")
     @Operation(summary = "查询卖家站点参与状态")
     @PreAuthorize("@ss.hasPermission('amazon:sellers:query')")
-    public CommonResult<AmazonSellersResponse<List<MarketplaceParticipationDto>>> getMarketplaceParticipations(@Valid @RequestBody AmazonSellersReqVO request) {
+    public CommonResult<AmazonApiResponse<List<MarketplaceParticipationDto>>> getMarketplaceParticipations(@Valid @RequestBody AmazonSellersReqVO request) {
         return CommonResult.success(amazonSellersService.getMarketplaceParticipations(request));
+    }
+
+    /**
+     * 同步卖家在各 Amazon 站点的参与状态。
+     *
+     * <p>同步结果会写入 {@code amazon_shop_marketplace}，供后续站点维度业务使用。</p>
+     *
+     * @param request 店铺参数
+     * @return Amazon 返回的站点参与状态
+     */
+    @PostMapping("/marketplace-participations/sync")
+    @Operation(summary = "同步卖家站点参与状态")
+    @PreAuthorize("@ss.hasPermission('amazon:sellers:update')")
+    public CommonResult<AmazonApiResponse<List<MarketplaceParticipationDto>>> syncMarketplaceParticipations(@Valid @RequestBody AmazonSellersReqVO request) {
+        return CommonResult.success(amazonSellersService.syncMarketplaceParticipations(request));
     }
 
     /**
@@ -43,7 +58,7 @@ public class AmazonSellersController {
     @PostMapping("/account")
     @Operation(summary = "查询 Amazon 卖家账户")
     @PreAuthorize("@ss.hasPermission('amazon:sellers:query')")
-    public CommonResult<AmazonSellersResponse<AccountDto>> getAccount(@Valid @RequestBody AmazonSellersReqVO request) {
+    public CommonResult<AmazonApiResponse<AccountDto>> getAccount(@Valid @RequestBody AmazonSellersReqVO request) {
         return CommonResult.success(amazonSellersService.getAccount(request));
     }
 
@@ -53,7 +68,7 @@ public class AmazonSellersController {
     @PostMapping("/account/sync")
     @Operation(summary = "同步 Amazon 卖家账户及站点参与状态")
     @PreAuthorize("@ss.hasPermission('amazon:sellers:update')")
-    public CommonResult<AmazonSellersResponse<AccountDto>> syncAccount(@Valid @RequestBody AmazonSellersReqVO request) {
+    public CommonResult<AmazonApiResponse<AccountDto>> syncAccount(@Valid @RequestBody AmazonSellersReqVO request) {
         return CommonResult.success(amazonSellersService.syncAccount(request));
     }
 }

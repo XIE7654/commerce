@@ -4,6 +4,7 @@ import cn.iocoder.yudao.module.amazon.controller.admin.vendorretailprocurement.v
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
+import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiCategory;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
@@ -33,6 +34,7 @@ public class VendorRetailProcurementServiceImpl implements VendorRetailProcureme
     private static final Set<String> SHIPMENT_QUERY = fields("limit", "sortOrder", "nextToken", "createdAfter", "createdBefore", "shipmentConfirmedBefore", "shipmentConfirmedAfter", "packageLabelCreatedBefore", "packageLabelCreatedAfter", "shippedBefore", "shippedAfter", "estimatedDeliveryBefore", "estimatedDeliveryAfter", "shipmentDeliveryBefore", "shipmentDeliveryAfter", "requestedPickUpBefore", "requestedPickUpAfter", "scheduledPickUpBefore", "scheduledPickUpAfter", "currentShipmentStatus", "vendorShipmentIdentifier", "buyerReferenceNumber", "buyerWarehouseCode", "sellerWarehouseCode");
     private static final Set<String> LABEL_QUERY = fields("limit", "sortOrder", "nextToken", "labelCreatedAfter", "labelCreatedBefore", "buyerReferenceNumber", "vendorShipmentIdentifier", "sellerWarehouseCode");
 
+    @Resource private AmazonMarketplaceProvider amazonMarketplaceProvider;
     @Resource private AmazonOAuthService amazonOAuthService;
     @Resource private AmazonShopMapper amazonShopMapper;
     @Resource private AmazonSellingPartnerClient amazonSellingPartnerClient;
@@ -91,7 +93,7 @@ public class VendorRetailProcurementServiceImpl implements VendorRetailProcureme
     /** 将路径及查询参数转换为端点 URI，并对可变数据进行百分号编码。 */
     private URI uri(AmazonMarketplaceEnum marketplace, String path, Map<String, String> query) {
         String parameters = query.entrySet().stream().map(entry -> encode(entry.getKey()) + "=" + encode(entry.getValue())).collect(Collectors.joining("&"));
-        return URI.create(marketplace.getEndpoint() + path + (parameters.isEmpty() ? "" : "?" + parameters));
+        return URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + path + (parameters.isEmpty() ? "" : "?" + parameters));
     }
 
     /** 校验并编码路径变量，防止采购订单或交易编号改变 URI 路径结构。 */

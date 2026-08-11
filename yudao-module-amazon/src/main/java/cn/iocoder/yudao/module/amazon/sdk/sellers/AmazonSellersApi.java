@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.amazon.sdk.sellers;
 
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiCategory;
+import cn.iocoder.yudao.module.amazon.sdk.AmazonApiResponse;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import cn.iocoder.yudao.module.amazon.sdk.sellers.dto.*;
 import jakarta.annotation.Resource;
@@ -24,7 +25,7 @@ public class AmazonSellersApi {
     /**
      * 查询卖家可参与销售的 Marketplace。
      */
-    public AmazonSellersResponse<List<MarketplaceParticipationDto>> getMarketplaceParticipations(AmazonSellersRequest request) {
+    public AmazonApiResponse<List<MarketplaceParticipationDto>> getMarketplaceParticipations(AmazonSellersRequest request) {
         Map<String, Object> raw = call(request, "/sellers/v1/marketplaceParticipations", "getMarketplaceParticipations", "marketplace-participations");
         List<MarketplaceParticipationDto> data = new ArrayList<>();
         for (Object item : getList(raw, "payload")) {
@@ -36,7 +37,7 @@ public class AmazonSellersApi {
     /**
      * 查询卖家账户及其 Marketplace 参与信息。
      */
-    public AmazonSellersResponse<AccountDto> getAccount(AmazonSellersRequest request) {
+    public AmazonApiResponse<AccountDto> getAccount(AmazonSellersRequest request) {
         Map<String, Object> raw = call(request, "/sellers/v1/account", "getAccount", "account");
         return response(raw, account(getMap(raw, "payload")));
     }
@@ -53,10 +54,10 @@ public class AmazonSellersApi {
     /**
      * 将 Amazon 的 payload/errors 结构转换为调用方统一的 code/data/msg。
      */
-    private <T> AmazonSellersResponse<T> response(Map<String, Object> raw, T data) {
+    private <T> AmazonApiResponse<T> response(Map<String, Object> raw, T data) {
         List<?> errors = getList(raw, "errors");
         String msg = errors.isEmpty() ? null : String.valueOf(errors.get(0));
-        return new AmazonSellersResponse<>(errors.isEmpty() ? 200 : 400, data, msg);
+        return new AmazonApiResponse<>(errors.isEmpty() ? 200 : 400, data, msg);
     }
 
     /**

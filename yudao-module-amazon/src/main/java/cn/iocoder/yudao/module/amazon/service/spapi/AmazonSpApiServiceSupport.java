@@ -25,6 +25,8 @@ public abstract class AmazonSpApiServiceSupport {
     private static final Pattern PATH_PARAM_PATTERN = Pattern.compile("\\{([^}]+)}");
 
     @Resource
+    private AmazonMarketplaceProvider amazonMarketplaceProvider;
+    @Resource
     private AmazonOAuthService amazonOAuthService;
     @Resource
     private AmazonShopService amazonShopService;
@@ -46,7 +48,7 @@ public abstract class AmazonSpApiServiceSupport {
         AmazonShopDO shop = amazonShopService.requireShop(request.getShopId());
         AmazonMarketplaceEnum marketplace = amazonShopService.requireMarketplace(request.getCountryCode());
         String query = buildQuery(request.getQuery());
-        URI uri = URI.create(marketplace.getEndpoint() + buildPath(definition.path(), request.getPathParams())
+        URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + buildPath(definition.path(), request.getPathParams())
                 + (query.isEmpty() ? "" : "?" + query));
         String token = amazonOAuthService.getSellerAccessToken(shop.getId());
         if (definition.method() == HttpMethod.GET) {

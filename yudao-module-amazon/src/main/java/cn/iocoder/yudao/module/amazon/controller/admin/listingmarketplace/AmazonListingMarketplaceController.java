@@ -46,8 +46,9 @@ public class AmazonListingMarketplaceController {
     @PostMapping("/sync")
     @Operation(summary = "同步全部可用店铺 Amazon Listings")
     @PreAuthorize("@ss.hasPermission('amazon:listing-marketplace:update')")
-    public CommonResult<AmazonListingMarketplaceSyncRespVO> syncAllAvailableListings() {
-        return success(listingMarketplaceService.syncAllAvailableListings());
+    public CommonResult<Boolean> syncAllAvailableListings() {
+        listingMarketplaceService.enqueueSyncAllAvailableListings();
+        return success(true);
     }
 
     @PostMapping("/create")

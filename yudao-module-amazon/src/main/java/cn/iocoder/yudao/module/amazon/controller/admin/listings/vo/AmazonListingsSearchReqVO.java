@@ -20,16 +20,19 @@ public class AmazonListingsSearchReqVO {
     @NotNull(message = "店铺编号不能为空")
     private Long shopId;
 
-    @Schema(description = "查询站点所属国家代码", requiredMode = Schema.RequiredMode.REQUIRED, example = "US")
-    @NotBlank(message = "国家代码不能为空")
+    @Schema(description = "查询站点所属国家代码；未传 countryCodes 时必填", example = "US")
     private String countryCode;
+
+    @Schema(description = "查询站点所属国家代码列表；与 countryCode 二选一，多个站点必须属于同一销售区域", example = "US,CA")
+    @Size(min = 1, message = "站点国家代码列表不能为空")
+    private List<String> countryCodes;
 
     @Schema(description = "需要返回的数据集；默认 summaries", example = "summaries,issues")
     private List<String> includedData;
     @Schema(description = "商品标识符，最多 20 个；与 identifiersType 配套使用", example = "SKU-001,SKU-002")
     @Size(max = 20, message = "商品标识符最多 20 个")
     private List<String> identifiers;
-    @Schema(description = "商品标识符类型", example = "SKU")
+    @Schema(description = "商品标识符类型；传 identifiers 时必填，支持 SKU、ASIN、UPC、EAN 等", example = "SKU")
     private String identifiersType;
     @Schema(description = "仅查询指定变体父 SKU 的子体", example = "PARENT-SKU")
     private String variationParentSku;

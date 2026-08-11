@@ -4,6 +4,7 @@ import cn.iocoder.yudao.module.amazon.controller.admin.easyship.vo.EasyShipReque
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
+import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiCategory;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
@@ -21,13 +22,14 @@ import java.util.stream.Collectors;
 @Service
 public class EasyShipServiceImpl implements EasyShipService {
     private static final String API_PREFIX = "/easyShip/2022-03-23";
+    @Resource private AmazonMarketplaceProvider amazonMarketplaceProvider;
     @Resource private AmazonOAuthService amazonOAuthService;
     @Resource private AmazonShopMapper amazonShopMapper;
     @Resource private AmazonSellingPartnerClient amazonSellingPartnerClient;
     /** {@inheritDoc} */
     @Override public Map<String, Object> invoke(EasyShipRequestVO request, String operation, String method, String resourcePath) {
         AmazonShopDO shop = shop(request.getShopId()); AmazonMarketplaceEnum marketplace = marketplace(request.getCountryCode());
-        URI uri = URI.create(marketplace.getEndpoint() + API_PREFIX + resourcePath + query(request.getQuery()));
+        URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + API_PREFIX + resourcePath + query(request.getQuery()));
         return amazonSellingPartnerClient.executeByCategory(uri, amazonOAuthService.getSellerAccessToken(shop.getId()), HttpMethod.valueOf(method), request.getBody(), Map.of(), AmazonApiCategory.EASY_SHIP, operation, "easy-ship-" + operation, shop.getId(), request.getCountryCode(), marketplace.getMarketplaceId());
     }
     /** 查询当前租户店铺，避免跨租户使用授权。 */

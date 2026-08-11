@@ -4,6 +4,7 @@ import cn.iocoder.yudao.module.amazon.controller.admin.sales.vo.AmazonSalesOrder
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
+import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiCategory;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
@@ -19,6 +20,7 @@ import java.util.TreeMap;
 /** Amazon Sales 服务实现。 */
 @Service
 public class AmazonSalesServiceImpl implements AmazonSalesService {
+    @Resource private AmazonMarketplaceProvider amazonMarketplaceProvider;
     @Resource private AmazonOAuthService amazonOAuthService;
     @Resource private AmazonShopMapper amazonShopMapper;
     @Resource private AmazonSellingPartnerClient amazonSellingPartnerClient;
@@ -42,7 +44,7 @@ public class AmazonSalesServiceImpl implements AmazonSalesService {
         put(query, "buyerType", request.getBuyerType()); put(query, "fulfillmentNetwork", request.getFulfillmentNetwork());
         put(query, "firstDayOfWeek", request.getFirstDayOfWeek()); put(query, "asin", request.getAsin());
         put(query, "sku", request.getSku()); put(query, "amazonProgram", request.getAmazonProgram());
-        URI uri = URI.create(marketplace.getEndpoint() + "/sales/v1/orderMetrics?" + query(query));
+        URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + "/sales/v1/orderMetrics?" + query(query));
         return amazonSellingPartnerClient.getByCategory(uri, amazonOAuthService.getSellerAccessToken(shop.getId()),
                 AmazonApiCategory.SALES, "getOrderMetrics", "order-metrics", shop.getId(), request.getCountryCode(),
                 marketplace.getMarketplaceId());

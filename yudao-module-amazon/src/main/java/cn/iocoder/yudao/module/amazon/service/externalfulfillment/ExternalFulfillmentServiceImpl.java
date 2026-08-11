@@ -4,6 +4,7 @@ import cn.iocoder.yudao.module.amazon.controller.admin.externalfulfillment.vo.Ex
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
+import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiCategory;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
@@ -24,6 +25,8 @@ public class ExternalFulfillmentServiceImpl implements ExternalFulfillmentServic
     private static final String FULFILLMENT_PATH = "/externalFulfillment/2024-09-11";
     private static final String INVENTORY_PATH = "/externalFulfillment/inventory/2024-09-11/inventories";
 
+    @Resource
+    private AmazonMarketplaceProvider amazonMarketplaceProvider;
     @Resource
     private AmazonOAuthService amazonOAuthService;
     @Resource
@@ -131,7 +134,7 @@ public class ExternalFulfillmentServiceImpl implements ExternalFulfillmentServic
                                        String path, boolean allowEmptyResponse) {
         AmazonShopDO shop = requireShop(request.getShopId());
         AmazonMarketplaceEnum marketplace = requireMarketplace(request.getCountryCode());
-        URI uri = URI.create(marketplace.getEndpoint() + path + buildQuery(request.getQuery()));
+        URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + path + buildQuery(request.getQuery()));
         String accessToken = amazonOAuthService.getSellerAccessToken(shop.getId());
         if (method == HttpMethod.GET) {
             return amazonSellingPartnerClient.getByCategory(uri, accessToken, AmazonApiCategory.EXTERNAL_FULFILLMENT,

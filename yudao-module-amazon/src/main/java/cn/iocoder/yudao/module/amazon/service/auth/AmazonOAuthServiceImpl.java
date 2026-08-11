@@ -40,7 +40,6 @@ public class AmazonOAuthServiceImpl implements AmazonOAuthService {
     private static final String STATE_KEY_PREFIX = "amazon:oauth:state:";
     private static final String TOKEN_LOCK_PREFIX = "amazon:oauth:token:lock:";
     private static final long REFRESH_BEFORE_SECONDS = 120;
-    private static final String LOGIN_WITH_AMAZON_TOKEN_URL = "https://api.amazon.com/auth/o2/token";
 
     @Resource
     private AwsProperties properties;
@@ -71,8 +70,9 @@ public class AmazonOAuthServiceImpl implements AmazonOAuthService {
     @Override
     public Long handleCallback(AmazonCallbackReqVO request) {
         StateData state = decryptState(request.getState());
-        // Seller OAuth 固定使用 LWA 全局端点；Ads OAuth 保持使用其独立的配置端点。
-        String tokenUrl = "ads".equalsIgnoreCase(state.type()) ? properties.getAdTokenUrl() : LOGIN_WITH_AMAZON_TOKEN_URL;
+        // Seller OAuth 必须使用枚举维护的 LWA 全局端点，Ads OAuth 保持使用其独立配置端点。
+        String tokenUrl = "ads".equalsIgnoreCase(state.type()) ? properties.getAdTokenUrl()
+                : AmazonMarketplaceEnum.getSellerOAuthTokenEndpoint();
         Map<String, Object> token = requestToken(tokenUrl, request.getSpapiOauthCode(), null, state.type());
         AmazonShopDO shop = amazonShopMapper.selectBySellerId(request.getSellingPartnerId());
         if (shop == null) {
@@ -117,7 +117,7 @@ public class AmazonOAuthServiceImpl implements AmazonOAuthService {
             if (isUsable(shop.getSellerAccessToken(), shop.getSellerAccessTokenExpiresAt())) {
                 return shop.getSellerAccessToken();
             }
-            Map<String, Object> token = requestToken(LOGIN_WITH_AMAZON_TOKEN_URL, null,
+            Map<String, Object> token = requestToken(AmazonMarketplaceEnum.getSellerOAuthTokenEndpoint(), null,
                     shop.getSellerRefreshToken(), "seller");
             shop.setSellerAccessToken(stringValue(token, "access_token"));
             shop.setSellerAccessTokenExpiresAt(expireAt(token));
@@ -185,10 +185,11 @@ public class AmazonOAuthServiceImpl implements AmazonOAuthService {
     }
 
     /**
-     * 校验国家代码后通过 Login with Amazon 全局端点请求 Token。
+     * 校验国家代码后请求 Seller OAuth Token。
      *
      * <p>SP-API 的 NA、EU、FE 端点只用于业务 API；OAuth 授权码换取和 Token 刷新必须调用
-     * Login with Amazon 的全局端点，否则会被 SP-API 资源端点以 403 拒绝。</p>
+     * Login with Amazon 端点（生产与沙盒均相同），否则会被 SP-API 资源端点以 403 拒绝。
+     * 端点由 {@link AmazonMarketplaceEnum} 统一维护，避免环境配置误指向非 Amazon 的代理地址。</p>
      *
      * @param countryCode 国家代码
      * @param code 授权码；刷新 Token 时传 {@code null}
@@ -200,7 +201,7 @@ public class AmazonOAuthServiceImpl implements AmazonOAuthService {
         if (marketplace == null) {
             throw new IllegalArgumentException("不支持的 Amazon 国家代码: " + countryCode);
         }
-        return requestToken(LOGIN_WITH_AMAZON_TOKEN_URL, code, refreshToken, "seller");
+        return requestToken(AmazonMarketplaceEnum.getSellerOAuthTokenEndpoint(), code, refreshToken, "seller");
     }
 
     /** 将 state 写入 Redis，并使用 AES-GCM 防篡改。 */

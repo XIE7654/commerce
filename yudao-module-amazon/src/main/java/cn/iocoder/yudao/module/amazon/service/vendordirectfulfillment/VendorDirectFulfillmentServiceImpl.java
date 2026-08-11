@@ -4,6 +4,7 @@ import cn.iocoder.yudao.module.amazon.controller.admin.vendordirectfulfillment.v
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
+import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiCategory;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
@@ -27,6 +28,8 @@ public class VendorDirectFulfillmentServiceImpl implements VendorDirectFulfillme
     private static final Pattern PATH_PARAMETER = Pattern.compile("\\{([^}]+)}");
 
     @Resource
+    private AmazonMarketplaceProvider amazonMarketplaceProvider;
+    @Resource
     private AmazonOAuthService amazonOAuthService;
     @Resource
     private AmazonShopMapper amazonShopMapper;
@@ -40,7 +43,7 @@ public class VendorDirectFulfillmentServiceImpl implements VendorDirectFulfillme
         AmazonShopDO shop = requireShop(request.getShopId());
         AmazonMarketplaceEnum marketplace = requireMarketplace(request.getCountryCode());
         String path = expandPath(resourcePath, request.getPathParams());
-        URI uri = URI.create(marketplace.getEndpoint() + path + query(request.getQuery()));
+        URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + path + query(request.getQuery()));
         return amazonSellingPartnerClient.executeByCategory(uri, amazonOAuthService.getSellerAccessToken(shop.getId()),
                 HttpMethod.valueOf(method), request.getBody(), Map.of(), AmazonApiCategory.VENDOR_DIRECT_FULFILLMENT,
                 operation, "vendor-direct-fulfillment-" + operation, shop.getId(), request.getCountryCode(),

@@ -4,6 +4,7 @@ import cn.iocoder.yudao.module.amazon.controller.admin.awd.vo.AwdRequestVO;
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
+import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiCategory;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 /** AWD 服务实现，统一处理店铺隔离、站点解析及 API 调用。 */
 @Service
 public class AwdServiceImpl implements AwdService {
+    @Resource private AmazonMarketplaceProvider amazonMarketplaceProvider;
     @Resource private AmazonOAuthService amazonOAuthService;
     @Resource private AmazonShopMapper amazonShopMapper;
     @Resource private AmazonSellingPartnerClient amazonSellingPartnerClient;
@@ -34,7 +36,7 @@ public class AwdServiceImpl implements AwdService {
         String query = request.getQuery() == null ? "" : request.getQuery().entrySet().stream()
                 .filter(e -> e.getValue() != null && !e.getValue().isBlank())
                 .map(e -> encode(e.getKey()) + "=" + encode(e.getValue())).collect(Collectors.joining("&"));
-        URI uri = URI.create(marketplace.getEndpoint() + "/awd/2024-05-09" + path + (query.isBlank() ? "" : "?" + query));
+        URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + "/awd/2024-05-09" + path + (query.isBlank() ? "" : "?" + query));
         String token = amazonOAuthService.getSellerAccessToken(shop.getId());
         HttpMethod httpMethod = HttpMethod.valueOf(method);
         if (httpMethod == HttpMethod.GET) {

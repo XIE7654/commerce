@@ -21,6 +21,9 @@ public interface AmazonListingMarketplaceService {
      */
     AmazonListingMarketplaceSyncRespVO syncAllAvailableListings();
 
+    /** 投递全量 Listings 同步任务，不阻塞当前 HTTP 请求。 */
+    void enqueueSyncAllAvailableListings();
+
     /**
      * 创建Listing信息表
      *

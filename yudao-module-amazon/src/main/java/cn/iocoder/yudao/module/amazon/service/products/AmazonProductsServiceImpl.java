@@ -4,6 +4,7 @@ import cn.iocoder.yudao.module.amazon.controller.admin.products.vo.AmazonProduct
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
+import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiCategory;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonSellingPartnerClient;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
@@ -31,6 +32,8 @@ public class AmazonProductsServiceImpl implements AmazonProductsService {
     private static final String FEES_PATH = "/products/fees/v0";
     private static final String PRODUCT_TYPES_PATH = "/definitions/2020-09-01/productTypes";
 
+    @Resource
+    private AmazonMarketplaceProvider amazonMarketplaceProvider;
     @Resource
     private AmazonOAuthService amazonOAuthService;
     @Resource
@@ -160,7 +163,7 @@ public class AmazonProductsServiceImpl implements AmazonProductsService {
                                     AmazonApiCategory category, String operationName, String storageName) {
         AmazonShopDO shop = requireShop(request.getShopId());
         AmazonMarketplaceEnum marketplace = requireMarketplace(request.getCountryCode());
-        URI uri = URI.create(marketplace.getEndpoint() + path + "?" + buildQuery(query));
+        URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + path + "?" + buildQuery(query));
         return amazonSellingPartnerClient.getByCategory(uri, amazonOAuthService.getSellerAccessToken(shop.getId()), category,
                 operationName, storageName, shop.getId(), request.getCountryCode(), marketplace.getMarketplaceId());
     }
@@ -182,7 +185,7 @@ public class AmazonProductsServiceImpl implements AmazonProductsService {
         }
         AmazonShopDO shop = requireShop(request.getShopId());
         AmazonMarketplaceEnum marketplace = requireMarketplace(request.getCountryCode());
-        URI uri = URI.create(marketplace.getEndpoint() + path);
+        URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + path);
         return amazonSellingPartnerClient.mutateByCategory(uri, amazonOAuthService.getSellerAccessToken(shop.getId()), HttpMethod.POST,
                 request.getBody(), category, operationName, storageName, shop.getId(), request.getCountryCode(), marketplace.getMarketplaceId());
     }
