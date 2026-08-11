@@ -15,6 +15,15 @@ public interface AmazonSellersService {
      * @return 包含强类型 Marketplace 数据的统一响应
      */
     AmazonApiResponse<List<MarketplaceParticipationDto>> getMarketplaceParticipations(AmazonSellersReqVO request);
+
+    /**
+     * 同步卖家可参与销售的站点及参与状态到店铺站点表。
+     *
+     * @param request 店铺参数
+     * @return Amazon 返回的站点参与状态
+     */
+    AmazonApiResponse<List<MarketplaceParticipationDto>> syncMarketplaceParticipations(AmazonSellersReqVO request);
+
     /**
      * 查询当前卖家的账户信息。
      *

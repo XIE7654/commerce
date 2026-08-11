@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class AmazonOAuthServiceImplTest {
 
     @Test
-    void refreshAccessTokenUsesConfiguredSellerTokenUrl() {
+    void refreshAccessTokenUsesMarketplaceEnumSellerTokenUrl() {
         AmazonOAuthServiceImpl service = new AmazonOAuthServiceImpl();
         AwsProperties properties = new AwsProperties();
         properties.getProd().setStoreTokenUrl("https://sandbox.example.com/auth/o2/token");
@@ -29,12 +29,12 @@ class AmazonOAuthServiceImplTest {
         request.setRefreshToken("refresh-token");
         service.refreshAccessToken(request);
 
-        assertEquals("https://sandbox.example.com/auth/o2/token", client.requestedUrl);
+        assertEquals("https://api.amazon.com/auth/o2/token", client.requestedUrl);
         assertEquals("seller", client.requestedType);
     }
 
     @Test
-    void refreshAccessTokenFallsBackToLoginWithAmazonWhenUnset() {
+    void refreshAccessTokenUsesMarketplaceEnumWhenSellerTokenUrlUnset() {
         AmazonOAuthServiceImpl service = new AmazonOAuthServiceImpl();
         RecordingOAuthClient client = new RecordingOAuthClient();
         ReflectionTestUtils.setField(service, "properties", new AwsProperties());

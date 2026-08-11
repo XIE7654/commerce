@@ -38,6 +38,21 @@ public class AmazonSellersController {
     }
 
     /**
+     * 同步卖家在各 Amazon 站点的参与状态。
+     *
+     * <p>同步结果会写入 {@code amazon_shop_marketplace}，供后续站点维度业务使用。</p>
+     *
+     * @param request 店铺参数
+     * @return Amazon 返回的站点参与状态
+     */
+    @PostMapping("/marketplace-participations/sync")
+    @Operation(summary = "同步卖家站点参与状态")
+    @PreAuthorize("@ss.hasPermission('amazon:sellers:update')")
+    public CommonResult<AmazonApiResponse<List<MarketplaceParticipationDto>>> syncMarketplaceParticipations(@Valid @RequestBody AmazonSellersReqVO request) {
+        return CommonResult.success(amazonSellersService.syncMarketplaceParticipations(request));
+    }
+
+    /**
      * 查询 Amazon 卖家账户信息。
      */
     @PostMapping("/account")

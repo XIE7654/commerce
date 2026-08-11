@@ -82,6 +82,12 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${maven-compiler-plugin.version}</version>
                     <configuration>
+                        <!-- 通过仓库 .mvn/toolchains.xml 固定使用 SDKMAN 安装的 Temurin 25，
+                             避免命令行 Maven 随 Shell 默认 JDK 降级为 Java 21。 -->
+                        <jdkToolchain>
+                            <version>${java.version}</version>
+                            <vendor>temurin</vendor>
+                        </jdkToolchain>
                         <annotationProcessorPaths>
                             <path>
                                 <groupId>org.springframework.boot</groupId>

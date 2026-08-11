@@ -55,3 +55,4 @@ application-my.yaml
 **/.DS_Store
 media
 docs
+.mvn

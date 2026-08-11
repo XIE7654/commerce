@@ -22,6 +22,9 @@ import java.util.Map;
 @Component
 public class AmazonSellingPartnerClient {
 
+    /** SP-API 用于识别调用应用的 User-Agent；沙盒会校验该通用请求头。 */
+    private static final String USER_AGENT = "commerce-amazon/1.0 (Language=Java)";
+
     @Resource
     private AmazonJsonStorageService amazonJsonStorageService;
     @Resource
@@ -519,6 +522,8 @@ public class AmazonSellingPartnerClient {
     private HttpHeaders buildHeaders(String accessToken, boolean hasJsonBody) {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+        // SP-API 要求所有请求标明调用应用；缺失时沙盒可能仅返回笼统的 InvalidInput。
+        headers.set(HttpHeaders.USER_AGENT, USER_AGENT);
         if (hasJsonBody) {
             headers.setContentType(MediaType.APPLICATION_JSON);
         }
