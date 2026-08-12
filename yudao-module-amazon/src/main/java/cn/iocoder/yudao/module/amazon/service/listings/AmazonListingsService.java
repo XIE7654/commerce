@@ -13,7 +13,7 @@ public interface AmazonListingsService {
     /**
      * 查询店铺在指定站点的 Listings Items。
      *
-     * @param request 店铺、国家代码及查询筛选条件
+     * @param request 店铺及查询筛选条件，站点从店铺已参与销售的 Marketplace 中读取
      * @return 官方 SDK Listings Items 查询结果
      */
     ItemSearchResults searchListingsItems(AmazonListingsSearchReqVO request) throws ApiException, LWAException;

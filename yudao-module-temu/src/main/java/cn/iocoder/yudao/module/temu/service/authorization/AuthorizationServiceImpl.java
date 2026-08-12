@@ -4,16 +4,15 @@ import cn.iocoder.yudao.module.temu.controller.admin.authorization.vo.Authorizat
 import cn.iocoder.yudao.module.temu.controller.admin.authorization.vo.AuthorizationAccessTokenInfoReqVO;
 import cn.iocoder.yudao.module.temu.enums.TemuSiteRegionEnum;
 import cn.iocoder.yudao.module.temu.framework.config.TemuProperties;
-import cn.iocoder.yudao.module.temu.sdk.TemuClient;
-import cn.iocoder.yudao.module.temu.sdk.TemuJsonStorageService;
-import cn.iocoder.yudao.module.temu.service.apirequestlog.TemuApiRequestLogService;
+import cn.iocoder.yudao.module.temu.framework.client.TemuClient;
+import cn.iocoder.yudao.module.temu.framework.client.auth.AccessTokenCreateRequest;
+import cn.iocoder.yudao.module.temu.framework.client.auth.AccessTokenCreateResult;
+import cn.iocoder.yudao.module.temu.framework.client.auth.AccessTokenInfoResult;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
-import tools.jackson.databind.JsonNode;
 
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * Temu Authorization 授权业务 Service 实现。
@@ -24,10 +23,6 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     @Resource
     private TemuProperties temuProperties;
-    @Resource
-    private TemuJsonStorageService temuJsonStorageService;
-    @Resource
-    private TemuApiRequestLogService temuApiRequestLogService;
 
     /**
      * 调用 {@code bg.open.accesstoken.info.get} 查询当前 Token 的授权信息。
@@ -36,8 +31,8 @@ public class AuthorizationServiceImpl implements AuthorizationService {
      * @return Temu 官方授权信息响应
      */
     @Override
-    public JsonNode getAccessTokenInfo(AuthorizationAccessTokenInfoReqVO request) {
-        return createClient(request.getSite(), request.getAccessToken()).getAuth().getAccessTokenInfo();
+    public AccessTokenInfoResult getAccessTokenInfo(AuthorizationAccessTokenInfoReqVO request) {
+        return createClient(request.getSite(), request.getAccessToken()).getAuth().getAccessTokenInfo().getResult();
     }
 
     /**
@@ -47,9 +42,11 @@ public class AuthorizationServiceImpl implements AuthorizationService {
      * @return Temu 官方 access_token 创建响应
      */
     @Override
-    public JsonNode createAccessToken(AuthorizationAccessTokenCreateReqVO request) {
+    public AccessTokenCreateResult createAccessToken(AuthorizationAccessTokenCreateReqVO request) {
+        AccessTokenCreateRequest createRequest = new AccessTokenCreateRequest();
+        createRequest.setCode(request.getCode());
         return createClient(request.getSite(), request.getAccessToken()).getAuth()
-                .createAccessTokenInfo(Map.of("code", request.getCode()));
+                .createAccessToken(createRequest).getResult();
     }
 
     /**
@@ -59,7 +56,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
      *
      * @param siteCode Temu 站点代码
      * @param accessToken 本次 Router 调用使用的授权 Token
-     * @return 已配置区域信息的 Temu SDK 客户端
+     * @return 已配置区域信息的新版 Temu 客户端
      */
     private TemuClient createClient(String siteCode, String accessToken) {
         TemuSiteRegionEnum site = TemuSiteRegionEnum.valueOf(siteCode.trim().toUpperCase(Locale.ROOT));
@@ -67,8 +64,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         if (region == null || isBlank(region.getAppKey()) || isBlank(region.getAppSecret())) {
             throw new IllegalArgumentException("Temu 站点未配置 appKey 或 appSecret: " + site.name());
         }
-        return new TemuClient(region.getAppKey(), region.getAppSecret(), accessToken, site.getEndpoint(),
-                temuJsonStorageService, site.name(), temuApiRequestLogService, null);
+        return new TemuClient(region.getAppKey(), region.getAppSecret(), accessToken, site.name());
     }
 
     /**

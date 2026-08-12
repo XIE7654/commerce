@@ -2,7 +2,9 @@ package cn.iocoder.yudao.module.amazon.service.listings;
 
 import cn.iocoder.yudao.module.amazon.controller.admin.listings.vo.AmazonListingsItemGetReqVO;
 import cn.iocoder.yudao.module.amazon.controller.admin.listings.vo.AmazonListingsSearchReqVO;
+import cn.iocoder.yudao.module.amazon.dal.dataobject.seller.AmazonShopMarketplaceDO;
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
+import cn.iocoder.yudao.module.amazon.dal.mysql.seller.AmazonShopMarketplaceParticipationMapper;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
 import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
@@ -23,14 +25,15 @@ import java.util.List;
 @Service
 public class AmazonListingsServiceImpl implements AmazonListingsService {
     @Resource private AmazonMarketplaceProvider amazonMarketplaceProvider;
+    @Resource private AmazonShopMarketplaceParticipationMapper amazonShopMarketplaceParticipationMapper;
     @Resource private AmazonShopMapper amazonShopMapper;
     @Resource private AmazonSpApiSdkFactory amazonSpApiSdkFactory;
 
     /** {@inheritDoc} */
     @Override
     public ItemSearchResults searchListingsItems(AmazonListingsSearchReqVO request) throws ApiException, LWAException {
-        List<AmazonMarketplaceEnum> marketplaces = requireSearchMarketplaces(request.getCountryCode(), request.getCountryCodes());
         AmazonShopDO shop = requireShop(request.getShopId());
+        List<AmazonMarketplaceEnum> marketplaces = requireSearchMarketplaces(shop.getId());
         return listingsApi(shop, marketplaces.getFirst()).searchListingsItems(requireSellerId(shop.getSellerId()),
                 marketplaces.stream().map(AmazonMarketplaceEnum::getMarketplaceId).toList(), request.getIssueLocale(),
                 request.getIncludedData(), request.getIdentifiers(), request.getIdentifiersType(), request.getVariationParentSku(),
@@ -82,23 +85,31 @@ public class AmazonListingsServiceImpl implements AmazonListingsService {
         return marketplace;
     }
 
-    /** 解析搜索站点并限制其必须使用同一 SP-API 区域端点。 */
-    private List<AmazonMarketplaceEnum> requireSearchMarketplaces(String countryCode, List<String> countryCodes) {
-        if (countryCode != null && !countryCode.isBlank() && countryCodes != null && !countryCodes.isEmpty()) {
-            throw new IllegalArgumentException("countryCode 与 countryCodes 不能同时传入");
+    /**
+     * 从当前店铺已同步的 Marketplace 参与状态解析搜索 Marketplace，并限制其使用同一 SP-API 区域端点。
+     *
+     * @param shopId 店铺编号
+     * @return 可用于 Listings 搜索的 Marketplace 列表
+     */
+    private List<AmazonMarketplaceEnum> requireSearchMarketplaces(Long shopId) {
+        List<AmazonShopMarketplaceDO> shopMarketplaces = amazonShopMarketplaceParticipationMapper.selectParticipatingByShopId(shopId);
+        if (shopMarketplaces.isEmpty()) {
+            throw new IllegalArgumentException("店铺不存在已参与销售的 Amazon Marketplace: " + shopId);
         }
-        List<String> codes = countryCodes == null || countryCodes.isEmpty()
-                ? (countryCode == null || countryCode.isBlank() ? List.of() : List.of(countryCode)) : countryCodes;
-        if (codes.isEmpty()) throw new IllegalArgumentException("countryCode 或 countryCodes 至少传入一个");
         List<AmazonMarketplaceEnum> marketplaces = new ArrayList<>();
         String region = null;
-        for (String code : codes) {
-            AmazonMarketplaceEnum marketplace = requireMarketplace(code);
+        for (AmazonShopMarketplaceDO shopMarketplace : shopMarketplaces) {
+            AmazonMarketplaceEnum marketplace = AmazonMarketplaceEnum.fromMarketplaceId(shopMarketplace.getMarketplaceId());
+            if (marketplace == null) {
+                throw new IllegalArgumentException("不支持的 Amazon Marketplace ID: " + shopMarketplace.getMarketplaceId());
+            }
             if (region != null && !region.equals(marketplace.getSalesRegion())) {
                 throw new IllegalArgumentException("Listings 搜索的多个站点必须属于同一销售区域");
             }
             region = marketplace.getSalesRegion();
-            marketplaces.add(marketplace);
+            if (!marketplaces.contains(marketplace)) {
+                marketplaces.add(marketplace);
+            }
         }
         return marketplaces;
     }

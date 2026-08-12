@@ -3,7 +3,6 @@ package cn.iocoder.yudao.module.temu.service.ordermanagement;
 import cn.iocoder.yudao.module.temu.controller.admin.ordermanagement.vo.OrderManagementCustomOrderReqVO;
 import cn.iocoder.yudao.module.temu.controller.admin.ordermanagement.vo.OrderManagementOrderListReqVO;
 import cn.iocoder.yudao.module.temu.controller.admin.ordermanagement.vo.OrderManagementParentOrderReqVO;
-import cn.iocoder.yudao.module.temu.controller.admin.ordermanagement.vo.OrderManagementShippingCompaniesReqVO;
 import cn.iocoder.yudao.module.temu.controller.admin.ordermanagement.vo.TemuOrderPageReqVO;
 import cn.iocoder.yudao.module.temu.dal.dataobject.order.TemuOrderDO;
 import cn.iocoder.yudao.module.temu.framework.client.TemuApiResponse;
@@ -12,7 +11,6 @@ import cn.iocoder.yudao.module.temu.framework.client.order.OrderDetailDto;
 import cn.iocoder.yudao.module.temu.framework.client.order.OrderListDto;
 import cn.iocoder.yudao.module.temu.framework.client.order.ShippingInfoDto;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import tools.jackson.databind.JsonNode;
 
 /**
  * Temu Order Management 订单管理业务 Service。
@@ -83,11 +81,4 @@ public interface OrderManagementService {
      */
     TemuApiResponse<ShippingInfoDto> getOrderShippingInfo(OrderManagementParentOrderReqVO request);
 
-    /**
-     * 查询 Temu 指定区域可用的承运商。
-     *
-     * @param request 区域查询参数
-     * @return Temu 官方承运商列表响应
-     */
-    JsonNode getOrderShippingCompanies(OrderManagementShippingCompaniesReqVO request);
 }
