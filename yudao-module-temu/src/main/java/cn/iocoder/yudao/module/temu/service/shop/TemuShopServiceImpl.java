@@ -17,12 +17,14 @@ import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.temu.dal.mysql.shop.TemuShopMapper;
 import cn.iocoder.yudao.module.temu.dal.dataobject.seller.TemuSellerDO;
 import cn.iocoder.yudao.module.temu.dal.mysql.seller.TemuSellerMapper;
-import cn.iocoder.yudao.module.temu.controller.admin.authorization.vo.AuthorizationAccessTokenInfoReqVO;
-import cn.iocoder.yudao.module.temu.service.authorization.AuthorizationService;
-import cn.iocoder.yudao.module.temu.service.auth.TemuAuthService;
-import cn.iocoder.yudao.module.temu.controller.admin.auth.vo.TemuAuthInfoReqVO;
 import cn.iocoder.yudao.framework.common.exception.ServiceException;
-import tools.jackson.databind.JsonNode;
+import cn.iocoder.yudao.module.temu.enums.TemuSiteRegionEnum;
+import cn.iocoder.yudao.module.temu.framework.client.TemuApiResponse;
+import cn.iocoder.yudao.module.temu.framework.client.TemuClient;
+import cn.iocoder.yudao.module.temu.framework.client.auth.AccessTokenInfoResult;
+import cn.iocoder.yudao.module.temu.framework.client.auth.LocalMallTagsResult;
+import cn.iocoder.yudao.module.temu.framework.config.TemuProperties;
+import tools.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.time.ZoneId;
 
@@ -45,9 +47,9 @@ public class TemuShopServiceImpl implements TemuShopService {
     @Resource
     private TemuSellerMapper sellerMapper;
     @Resource
-    private AuthorizationService authorizationService;
+    private TemuProperties temuProperties;
     @Resource
-    private TemuAuthService temuAuthService;
+    private ObjectMapper objectMapper;
 
     /**
      * 校验店铺 accessToken 并保存店铺及其商城授权信息。
@@ -60,8 +62,8 @@ public class TemuShopServiceImpl implements TemuShopService {
     @Override
     public Long createShop(TemuShopSaveReqVO createReqVO) {
         // 先完成远程鉴权，避免无效 Token 导致店铺或卖家记录落库。
-        JsonNode authorization = queryAuthorization(createReqVO);
-        JsonNode localMallTags = queryLocalMallTags(createReqVO);
+        TemuApiResponse<AccessTokenInfoResult> authorization = queryAuthorization(createReqVO);
+        TemuApiResponse<LocalMallTagsResult> localMallTags = queryLocalMallTags(createReqVO);
         TemuSellerDO seller = buildSeller(authorization, localMallTags);
 
         TemuShopDO shop = BeanUtils.toBean(createReqVO, TemuShopDO.class);
@@ -78,16 +80,11 @@ public class TemuShopServiceImpl implements TemuShopService {
      * @param request 店铺创建参数
      * @return Temu 本地店铺标签响应
      */
-    private JsonNode queryLocalMallTags(TemuShopSaveReqVO request) {
+    private TemuApiResponse<LocalMallTagsResult> queryLocalMallTags(TemuShopSaveReqVO request) {
         try {
-            TemuAuthInfoReqVO authRequest = new TemuAuthInfoReqVO();
-            authRequest.setSite(request.getSite());
-            authRequest.setAccessToken(request.getAuthToken());
-            JsonNode response = temuAuthService.getLocalMallTags(authRequest);
-            JsonNode result = response == null ? null : response.get("result");
-            if (response == null || !response.path("success").asBoolean(false)
-                    || result == null || result.isNull() || !result.path("tags").isArray()) {
-                throw createAccessTokenInvalidException(response);
+            TemuApiResponse<LocalMallTagsResult> response = createClient(request).getAuth().getLocalMallTags();
+            if (response.getResult().getTags() == null) {
+                throw createAccessTokenInvalidException(null);
             }
             return response;
         } catch (RuntimeException ex) {
@@ -104,19 +101,9 @@ public class TemuShopServiceImpl implements TemuShopService {
      * @param request 店铺创建参数
      * @return Temu 授权信息响应
      */
-    private JsonNode queryAuthorization(TemuShopSaveReqVO request) {
+    private TemuApiResponse<AccessTokenInfoResult> queryAuthorization(TemuShopSaveReqVO request) {
         try {
-            AuthorizationAccessTokenInfoReqVO authRequest = new AuthorizationAccessTokenInfoReqVO();
-            authRequest.setSite(request.getSite());
-            authRequest.setAccessToken(request.getAuthToken());
-            JsonNode response = authorizationService.getAccessTokenInfo(authRequest);
-            JsonNode result = response == null ? null : response.get("result");
-            if (response == null || !response.path("success").asBoolean(false)
-                    || result == null || result.isNull() || result.path("mallId").isMissingNode()
-                    || result.path("mallId").isNull()) {
-                throw createAccessTokenInvalidException(response);
-            }
-            return response;
+            return createClient(request).getAuth().getAccessTokenInfo();
         } catch (RuntimeException ex) {
             if (ex instanceof cn.iocoder.yudao.framework.common.exception.ServiceException) {
                 throw ex;
@@ -132,50 +119,32 @@ public class TemuShopServiceImpl implements TemuShopService {
      * @param localMallTagsResponse Temu 本地店铺标签响应
      * @return 待保存的卖家对象
      */
-    private TemuSellerDO buildSeller(JsonNode response, JsonNode localMallTagsResponse) {
-        JsonNode result = response.get("result");
-        TemuSellerDO seller = new TemuSellerDO();
-        seller.setSemiUniqueId(text(result, "semiUniqueId"));
-        seller.setRegionId(integer(result, "regionId"));
-        seller.setMallId(result.path("mallId").asLong());
-        seller.setMallType(integer(result, "mallType"));
-        seller.setTags(json(localMallTagsResponse.get("result"), "tags"));
-        seller.setAppSubscribeStatus(integer(result, "appSubscribeStatus"));
-        seller.setExpiredTime(longValue(result, "expiredTime"));
+    private TemuSellerDO buildSeller(TemuApiResponse<AccessTokenInfoResult> response,
+                                     TemuApiResponse<LocalMallTagsResult> localMallTagsResponse) {
+        AccessTokenInfoResult result = response.getResult();
+        // DTO 与 DO 的同名标量字段统一转换，避免维护大量重复 setter。
+        TemuSellerDO seller = BeanUtils.toBean(result, TemuSellerDO.class);
+        seller.setTags(writeJson(localMallTagsResponse.getResult().getTags()));
+        seller.setAppSubscribeEventCodeList(writeJson(result.getAppSubscribeEventCodeList()));
+        seller.setAuthEventCodeList(writeJson(result.getAuthEventCodeList()));
+        seller.setApiScopeList(writeJson(result.getApiScopeList()));
         if (seller.getExpiredTime() != null) {
             seller.setExpiredAt(Instant.ofEpochSecond(seller.getExpiredTime())
                     .atZone(ZoneId.systemDefault()).toLocalDateTime());
         }
-        seller.setAppSubscribeEventCodeList(json(result, "appSubscribeEventCodeList"));
-        seller.setAuthEventCodeList(json(result, "authEventCodeList"));
-        seller.setApiScopeList(json(result, "apiScopeList"));
-        seller.setResponseJson(response.toString());
+        seller.setResponseJson(writeJson(response));
         seller.setLastSyncTime(java.time.LocalDateTime.now());
         return seller;
     }
 
-    /** 从响应节点读取可空文本字段。 */
-    private String text(JsonNode node, String field) {
-        JsonNode value = node.get(field);
-        return value == null || value.isNull() ? null : value.asText();
-    }
-
-    /** 从响应节点读取可空整数型字段。 */
-    private Integer integer(JsonNode node, String field) {
-        JsonNode value = node.get(field);
-        return value == null || value.isNull() ? null : value.asInt();
-    }
-
-    /** 从响应节点读取可空长整数型字段。 */
-    private Long longValue(JsonNode node, String field) {
-        JsonNode value = node.get(field);
-        return value == null || value.isNull() ? null : value.asLong();
-    }
-
-    /** 将响应中的数组或对象字段序列化为数据库 JSON 文本。 */
-    private String json(JsonNode node, String field) {
-        JsonNode value = node.get(field);
-        return value == null || value.isNull() ? null : value.toString();
+    /** 将新版客户端响应或字段序列化为数据库 JSON 文本。 */
+    private String writeJson(Object value) {
+        if (value == null) return null;
+        try {
+            return objectMapper.writeValueAsString(value);
+        } catch (RuntimeException ex) {
+            return null;
+        }
     }
 
     @Override
@@ -201,11 +170,11 @@ public class TemuShopServiceImpl implements TemuShopService {
      * @param request 新的店铺编辑参数
      */
     private void syncSellerAuthorization(TemuShopDO existingShop, TemuShopSaveReqVO request) {
-        JsonNode authorization = queryTemuAuthInfo(request);
-        JsonNode result = authorization.get("result");
+        TemuApiResponse<AccessTokenInfoResult> authorization = queryTemuAuthInfo(request);
+        AccessTokenInfoResult result = authorization.getResult();
         TemuSellerDO existingSeller = sellerMapper.selectOne(new LambdaQueryWrapper<TemuSellerDO>()
                 .eq(TemuSellerDO::getShopId, existingShop.getId()));
-        Long mallId = result.path("mallId").asLong();
+        Long mallId = result.getMallId();
         if (existingSeller != null && existingSeller.getMallId() != null
                 && !Objects.equals(existingSeller.getMallId(), mallId)) {
             throw exception(SHOP_MALL_NOT_MATCH);
@@ -220,20 +189,10 @@ public class TemuShopServiceImpl implements TemuShopService {
         }
     }
 
-    /** 使用 TemuAuthService 查询并校验编辑时的新授权信息。 */
-    private JsonNode queryTemuAuthInfo(TemuShopSaveReqVO request) {
+    /** 使用新版 Temu client 查询并校验编辑时的新授权信息。 */
+    private TemuApiResponse<AccessTokenInfoResult> queryTemuAuthInfo(TemuShopSaveReqVO request) {
         try {
-            TemuAuthInfoReqVO authRequest = new TemuAuthInfoReqVO();
-            authRequest.setSite(request.getSite());
-            authRequest.setAccessToken(request.getAuthToken());
-            JsonNode response = temuAuthService.getAccessTokenInfo(authRequest);
-            JsonNode result = response == null ? null : response.get("result");
-            if (response == null || !response.path("success").asBoolean(false)
-                    || result == null || result.isNull() || result.path("mallId").isMissingNode()
-                    || result.path("mallId").isNull()) {
-                throw createAccessTokenInvalidException(response);
-            }
-            return response;
+            return createClient(request).getAuth().getAccessTokenInfo();
         } catch (RuntimeException ex) {
             if (ex instanceof cn.iocoder.yudao.framework.common.exception.ServiceException) {
                 throw ex;
@@ -246,19 +205,24 @@ public class TemuShopServiceImpl implements TemuShopService {
      * 将 Temu 业务失败响应转换为前端可识别的业务异常。
      * Temu 已提供错误文案时原样透传，响应缺少文案时才使用本地提示兜底。
      *
-     * @param response Temu 原始响应，可为空
+     * @param errorMessage Temu 返回的错误文案，可为空
      * @return 包含 Temu 错误文案的业务异常
      */
-    private ServiceException createAccessTokenInvalidException(JsonNode response) {
-        if (response != null) {
-            for (String fieldName : List.of("error_message", "error_msg", "errorMessage", "message")) {
-                JsonNode message = response.path(fieldName);
-                if (message.isValueNode() && !message.asText().isBlank()) {
-                    return new ServiceException(ACCESS_TOKEN_INVALID.getCode(), message.asText());
-                }
-            }
+    private ServiceException createAccessTokenInvalidException(String errorMessage) {
+        if (errorMessage != null && !errorMessage.isBlank()) {
+            return new ServiceException(ACCESS_TOKEN_INVALID.getCode(), errorMessage);
         }
         return exception(ACCESS_TOKEN_INVALID);
+    }
+
+    /** 根据店铺站点和 Token 创建新版 Temu 客户端。 */
+    private TemuClient createClient(TemuShopSaveReqVO request) {
+        TemuSiteRegionEnum site = TemuSiteRegionEnum.valueOf(request.getSite().trim().toUpperCase(Locale.ROOT));
+        TemuProperties.RegionProperties region = temuProperties.getRegion(site);
+        if (region == null || region.getAppKey() == null || region.getAppSecret() == null) {
+            throw exception(ACCESS_TOKEN_INVALID);
+        }
+        return new TemuClient(region.getAppKey(), region.getAppSecret(), request.getAuthToken(), site.name());
     }
 
     @Override

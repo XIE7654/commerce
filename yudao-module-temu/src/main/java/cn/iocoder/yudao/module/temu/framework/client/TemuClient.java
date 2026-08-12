@@ -84,7 +84,18 @@ public class TemuClient {
             ResponseEntity<String> response = HttpMethod.GET.equals(method)
                     ? restTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(headers), String.class)
                     : restTemplate.exchange(uri, HttpMethod.POST, new HttpEntity<>(params, headers), String.class);
-            return objectMapper.readTree(response.getBody());
+            JsonNode body = objectMapper.readTree(response.getBody());
+            if (body == null || body.isNull()) {
+                throw new TemuClientException("Temu 响应为空: " + apiType);
+            }
+            // 所有 Router 接口统一在客户端拦截业务失败，调用方只处理成功结果和领域校验。
+            if (!body.path("success").asBoolean(false)) {
+                String error = body.path("errorMsg").asText(null);
+                if (error == null || error.isBlank()) error = body.path("error_message").asText(null);
+                throw new TemuClientException("Temu 业务请求失败: " + apiType
+                        + (error == null || error.isBlank() ? "" : ": " + error));
+            }
+            return body;
         } catch (RestClientResponseException ex) {
             throw new TemuClientException("Temu HTTP 请求失败: " + apiType, ex);
         } catch (RestClientException | JacksonException ex) {
