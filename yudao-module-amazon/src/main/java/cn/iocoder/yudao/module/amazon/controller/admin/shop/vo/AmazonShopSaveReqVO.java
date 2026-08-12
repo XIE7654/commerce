@@ -15,9 +15,6 @@ public class AmazonShopSaveReqVO {
     @Schema(description = "Amazon sellerId", example = "18348")
     private String sellerId;
 
-    @Schema(description = "默认 marketplaceId", example = "29401")
-    private String marketplaceId;
-
     @Schema(description = "店铺名称", requiredMode = Schema.RequiredMode.REQUIRED, example = "张三")
     @NotEmpty(message = "店铺名称不能为空")
     private String shopName;

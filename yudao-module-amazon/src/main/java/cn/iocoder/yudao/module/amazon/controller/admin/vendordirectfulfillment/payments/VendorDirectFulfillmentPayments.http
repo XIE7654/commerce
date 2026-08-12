@@ -1,7 +1,0 @@
-### 提交发票
-POST {{baseUrl}}/amazon/vendor-direct-fulfillment/payments/v1/invoices
-Authorization: Bearer {{token}}
-tenant-id: {{adminTenantId}}
-Content-Type: application/json
-
-{"shopId":1,"countryCode":"US","body":{"invoices":[]}}

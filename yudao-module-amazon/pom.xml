@@ -16,6 +16,12 @@
     <description>Amazon 业务模块</description>
 
     <dependencies>
+        <!-- Amazon Selling Partner API 官方 Java SDK；用于沙盒及生产 SP-API 调用。 -->
+        <dependency>
+            <groupId>software.amazon.spapi</groupId>
+            <artifactId>spapi-sdk</artifactId>
+            <version>1.11.1</version>
+        </dependency>
         <!-- 基础业务模块，提供用户、租户等通用能力。 -->
         <dependency>
             <groupId>cn.iocoder.boot</groupId>

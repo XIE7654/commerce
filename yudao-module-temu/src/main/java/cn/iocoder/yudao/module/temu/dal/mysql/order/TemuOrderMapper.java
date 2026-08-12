@@ -49,7 +49,6 @@ public interface TemuOrderMapper extends BaseMapperX<TemuOrderDO> {
             cn.iocoder.yudao.module.temu.controller.admin.ordermanagement.vo.TemuOrderPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<TemuOrderDO>()
                 .eqIfPresent(TemuOrderDO::getShopId, reqVO.getShopId())
-                .eqIfPresent(TemuOrderDO::getSellerId, reqVO.getSellerId())
                 .eqIfPresent(TemuOrderDO::getParentOrderSn, reqVO.getParentOrderSn())
                 .eqIfPresent(TemuOrderDO::getOrderSn, reqVO.getOrderSn())
                 .eqIfPresent(TemuOrderDO::getParentOrderStatus, reqVO.getParentOrderStatus())
@@ -67,7 +66,6 @@ public interface TemuOrderMapper extends BaseMapperX<TemuOrderDO> {
     default PageResult<TemuOrderDO> selectPage(TemuOrderPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<TemuOrderDO>()
                 .eqIfPresent(TemuOrderDO::getShopId, reqVO.getShopId())
-                .eqIfPresent(TemuOrderDO::getSellerId, reqVO.getSellerId())
                 .eqIfPresent(TemuOrderDO::getParentOrderSn, reqVO.getParentOrderSn())
                 .eqIfPresent(TemuOrderDO::getOrderSn, reqVO.getOrderSn())
                 .eqIfPresent(TemuOrderDO::getSiteId, reqVO.getSiteId())

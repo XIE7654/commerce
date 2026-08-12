@@ -9,12 +9,15 @@ import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
 import cn.iocoder.yudao.module.amazon.framework.config.AwsProperties;
-import cn.iocoder.yudao.module.amazon.sdk.AmazonOAuthClient;
 import jakarta.annotation.Resource;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClient;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
@@ -50,8 +53,6 @@ public class AmazonOAuthServiceImpl implements AmazonOAuthService {
     private StringRedisTemplate stringRedisTemplate;
     @Resource
     private RedissonClient redissonClient;
-    @Resource
-    private AmazonOAuthClient amazonOAuthClient;
 
     private final SecureRandom secureRandom = new SecureRandom();
 
@@ -173,7 +174,7 @@ public class AmazonOAuthServiceImpl implements AmazonOAuthService {
     }
 
     /**
-     * 通过 SDK 请求 Amazon OAuth Token，避免业务服务直接处理外部 HTTP 调用。
+     * 调用 Login with Amazon Token 端点换取访问令牌。
      *
      * @param url OAuth Token 端点
      * @param code 授权码；刷新 Token 时传 {@code null}
@@ -182,7 +183,16 @@ public class AmazonOAuthServiceImpl implements AmazonOAuthService {
      * @return Amazon 原始 Token 响应
      */
     private Map<String, Object> requestToken(String url, String code, String refreshToken, String type) {
-        return amazonOAuthClient.requestToken(url, code, refreshToken, type);
+        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+        boolean seller = "seller".equalsIgnoreCase(type);
+        form.add("grant_type", refreshToken == null ? "authorization_code" : "refresh_token");
+        form.add(refreshToken == null ? "code" : "refresh_token", refreshToken == null ? code : refreshToken);
+        form.add("client_id", seller ? properties.getClientId() : properties.getAdClientId());
+        form.add("client_secret", seller ? properties.getClientSecret() : properties.getAdClientSecret());
+        Map response = RestClient.create().post().uri(url).contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .body(form).retrieve().body(Map.class);
+        if (response == null) throw new IllegalStateException("Amazon OAuth Token 接口未返回响应");
+        return response;
     }
 
     /**

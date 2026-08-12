@@ -1,7 +1,6 @@
 package cn.iocoder.yudao.module.temu.service.shop;
 
 import cn.hutool.core.collection.CollUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.stereotype.Service;
 import jakarta.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -15,8 +14,6 @@ import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 
 import cn.iocoder.yudao.module.temu.dal.mysql.shop.TemuShopMapper;
-import cn.iocoder.yudao.module.temu.dal.dataobject.seller.TemuSellerDO;
-import cn.iocoder.yudao.module.temu.dal.mysql.seller.TemuSellerMapper;
 import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.iocoder.yudao.module.temu.enums.TemuSiteRegionEnum;
 import cn.iocoder.yudao.module.temu.framework.client.TemuApiResponse;
@@ -45,8 +42,6 @@ public class TemuShopServiceImpl implements TemuShopService {
     @Resource
     private TemuShopMapper shopMapper;
     @Resource
-    private TemuSellerMapper sellerMapper;
-    @Resource
     private TemuProperties temuProperties;
     @Resource
     private ObjectMapper objectMapper;
@@ -64,12 +59,9 @@ public class TemuShopServiceImpl implements TemuShopService {
         // 先完成远程鉴权，避免无效 Token 导致店铺或卖家记录落库。
         TemuApiResponse<AccessTokenInfoResult> authorization = queryAuthorization(createReqVO);
         TemuApiResponse<LocalMallTagsResult> localMallTags = queryLocalMallTags(createReqVO);
-        TemuSellerDO seller = buildSeller(authorization, localMallTags);
-
         TemuShopDO shop = BeanUtils.toBean(createReqVO, TemuShopDO.class);
+        applyAuthorization(shop, authorization, localMallTags);
         shopMapper.insert(shop);
-        seller.setShopId(shop.getId());
-        sellerMapper.insert(seller);
 
         return shop.getId();
     }
@@ -119,22 +111,26 @@ public class TemuShopServiceImpl implements TemuShopService {
      * @param localMallTagsResponse Temu 本地店铺标签响应
      * @return 待保存的卖家对象
      */
-    private TemuSellerDO buildSeller(TemuApiResponse<AccessTokenInfoResult> response,
+    private void applyAuthorization(TemuShopDO shop, TemuApiResponse<AccessTokenInfoResult> response,
                                      TemuApiResponse<LocalMallTagsResult> localMallTagsResponse) {
         AccessTokenInfoResult result = response.getResult();
         // DTO 与 DO 的同名标量字段统一转换，避免维护大量重复 setter。
-        TemuSellerDO seller = BeanUtils.toBean(result, TemuSellerDO.class);
-        seller.setTags(writeJson(localMallTagsResponse.getResult().getTags()));
-        seller.setAppSubscribeEventCodeList(writeJson(result.getAppSubscribeEventCodeList()));
-        seller.setAuthEventCodeList(writeJson(result.getAuthEventCodeList()));
-        seller.setApiScopeList(writeJson(result.getApiScopeList()));
-        if (seller.getExpiredTime() != null) {
-            seller.setExpiredAt(Instant.ofEpochSecond(seller.getExpiredTime())
+        shop.setSemiUniqueId(result.getSemiUniqueId());
+        shop.setRegionId(result.getRegionId());
+        shop.setMallId(result.getMallId());
+        shop.setMallType(result.getMallType());
+        shop.setTags(writeJson(localMallTagsResponse.getResult().getTags()));
+        shop.setAppSubscribeStatus(result.getAppSubscribeStatus());
+        shop.setExpiredTime(result.getExpiredTime());
+        if (shop.getExpiredTime() != null) {
+            shop.setExpiredAt(Instant.ofEpochSecond(shop.getExpiredTime())
                     .atZone(ZoneId.systemDefault()).toLocalDateTime());
         }
-        seller.setResponseJson(writeJson(response));
-        seller.setLastSyncTime(java.time.LocalDateTime.now());
-        return seller;
+        shop.setAppSubscribeEventCodeList(writeJson(result.getAppSubscribeEventCodeList()));
+        shop.setAuthEventCodeList(writeJson(result.getAuthEventCodeList()));
+        shop.setApiScopeList(writeJson(result.getApiScopeList()));
+        shop.setResponseJson(writeJson(response));
+        shop.setLastSyncTime(java.time.LocalDateTime.now());
     }
 
     /** 将新版客户端响应或字段序列化为数据库 JSON 文本。 */
@@ -172,21 +168,14 @@ public class TemuShopServiceImpl implements TemuShopService {
     private void syncSellerAuthorization(TemuShopDO existingShop, TemuShopSaveReqVO request) {
         TemuApiResponse<AccessTokenInfoResult> authorization = queryTemuAuthInfo(request);
         AccessTokenInfoResult result = authorization.getResult();
-        TemuSellerDO existingSeller = sellerMapper.selectOne(new LambdaQueryWrapper<TemuSellerDO>()
-                .eq(TemuSellerDO::getShopId, existingShop.getId()));
         Long mallId = result.getMallId();
-        if (existingSeller != null && existingSeller.getMallId() != null
-                && !Objects.equals(existingSeller.getMallId(), mallId)) {
+        if (existingShop.getMallId() != null && !Objects.equals(existingShop.getMallId(), mallId)) {
             throw exception(SHOP_MALL_NOT_MATCH);
         }
-        TemuSellerDO seller = buildSeller(authorization, queryLocalMallTags(request));
-        seller.setShopId(existingShop.getId());
-        if (existingSeller == null) {
-            sellerMapper.insert(seller);
-        } else {
-            seller.setId(existingSeller.getId());
-            sellerMapper.updateById(seller);
-        }
+        TemuShopDO authorizationUpdate = new TemuShopDO();
+        authorizationUpdate.setId(existingShop.getId());
+        applyAuthorization(authorizationUpdate, authorization, queryLocalMallTags(request));
+        shopMapper.updateById(authorizationUpdate);
     }
 
     /** 使用新版 Temu client 查询并校验编辑时的新授权信息。 */
@@ -229,8 +218,6 @@ public class TemuShopServiceImpl implements TemuShopService {
     @Transactional(rollbackFor = Exception.class)
     public void deleteShop(Long id) {
         validateShopExists(id);
-        // 卖家表以 shop_id 关联店铺，先删除从表避免残留授权数据。
-        sellerMapper.delete(new LambdaQueryWrapper<TemuSellerDO>().eq(TemuSellerDO::getShopId, id));
         shopMapper.deleteById(id);
     }
 
@@ -240,8 +227,6 @@ public class TemuShopServiceImpl implements TemuShopService {
         if (CollUtil.isEmpty(ids)) {
             return;
         }
-        // 批量删除时同步清理所有关联卖家授权信息。
-        sellerMapper.delete(new LambdaQueryWrapper<TemuSellerDO>().in(TemuSellerDO::getShopId, ids));
         shopMapper.deleteByIds(ids);
     }
 

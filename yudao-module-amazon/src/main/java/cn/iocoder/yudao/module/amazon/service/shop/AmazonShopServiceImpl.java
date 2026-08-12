@@ -2,9 +2,7 @@ package cn.iocoder.yudao.module.amazon.service.shop;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
-import cn.iocoder.yudao.module.amazon.controller.admin.sellers.vo.AmazonSellersReqVO;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
-import cn.iocoder.yudao.module.amazon.service.sellers.AmazonSellersService;
 import org.springframework.stereotype.Service;
 import jakarta.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -34,11 +32,9 @@ public class AmazonShopServiceImpl implements AmazonShopService {
 
     @Resource
     private AmazonShopMapper amazonShopMapper;
-    @Resource
-    private AmazonSellersService amazonSellersService;
 
     /**
-     * 创建店铺后同步 Amazon Sellers 返回的账户档案和站点参与状态。
+     * 创建 Amazon 店铺记录。
      *
      * @param createReqVO 创建信息
      * @return 新建店铺编号
@@ -49,10 +45,6 @@ public class AmazonShopServiceImpl implements AmazonShopService {
         AmazonShopDO shop = BeanUtils.toBean(createReqVO, AmazonShopDO.class);
         amazonShopMapper.insert(shop);
 
-        // 店铺主键生成后才能使用其授权信息调用 Sellers API，并建立两张从属同步记录。
-        AmazonSellersReqVO sellersReqVO = new AmazonSellersReqVO();
-        sellersReqVO.setShopId(shop.getId());
-        amazonSellersService.syncAccount(sellersReqVO);
         return shop.getId();
     }
 

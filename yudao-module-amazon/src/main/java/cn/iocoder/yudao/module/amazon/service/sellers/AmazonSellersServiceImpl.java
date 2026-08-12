@@ -5,19 +5,14 @@ import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
 import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
-import cn.iocoder.yudao.module.amazon.sdk.sellers.AmazonSellersApi;
-import cn.iocoder.yudao.module.amazon.sdk.sellers.AmazonSellersRequest;
-import cn.iocoder.yudao.module.amazon.sdk.AmazonApiResponse;
-import cn.iocoder.yudao.module.amazon.sdk.sellers.dto.AccountDto;
-import cn.iocoder.yudao.module.amazon.sdk.sellers.dto.MarketplaceParticipationDto;
-import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
-import cn.iocoder.yudao.module.amazon.service.seller.AmazonSellerAccountService;
-import cn.iocoder.yudao.module.amazon.service.seller.AmazonShopMarketplaceParticipationService;
+import cn.iocoder.yudao.module.amazon.service.spapi.AmazonSpApiSdkFactory;
+import com.amazon.SellingPartnerAPIAA.LWAException;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
+import software.amazon.spapi.ApiException;
+import software.amazon.spapi.api.sellers.v1.SellersApi;
+import software.amazon.spapi.models.sellers.v1.GetAccountResponse;
+import software.amazon.spapi.models.sellers.v1.GetMarketplaceParticipationsResponse;
 
 /**
  * Amazon Sellers 服务实现。
@@ -27,58 +22,24 @@ public class AmazonSellersServiceImpl implements AmazonSellersService {
     @Resource
     private AmazonMarketplaceProvider amazonMarketplaceProvider;
     @Resource
-    private AmazonOAuthService amazonOAuthService;
-    @Resource
     private AmazonShopMapper amazonShopMapper;
     @Resource
-    private AmazonSellersApi amazonSellersApi;
-    @Resource
-    private AmazonSellerAccountService amazonSellerAccountService;
-    @Resource
-    private AmazonShopMarketplaceParticipationService marketplaceParticipationService;
+    private AmazonSpApiSdkFactory amazonSpApiSdkFactory;
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public AmazonApiResponse<List<MarketplaceParticipationDto>> getMarketplaceParticipations(AmazonSellersReqVO request) {
-        return amazonSellersApi.getMarketplaceParticipations(buildSdkRequest(request));
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * <p>站点参与状态是 Listings 等站点维度业务的基础数据，拉取成功后在同一事务内
-     * 写入 {@code amazon_shop_marketplace}，确保接口返回的数据与本地记录一致。</p>
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public AmazonApiResponse<List<MarketplaceParticipationDto>> syncMarketplaceParticipations(AmazonSellersReqVO request) {
-        AmazonApiResponse<List<MarketplaceParticipationDto>> response = getMarketplaceParticipations(request);
-        marketplaceParticipationService.syncMarketplaceParticipations(request.getShopId(), response.getData());
-        return response;
+    public GetMarketplaceParticipationsResponse getMarketplaceParticipations(AmazonSellersReqVO request) throws ApiException, LWAException {
+        return sellersApi(request).getMarketplaceParticipations();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public AmazonApiResponse<AccountDto> getAccount(AmazonSellersReqVO request) {
-        return amazonSellersApi.getAccount(buildSdkRequest(request));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public AmazonApiResponse<AccountDto> syncAccount(AmazonSellersReqVO request) {
-        AmazonApiResponse<AccountDto> accountResponse = getAccount(request);
-        amazonSellerAccountService.syncSellerAccount(request.getShopId(), accountResponse.getData());
-
-        // Marketplace 参与状态不包含在 Account 响应中，需通过独立的 Sellers 接口获取。
-        syncMarketplaceParticipations(request);
-        return accountResponse;
+    public GetAccountResponse getAccount(AmazonSellersReqVO request) throws ApiException, LWAException {
+        return sellersApi(request).getAccount();
     }
 
     /**
@@ -87,14 +48,13 @@ public class AmazonSellersServiceImpl implements AmazonSellersService {
      * @param request 前端传入的店铺参数
      * @return 包含端点和授权信息的 SDK 请求
      */
-    private AmazonSellersRequest buildSdkRequest(AmazonSellersReqVO request) {
+    private SellersApi sellersApi(AmazonSellersReqVO request) {
         AmazonShopDO shop = requireShop(request.getShopId());
         AmazonMarketplaceEnum marketplace = requireMarketplace(shop.getRegion());
-        AmazonSellersRequest sdkRequest = new AmazonSellersRequest();
-        sdkRequest.setShopId(shop.getId());
-        sdkRequest.setEndpoint(amazonMarketplaceProvider.getEndpoint(marketplace));
-        sdkRequest.setAccessToken(amazonOAuthService.getSellerAccessToken(shop.getId()));
-        return sdkRequest;
+        return new SellersApi.Builder()
+                .lwaAuthorizationCredentials(amazonSpApiSdkFactory.credentials(shop.getSellerRefreshToken()))
+                .endpoint(amazonMarketplaceProvider.getEndpoint(marketplace))
+                .build();
     }
 
     /**

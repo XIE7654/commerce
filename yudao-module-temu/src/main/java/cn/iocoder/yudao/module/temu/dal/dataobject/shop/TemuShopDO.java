@@ -48,5 +48,32 @@ public class TemuShopDO extends BaseDO {
      */
     private Integer status;
 
+    /** Temu semiUniqueId。 */
+    private String semiUniqueId;
+    /** Temu 区域编号。 */
+    private Integer regionId;
+    /** Temu mallId。 */
+    private Long mallId;
+    /** Temu mallType。 */
+    private Integer mallType;
+    /** Temu 店铺标签 JSON。 */
+    private String tags;
+    /** 应用订阅状态。 */
+    private Integer appSubscribeStatus;
+    /** 授权过期时间 Unix 秒。 */
+    private Long expiredTime;
+    /** 授权过期时间。 */
+    private LocalDateTime expiredAt;
+    /** 应用订阅事件编码列表 JSON。 */
+    private String appSubscribeEventCodeList;
+    /** 授权事件及权限状态列表 JSON。 */
+    private String authEventCodeList;
+    /** API 权限范围列表 JSON。 */
+    private String apiScopeList;
+    /** 授权接口完整响应 JSON。 */
+    private String responseJson;
+    /** 最近一次同步授权信息时间。 */
+    private LocalDateTime lastSyncTime;
+
 
 }

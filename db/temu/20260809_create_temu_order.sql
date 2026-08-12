@@ -1,7 +1,6 @@
 CREATE TABLE IF NOT EXISTS temu_order (
     id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键编号',
     shop_id BIGINT NOT NULL COMMENT '关联 temu_shop.id',
-    seller_id BIGINT NOT NULL COMMENT '关联 temu_seller.id，由店铺授权关系确定',
     parent_order_sn VARCHAR(64) NOT NULL COMMENT 'Temu 父订单号',
     order_sn VARCHAR(64) NOT NULL COMMENT 'Temu 子订单号',
     site_id INT NULL COMMENT 'Temu 站点编号',
@@ -47,9 +46,7 @@ CREATE TABLE IF NOT EXISTS temu_order (
     PRIMARY KEY (id),
     UNIQUE KEY uk_temu_order_tenant_shop_sn (tenant_id, shop_id, order_sn),
     KEY idx_temu_order_tenant_id (tenant_id),
-    KEY idx_temu_order_tenant_seller_create (tenant_id, seller_id, order_create_time),
     KEY idx_temu_order_tenant_shop_parent (tenant_id, shop_id, parent_order_sn),
     KEY idx_temu_order_tenant_shop_status (tenant_id, shop_id, parent_order_status, order_status),
-    CONSTRAINT fk_temu_order_shop FOREIGN KEY (shop_id) REFERENCES temu_shop (id),
-    CONSTRAINT fk_temu_order_seller FOREIGN KEY (seller_id) REFERENCES temu_seller (id)
+    CONSTRAINT fk_temu_order_shop FOREIGN KEY (shop_id) REFERENCES temu_shop (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Temu 子订单表';

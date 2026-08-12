@@ -1,8 +1,8 @@
 package cn.iocoder.yudao.module.temu.service.addproducts;
 
 import cn.iocoder.yudao.module.temu.controller.admin.addproducts.vo.AddProductsCatsReqVO;
-import cn.iocoder.yudao.module.temu.sdk.TemuApiResponse;
-import cn.iocoder.yudao.module.temu.sdk.product.dto.CatsGetCategoryDto;
+import cn.iocoder.yudao.module.temu.framework.client.TemuApiResponse;
+import cn.iocoder.yudao.module.temu.framework.client.product.CatsGetCategoryResult;
 
 import java.util.List;
 
@@ -17,5 +17,5 @@ public interface AddProductsService {
      * @param request 查询参数，包含站点、授权 Token、语言和可选父分类 ID
      * @return Temu 官方分类查询响应
      */
-    TemuApiResponse<List<CatsGetCategoryDto>> getCategories(AddProductsCatsReqVO request);
+    TemuApiResponse<List<CatsGetCategoryResult>> getCategories(AddProductsCatsReqVO request);
 }

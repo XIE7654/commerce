@@ -1,6 +1,8 @@
 package cn.iocoder.yudao.module.temu.framework.client;
 
 import cn.iocoder.yudao.module.temu.framework.client.api.AuthApi;
+import cn.iocoder.yudao.module.temu.framework.client.api.OrderApi;
+import cn.iocoder.yudao.module.temu.framework.client.api.ProductApi;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -38,6 +40,8 @@ public class TemuClient {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     private final AuthApi authApi;
+    private final OrderApi orderApi;
+    private final ProductApi productApi;
 
     /** 使用默认 HTTP 客户端创建 Temu 客户端。 */
     public TemuClient(String appKey, String appSecret, String accessToken, String site) {
@@ -58,11 +62,23 @@ public class TemuClient {
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
         this.authApi = new AuthApi(this);
+        this.orderApi = new OrderApi(this);
+        this.productApi = new ProductApi(this);
     }
 
     /** @return 认证 API。 */
     public AuthApi getAuth() {
         return authApi;
+    }
+
+    /** @return 商品 API。 */
+    public ProductApi getProduct() {
+        return productApi;
+    }
+
+    /** @return 订单 API。 */
+    public OrderApi getOrder() {
+        return orderApi;
     }
 
     /** 发起 Temu Router 请求并返回原始 JSON，供各 API 做强类型转换。 */
