@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.amazon.controller.admin.orders.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -13,6 +14,10 @@ import java.util.Map;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class AmazonOrderShipmentConfirmationReqVO extends AmazonOrderGetReqVO {
+
+    @Schema(description = "写入目标站点国家代码", requiredMode = Schema.RequiredMode.REQUIRED, example = "US")
+    @NotBlank(message = "国家代码不能为空")
+    private String countryCode;
 
     @Schema(description = "包裹明细，需符合 Amazon PackageDetail 结构", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotEmpty(message = "包裹明细不能为空")

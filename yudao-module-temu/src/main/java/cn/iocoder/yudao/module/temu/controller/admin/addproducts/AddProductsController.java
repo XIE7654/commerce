@@ -2,6 +2,8 @@ package cn.iocoder.yudao.module.temu.controller.admin.addproducts;
 
 import cn.iocoder.yudao.module.temu.controller.admin.addproducts.vo.AddProductsCatsReqVO;
 import cn.iocoder.yudao.module.temu.service.addproducts.AddProductsService;
+import cn.iocoder.yudao.module.temu.sdk.TemuApiResponse;
+import cn.iocoder.yudao.module.temu.sdk.product.dto.CatsGetCategoryDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -12,7 +14,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import tools.jackson.databind.JsonNode;
+
+import java.util.List;
 
 /**
  * 管理后台 Add Products 商品发布接口。
@@ -35,7 +38,7 @@ public class AddProductsController {
     @PostMapping("/categories")
     @Operation(summary = "查询 Temu 商品分类")
     @PreAuthorize("@ss.hasPermission('temu:add-products:query')")
-    public JsonNode getCategories(@Valid @RequestBody AddProductsCatsReqVO request) {
+    public TemuApiResponse<List<CatsGetCategoryDto>> getCategories(@Valid @RequestBody AddProductsCatsReqVO request) {
         return addProductsService.getCategories(request);
     }
 }

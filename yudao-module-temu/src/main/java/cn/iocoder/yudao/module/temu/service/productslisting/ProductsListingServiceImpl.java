@@ -12,7 +12,10 @@ import cn.iocoder.yudao.module.temu.controller.admin.productslisting.vo.Products
 import cn.iocoder.yudao.module.temu.enums.TemuSiteRegionEnum;
 import cn.iocoder.yudao.module.temu.framework.config.TemuProperties;
 import cn.iocoder.yudao.module.temu.sdk.TemuClient;
+import cn.iocoder.yudao.module.temu.sdk.TemuApiResponse;
 import cn.iocoder.yudao.module.temu.sdk.TemuJsonStorageService;
+import cn.iocoder.yudao.module.temu.sdk.product.CatsGetReqVO;
+import cn.iocoder.yudao.module.temu.sdk.product.dto.CatsGetCategoryDto;
 import cn.iocoder.yudao.module.temu.service.apirequestlog.TemuApiRequestLogService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -20,6 +23,7 @@ import org.springframework.validation.annotation.Validated;
 import tools.jackson.databind.JsonNode;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -44,10 +48,10 @@ public class ProductsListingServiceImpl implements ProductsListingService {
      * @return Temu 官方分类响应
      */
     @Override
-    public JsonNode getGoodsCategories(ProductsListingCategoryReqVO request) {
-        Map<String, Object> params = new LinkedHashMap<>();
-        params.put("parentCatId", request.getParentCatId());
-        return createClient(request).getProduct().catsGet(params);
+    public TemuApiResponse<List<CatsGetCategoryDto>> getGoodsCategories(ProductsListingCategoryReqVO request) {
+        CatsGetReqVO catsRequest = new CatsGetReqVO();
+        catsRequest.setParentCatId(request.getParentCatId());
+        return createClient(request).getProduct().catsGet(catsRequest);
     }
 
     /**

@@ -8,28 +8,26 @@ import cn.iocoder.yudao.module.amazon.controller.admin.orders.vo.AmazonOrderRegu
 import cn.iocoder.yudao.module.amazon.controller.admin.orders.vo.AmazonOrder2026GetReqVO;
 import cn.iocoder.yudao.module.amazon.controller.admin.orders.vo.AmazonOrdersListReqVO;
 import cn.iocoder.yudao.module.amazon.controller.admin.orders.vo.AmazonOrders2026ListReqVO;
+import cn.iocoder.yudao.module.amazon.dal.dataobject.seller.AmazonShopMarketplaceDO;
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
+import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopWithMarketplacesDO;
+import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
 import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.sdk.orders.AmazonOrdersApi;
 import cn.iocoder.yudao.module.amazon.sdk.orders.AmazonOrdersRequest;
 import cn.iocoder.yudao.module.amazon.sdk.AmazonApiResponse;
 import cn.iocoder.yudao.module.amazon.service.auth.AmazonOAuthService;
-import cn.iocoder.yudao.module.amazon.service.shop.AmazonShopService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
-import org.springframework.http.HttpMethod;
-import org.springframework.web.util.UriUtils;
 
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 import static cn.hutool.core.collection.CollUtil.isEmpty;
 import static cn.hutool.core.util.StrUtil.isBlank;
 import static cn.iocoder.yudao.module.amazon.utils.AmazonDateTimeUtils.validateRange;
-import static cn.iocoder.yudao.module.amazon.utils.AmazonQueryUtils.buildQuery;
 import static cn.iocoder.yudao.module.amazon.utils.AmazonQueryUtils.join;
 import static cn.iocoder.yudao.module.amazon.utils.AmazonQueryUtils.putIfNotBlank;
 
@@ -41,16 +39,13 @@ import static cn.iocoder.yudao.module.amazon.utils.AmazonQueryUtils.putIfNotBlan
 @Service
 public class AmazonOrdersServiceImpl implements AmazonOrdersService {
 
-    private static final String ORDERS_PATH = "/orders/v0/orders";
-    private static final String ORDERS_2026_PATH = "/orders/2026-01-01/orders";
-
     @Resource
     private AmazonMarketplaceProvider amazonMarketplaceProvider;
     @Resource
     private AmazonOAuthService amazonOAuthService;
 
     @Resource
-    private AmazonShopService amazonShopService;
+    private AmazonShopMapper shopMapper;
 
     @Resource
     private AmazonOrdersApi amazonOrdersApi;
@@ -59,219 +54,251 @@ public class AmazonOrdersServiceImpl implements AmazonOrdersService {
     @Override
     public AmazonApiResponse<Map<String, Object>> getOrders(AmazonOrdersListReqVO request) {
         validateListRequest(request);
-        return execute(request.getShopId(), request.getCountryCode(), buildListUri(request), "getOrders", "orders");
+        RequestContext context = resolveReadContext(request.getShopId());
+        return amazonOrdersApi.getOrders(sdkRequest(context, null, null, buildListQuery(request, context.marketplaceIds()),
+                null, "getOrders", "orders"));
     }
 
     /** {@inheritDoc} */
     @Override
     public AmazonApiResponse<Map<String, Object>> getOrder(AmazonOrderGetReqVO request) {
-        return executeOrderRequest(request, "", "getOrder", "order");
+        return getOrderResource(request, "", "getOrder", "order", amazonOrdersApi::getOrder);
     }
 
     /** {@inheritDoc} */
     @Override
     public AmazonApiResponse<Map<String, Object>> getOrderItems(AmazonOrderItemsReqVO request) {
-        return executeOrderItemsRequest(request, "/orderItems", "getOrderItems", "order-items");
+        Map<String, String> query = new TreeMap<>();
+        putIfNotBlank(query, "NextToken", request.getNextToken());
+        return getOrderResource(request, "/orderItems", "getOrderItems", "order-items", amazonOrdersApi::getOrderItems, query);
     }
 
     /** {@inheritDoc} */
     @Override
     public AmazonApiResponse<Map<String, Object>> getOrderItemsBuyerInfo(AmazonOrderItemsReqVO request) {
-        return executeOrderItemsRequest(request, "/orderItems/buyerInfo", "getOrderItemsBuyerInfo", "order-items-buyer-info");
+        Map<String, String> query = new TreeMap<>();
+        putIfNotBlank(query, "NextToken", request.getNextToken());
+        return getOrderResource(request, "/orderItems/buyerInfo", "getOrderItemsBuyerInfo", "order-items-buyer-info",
+                amazonOrdersApi::getOrderItemsBuyerInfo, query);
     }
 
     /** {@inheritDoc} */
     @Override
     public AmazonApiResponse<Map<String, Object>> getOrderBuyerInfo(AmazonOrderGetReqVO request) {
-        return executeOrderRequest(request, "/buyerInfo", "getOrderBuyerInfo", "order-buyer-info");
+        return getOrderResource(request, "/buyerInfo", "getOrderBuyerInfo", "order-buyer-info", amazonOrdersApi::getOrderBuyerInfo);
     }
 
     /** {@inheritDoc} */
     @Override
     public AmazonApiResponse<Map<String, Object>> getOrderAddress(AmazonOrderGetReqVO request) {
-        return executeOrderRequest(request, "/address", "getOrderAddress", "order-address");
+        return getOrderResource(request, "/address", "getOrderAddress", "order-address", amazonOrdersApi::getOrderAddress);
     }
 
     /** {@inheritDoc} */
     @Override
     public AmazonApiResponse<Map<String, Object>> getOrderRegulatedInfo(AmazonOrderGetReqVO request) {
-        return executeOrderRequest(request, "/regulatedInfo", "getOrderRegulatedInfo", "order-regulated-info");
+        return getOrderResource(request, "/regulatedInfo", "getOrderRegulatedInfo", "order-regulated-info",
+                amazonOrdersApi::getOrderRegulatedInfo);
     }
 
     /** {@inheritDoc} */
     @Override
     public AmazonApiResponse<Map<String, Object>> updateShipmentStatus(AmazonOrderShipmentReqVO request) {
+        RequestContext context = resolveWriteContext(request.getShopId(), request.getCountryCode());
         Map<String, Object> body = new TreeMap<>();
-        body.put("marketplaceId", amazonShopService.requireMarketplace(request.getCountryCode()).getMarketplaceId());
+        body.put("marketplaceId", context.marketplaceId());
         body.put("shipmentStatus", request.getShipmentStatus());
         if (!isEmpty(request.getOrderItems())) {
             body.put("orderItems", request.getOrderItems());
         }
-        return executeMutation(request, "/shipment", HttpMethod.POST, body, "updateShipmentStatus");
+        return amazonOrdersApi.updateShipmentStatus(sdkRequest(context, request.getOrderId(), "/shipment", Map.of(), body,
+                "updateShipmentStatus", "update-shipment-status"));
     }
 
     /** {@inheritDoc} */
     @Override
     public AmazonApiResponse<Map<String, Object>> confirmShipment(AmazonOrderShipmentConfirmationReqVO request) {
+        RequestContext context = resolveWriteContext(request.getShopId(), request.getCountryCode());
         Map<String, Object> body = new TreeMap<>();
-        body.put("marketplaceId", amazonShopService.requireMarketplace(request.getCountryCode()).getMarketplaceId());
+        body.put("marketplaceId", context.marketplaceId());
         body.put("packageDetail", request.getPackageDetail());
         if (!isBlank(request.getCodCollectionMethod())) {
             body.put("codCollectionMethod", request.getCodCollectionMethod());
         }
-        return executeMutation(request, "/shipmentConfirmation", HttpMethod.POST, body, "confirmShipment");
+        return amazonOrdersApi.confirmShipment(sdkRequest(context, request.getOrderId(), "/shipmentConfirmation", Map.of(), body,
+                "confirmShipment", "confirm-shipment"));
     }
 
     /** {@inheritDoc} */
     @Override
     public AmazonApiResponse<Map<String, Object>> updateOrderRegulatedInfo(AmazonOrderRegulatedInfoUpdateReqVO request) {
-        return executeMutation(request, "/regulatedInfo", HttpMethod.PATCH,
+        RequestContext context = resolveWriteContext(request.getShopId(), request.getCountryCode());
+        return amazonOrdersApi.updateVerificationStatus(sdkRequest(context, request.getOrderId(), "/regulatedInfo", Map.of(),
                 Map.of("regulatedOrderVerificationStatus", request.getRegulatedOrderVerificationStatus()),
-                "updateVerificationStatus");
+                "updateVerificationStatus", "update-verification-status"));
     }
 
     /** {@inheritDoc} */
     @Override
     public AmazonApiResponse<Map<String, Object>> getOrders2026(AmazonOrders2026ListReqVO request) {
-        AmazonMarketplaceEnum marketplace = amazonShopService.requireMarketplace(request.getCountryCode());
+        RequestContext context = resolveReadContext(request.getShopId());
         Map<String, String> query = new TreeMap<>();
         putIfNotBlank(query, "createdAfter", request.getCreatedAfter());
         putIfNotBlank(query, "createdBefore", request.getCreatedBefore());
         putIfNotBlank(query, "lastUpdatedAfter", request.getLastUpdatedAfter());
         putIfNotBlank(query, "lastUpdatedBefore", request.getLastUpdatedBefore());
         putIfNotBlank(query, "fulfillmentStatuses", join(request.getFulfillmentStatuses()));
-        putIfNotBlank(query, "marketplaceIds", marketplace.getMarketplaceId());
+        putIfNotBlank(query, "marketplaceIds", join(context.marketplaceIds()));
         putIfNotBlank(query, "fulfilledBy", join(request.getFulfilledBy()));
         putIfNotBlank(query, "maxResultsPerPage", request.getMaxResultsPerPage() == null ? null : request.getMaxResultsPerPage().toString());
         putIfNotBlank(query, "paginationToken", request.getPaginationToken());
         putIfNotBlank(query, "includedData", join(request.getIncludedData()));
-        URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + ORDERS_2026_PATH + "?" + buildQuery(query));
-        return execute2026(request.getShopId(), request.getCountryCode(), uri, "getOrders2026", "orders-2026");
+        return amazonOrdersApi.searchOrders(sdkRequest(context, null, null, query, null, "searchOrders", "orders-2026"));
     }
 
     /** {@inheritDoc} */
     @Override
     public AmazonApiResponse<Map<String, Object>> getOrder2026(AmazonOrder2026GetReqVO request) {
-        AmazonMarketplaceEnum marketplace = amazonShopService.requireMarketplace(request.getCountryCode());
-        String orderId = UriUtils.encodePathSegment(request.getOrderId(), StandardCharsets.UTF_8);
+        RequestContext context = resolveReadContext(request.getShopId());
         Map<String, String> query = new TreeMap<>();
         putIfNotBlank(query, "includedData", join(request.getIncludedData()));
-        URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + ORDERS_2026_PATH + "/" + orderId + "?" + buildQuery(query));
-        return execute2026(request.getShopId(), request.getCountryCode(), uri, "getOrder2026", "order-2026");
+        return amazonOrdersApi.getOrder2026(sdkRequest(context, request.getOrderId(), null, query, null,
+                "getOrder2026", "order-2026"));
     }
 
     /**
-     * 调用指定订单子资源，确保所有订单详情接口使用相同的店铺授权和站点解析规则。
+     * 查询指定的 Orders v0 子资源。
      *
-     * @param request 店铺、国家代码和 Amazon 订单编号
-     * @param suffix 订单资源路径后缀
-     * @param operationName Amazon 操作名称
-     * @param storageName 响应归档文件名称
+     * @param request 店铺和 Amazon 订单编号
+     * @param path 订单资源路径后缀
+     * @param operation Amazon 操作名称
+     * @param storage 响应归档文件名称
+     * @param query Orders SDK 读操作
      * @return Amazon 原始 JSON 响应
      */
-    private AmazonApiResponse<Map<String, Object>> executeOrderRequest(AmazonOrderGetReqVO request, String suffix, String operationName,
-                                                    String storageName) {
-        AmazonMarketplaceEnum marketplace = amazonShopService.requireMarketplace(request.getCountryCode());
-        String orderId = UriUtils.encodePathSegment(request.getOrderId(), StandardCharsets.UTF_8);
-        URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + ORDERS_PATH + "/" + orderId + suffix);
-        return execute(request.getShopId(), request.getCountryCode(), uri, operationName, storageName);
+    private AmazonApiResponse<Map<String, Object>> getOrderResource(AmazonOrderGetReqVO request, String path, String operation,
+                                                                      String storage, OrdersQuery query) {
+        return getOrderResource(request, path, operation, storage, query, Map.of());
     }
 
     /**
-     * 调用订单商品资源并传递 Amazon 返回的分页令牌。
+     * 查询指定的 Orders v0 子资源，并透传该资源的查询参数。
      *
-     * @param request 订单商品查询参数
-     * @param suffix 订单资源路径后缀
-     * @param operationName Amazon 操作名称
-     * @param storageName 响应归档文件名称
+     * @param request 店铺和 Amazon 订单编号
+     * @param path 订单资源路径后缀
+     * @param operation Amazon 操作名称
+     * @param storage 响应归档文件名称
+     * @param query Orders SDK 读操作
+     * @param parameters Amazon 查询参数
      * @return Amazon 原始 JSON 响应
      */
-    private AmazonApiResponse<Map<String, Object>> executeOrderItemsRequest(AmazonOrderItemsReqVO request, String suffix, String operationName,
-                                                         String storageName) {
-        AmazonMarketplaceEnum marketplace = amazonShopService.requireMarketplace(request.getCountryCode());
-        String orderId = UriUtils.encodePathSegment(request.getOrderId(), StandardCharsets.UTF_8);
-        Map<String, String> query = new TreeMap<>();
-        putIfNotBlank(query, "NextToken", request.getNextToken());
-        String queryString = query.isEmpty() ? "" : "?" + buildQuery(query);
-        URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + ORDERS_PATH + "/" + orderId + suffix + queryString);
-        return execute(request.getShopId(), request.getCountryCode(), uri, operationName, storageName);
+    private AmazonApiResponse<Map<String, Object>> getOrderResource(AmazonOrderGetReqVO request, String path, String operation,
+                                                                      String storage, OrdersQuery query, Map<String, String> parameters) {
+        RequestContext context = resolveReadContext(request.getShopId());
+        return query.execute(sdkRequest(context, request.getOrderId(), path, parameters, null, operation, storage));
     }
 
     /**
-     * 调用指定订单写接口，并复用店铺授权、站点解析和审计归档链路。
+     * 构造 Orders SDK 请求上下文，集中注入店铺授权、端点和参与的 Marketplace。
      *
-     * @param request 订单及站点定位参数
-     * @param suffix 订单资源路径后缀
-     * @param method HTTP 请求方式
-     * @param body Amazon 请求体
-     * @param operationName Amazon 操作名称
-     * @return Amazon 原始 JSON 响应
+     * @param context 店铺、站点和授权上下文
+     * @param orderId Amazon 订单编号；列表查询时为空
+     * @param path 订单资源路径后缀
+     * @param query Amazon 查询参数
+     * @param body Amazon 请求体；读操作时为空
+     * @param operation Amazon 操作名称
+     * @param storage 响应归档文件名称
+     * @return 已完成上下文注入的 SDK 请求
      */
-    private AmazonApiResponse<Map<String, Object>> executeMutation(AmazonOrderGetReqVO request, String suffix, HttpMethod method,
-                                                Map<String, Object> body, String operationName) {
-        AmazonShopDO shop = amazonShopService.requireShop(request.getShopId());
-        AmazonMarketplaceEnum marketplace = amazonShopService.requireMarketplace(request.getCountryCode());
-        String orderId = UriUtils.encodePathSegment(request.getOrderId(), StandardCharsets.UTF_8);
-        URI uri = URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + ORDERS_PATH + "/" + orderId + suffix);
-        String accessToken = amazonOAuthService.getSellerAccessToken(shop.getId());
-        AmazonOrdersRequest sdkRequest = sdkRequest(shop, request.getCountryCode(), marketplace.getMarketplaceId(),
-                accessToken, uri, operationName, operationName);
-        sdkRequest.setBody(body);
-        return amazonOrdersApi.mutate(sdkRequest, method);
-    }
-
-    /**
-     * 使用店铺 Seller Token 调用 Orders API，并将响应交由统一客户端审计和归档。
-     *
-     * @param shopId 当前租户的店铺编号
-     * @param countryCode 站点国家代码
-     * @param uri 已构造的 Orders API 地址
-     * @param operationName Amazon 操作名称
-     * @param storageName 响应归档文件名称
-     * @return Amazon 原始 JSON 响应
-     */
-    private AmazonApiResponse<Map<String, Object>> execute(Long shopId, String countryCode, URI uri, String operationName, String storageName) {
-        AmazonShopDO shop = amazonShopService.requireShop(shopId);
-        AmazonMarketplaceEnum marketplace = amazonShopService.requireMarketplace(countryCode);
-        String accessToken = amazonOAuthService.getSellerAccessToken(shop.getId());
-        return amazonOrdersApi.get(sdkRequest(shop, countryCode, marketplace.getMarketplaceId(), accessToken, uri,
-                operationName, storageName));
-    }
-
-    /** 调用 Orders 2026 SDK 资源，并保留独立的版本归档命名。 */
-    private AmazonApiResponse<Map<String, Object>> execute2026(Long shopId, String countryCode, URI uri, String operationName,
-                                            String storageName) {
-        AmazonShopDO shop = amazonShopService.requireShop(shopId);
-        AmazonMarketplaceEnum marketplace = amazonShopService.requireMarketplace(countryCode);
-        String accessToken = amazonOAuthService.getSellerAccessToken(shop.getId());
-        return amazonOrdersApi.get2026(sdkRequest(shop, countryCode, marketplace.getMarketplaceId(), accessToken, uri,
-                operationName, storageName));
-    }
-
-    /** 构造 Orders SDK 请求上下文，集中注入店铺授权和审计所需站点信息。 */
-    private AmazonOrdersRequest sdkRequest(AmazonShopDO shop, String countryCode, String marketplaceId,
-                                           String accessToken, URI uri, String operation, String storage) {
+    private AmazonOrdersRequest sdkRequest(RequestContext context, String orderId, String path, Map<String, String> query,
+                                           Map<String, Object> body, String operation, String storage) {
         AmazonOrdersRequest request = new AmazonOrdersRequest();
-        request.setShopId(shop.getId());
-        request.setCountryCode(countryCode);
-        request.setMarketplaceId(marketplaceId);
-        request.setAccessToken(accessToken);
-        request.setUri(uri);
+        request.setShopId(context.shop().getId());
+        request.setEndpoint(context.endpoint());
+        request.setCountryCode(context.countryCode());
+        request.setMarketplaceId(context.marketplaceId());
+        request.setAccessToken(context.accessToken());
+        request.setOrderId(orderId);
+        request.setPath(path);
+        request.setQuery(query);
+        request.setBody(body);
         request.setOperation(operation);
         request.setStorage(storage);
         return request;
     }
 
     /**
-     * 构造订单列表 URI；Amazon 要求以站点 Marketplace ID 作为必传筛选条件。
+     * 从启用店铺及其参与站点中解析读取请求上下文。
+     *
+     * <p>Marketplace ID 以 {@code amazon_shop_marketplace} 的同步记录为准，防止使用国家枚举推导出
+     * 并未授权给该店铺的站点。</p>
+     *
+     * @param shopId 店铺编号
+     * @return 包含店铺授权、区域端点和数据库 Marketplace ID 的上下文
+     */
+    private RequestContext resolveReadContext(Long shopId) {
+        AmazonShopWithMarketplacesDO target = requireEnabledShop(shopId);
+        AmazonMarketplaceEnum endpointMarketplace = AmazonMarketplaceEnum.fromSalesRegion(target.getShop().getRegion());
+        if (endpointMarketplace == null) {
+            throw new IllegalArgumentException("不支持的 Amazon 销售区域: " + target.getShop().getRegion());
+        }
+        List<String> marketplaceIds = target.getParticipations().stream()
+                .filter(item -> Boolean.TRUE.equals(item.getIsParticipating()))
+                .map(AmazonShopMarketplaceDO::getMarketplaceId)
+                .filter(id -> AmazonMarketplaceEnum.fromMarketplaceId(id) != null)
+                .filter(id -> endpointMarketplace.getSalesRegion().equals(AmazonMarketplaceEnum.fromMarketplaceId(id).getSalesRegion()))
+                .distinct().toList();
+        if (marketplaceIds.isEmpty()) {
+            throw new IllegalArgumentException("店铺没有可查询的参与站点: " + shopId);
+        }
+        return new RequestContext(target.getShop(), null, marketplaceIds.getFirst(), marketplaceIds,
+                amazonMarketplaceProvider.getEndpoint(endpointMarketplace), amazonOAuthService.getSellerAccessToken(shopId));
+    }
+
+    /**
+     * 从启用店铺及其参与站点中解析写入请求上下文。
+     *
+     * @param shopId 店铺编号
+     * @param countryCode 写入目标站点国家代码
+     * @return 包含单一目标 Marketplace 的上下文
+     */
+    private RequestContext resolveWriteContext(Long shopId, String countryCode) {
+        AmazonShopWithMarketplacesDO target = requireEnabledShop(shopId);
+        AmazonShopMarketplaceDO participation = target.getParticipations().stream()
+                .filter(item -> Boolean.TRUE.equals(item.getIsParticipating()))
+                .filter(item -> countryCode.equalsIgnoreCase(item.getCountryCode()))
+                .findFirst().orElseThrow(() -> new IllegalArgumentException("店铺未参与站点: " + countryCode));
+        AmazonMarketplaceEnum marketplace = AmazonMarketplaceEnum.fromMarketplaceId(participation.getMarketplaceId());
+        if (marketplace == null) {
+            throw new IllegalArgumentException("不支持的 Amazon Marketplace ID: " + participation.getMarketplaceId());
+        }
+        return new RequestContext(target.getShop(), countryCode, participation.getMarketplaceId(), List.of(participation.getMarketplaceId()),
+                amazonMarketplaceProvider.getEndpoint(marketplace), amazonOAuthService.getSellerAccessToken(shopId));
+    }
+
+    /**
+     * 按传入店铺编号从启用店铺聚合结果中定位店铺。
+     *
+     * @param shopId 店铺编号
+     * @return 含参与站点记录的启用店铺
+     */
+    private AmazonShopWithMarketplacesDO requireEnabledShop(Long shopId) {
+        List<AmazonShopWithMarketplacesDO> shops = shopMapper.selectEnabledWithMarketplaces();
+        return shops.stream()
+                .filter(item -> item.getShop() != null && shopId.equals(item.getShop().getId()))
+                .findFirst().orElseThrow(() -> new IllegalArgumentException("Amazon 店铺不存在或未启用: " + shopId));
+    }
+
+    /**
+     * 构造 Orders v0 列表查询参数；Marketplace ID 必须来自店铺参与站点记录。
      *
      * @param request 订单列表请求参数
-     * @return 可直接发起请求的 URI
+     * @param marketplaceId 数据库中该店铺参与的 Marketplace ID
+     * @return 传递给 Orders SDK 的查询参数
      */
-    private URI buildListUri(AmazonOrdersListReqVO request) {
-        AmazonMarketplaceEnum marketplace = amazonShopService.requireMarketplace(request.getCountryCode());
+    private Map<String, String> buildListQuery(AmazonOrdersListReqVO request, List<String> marketplaceIds) {
         Map<String, String> query = new TreeMap<>();
-        query.put("MarketplaceIds", marketplace.getMarketplaceId());
+        query.put("MarketplaceIds", join(marketplaceIds));
         putIfNotBlank(query, "CreatedAfter", request.getCreatedAfter());
         putIfNotBlank(query, "CreatedBefore", request.getCreatedBefore());
         putIfNotBlank(query, "LastUpdatedAfter", request.getLastUpdatedAfter());
@@ -293,7 +320,7 @@ public class AmazonOrdersServiceImpl implements AmazonOrdersService {
         putIfNotBlank(query, "EarliestDeliveryDateAfter", request.getEarliestDeliveryDateAfter());
         putIfNotBlank(query, "LatestDeliveryDateBefore", request.getLatestDeliveryDateBefore());
         putIfNotBlank(query, "LatestDeliveryDateAfter", request.getLatestDeliveryDateAfter());
-        return URI.create(amazonMarketplaceProvider.getEndpoint(marketplace) + ORDERS_PATH + "?" + buildQuery(query));
+        return query;
     }
 
     /**
@@ -323,6 +350,24 @@ public class AmazonOrdersServiceImpl implements AmazonOrdersService {
                 || !isBlank(request.getBuyerEmail()))) {
             throw new IllegalArgumentException("SellerOrderId 不能与履行渠道、订单状态、支付方式、更新时间或买家邮箱同时传入");
         }
+    }
+
+    /** Orders SDK 查询操作，避免为每个订单子资源重复构造同类调用。 */
+    @FunctionalInterface
+    private interface OrdersQuery {
+
+        /**
+         * 执行一个已填充上下文的 Orders SDK 查询。
+         *
+         * @param request 已填充的 SDK 请求
+         * @return Amazon 原始 JSON 响应
+         */
+        AmazonApiResponse<Map<String, Object>> execute(AmazonOrdersRequest request);
+    }
+
+    /** 订单调用使用的店铺授权和参与站点上下文。 */
+    private record RequestContext(AmazonShopDO shop, String countryCode, String marketplaceId, List<String> marketplaceIds,
+                                  String endpoint, String accessToken) {
     }
 
 }

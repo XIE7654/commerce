@@ -1,6 +1,6 @@
 ### Products Listing 商品刊登接口测试
 
-@temuAccessToken = replace-with-temu-access-token
+@temuAccessToken = uplv3hfyt5kcwoymrgnajnbl1ow5qxlz4sqhev6hl3xosz5dejrtyl2jre7
 
 ### 查询商品分类
 POST {{baseUrl}}/temu/products-listing/goods/categories
@@ -8,7 +8,8 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 tenant-id: {{adminTenantId}}
 
-{"site":"US","accessToken":"{{temuAccessToken}}","parentCatId":0}
+{"site":"US","accessToken":"{{temuAccessToken}}","parentCatId":null
+}
 
 ### 查询分类商品模板
 POST {{baseUrl}}/temu/products-listing/goods/template

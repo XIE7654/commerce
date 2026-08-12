@@ -5,8 +5,7 @@ Content-Type: application/json
 tenant-id: {{adminTenantId}}
 
 {
-  "shopId": 1,
-  "countryCode": "US",
+  "shopId": 2,
   "createdAfter": "2026-01-01T00:00:00Z",
   "maxResultsPerPage": 100,
   "orderStatuses": ["Unshipped", "PartiallyShipped"]
@@ -20,7 +19,6 @@ tenant-id: {{adminTenantId}}
 
 {
   "shopId": 1,
-  "countryCode": "US",
   "orderId": "902-3159896-1390916"
 }
 
@@ -32,7 +30,6 @@ tenant-id: {{adminTenantId}}
 
 {
   "shopId": 1,
-  "countryCode": "US",
   "orderId": "902-3159896-1390916",
   "nextToken": "NEXT_PAGE_TOKEN"
 }
@@ -93,7 +90,6 @@ tenant-id: {{adminTenantId}}
 
 {
   "shopId": 1,
-  "countryCode": "US",
   "lastUpdatedAfter": "2026-08-01T00:00:00Z",
   "includedData": ["FULFILLMENT"]
 }
@@ -106,7 +102,6 @@ tenant-id: {{adminTenantId}}
 
 {
   "shopId": 1,
-  "countryCode": "US",
   "orderId": "902-3159896-1390916",
   "includedData": ["FULFILLMENT"]
 }
@@ -119,7 +114,6 @@ tenant-id: {{adminTenantId}}
 
 {
   "shopId": 1,
-  "countryCode": "US",
   "orderId": "902-3159896-1390916"
 }
 
@@ -131,7 +125,6 @@ tenant-id: {{adminTenantId}}
 
 {
   "shopId": 1,
-  "countryCode": "US",
   "orderId": "902-3159896-1390916"
 }
 
@@ -143,7 +136,6 @@ tenant-id: {{adminTenantId}}
 
 {
   "shopId": 1,
-  "countryCode": "US",
   "orderId": "902-3159896-1390916"
 }
 
@@ -155,6 +147,5 @@ tenant-id: {{adminTenantId}}
 
 {
   "shopId": 1,
-  "countryCode": "US",
   "orderId": "902-3159896-1390916"
 }

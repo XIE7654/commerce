@@ -4,16 +4,17 @@ import cn.iocoder.yudao.module.temu.controller.admin.addproducts.vo.AddProductsC
 import cn.iocoder.yudao.module.temu.enums.TemuSiteRegionEnum;
 import cn.iocoder.yudao.module.temu.framework.config.TemuProperties;
 import cn.iocoder.yudao.module.temu.sdk.TemuClient;
+import cn.iocoder.yudao.module.temu.sdk.TemuApiResponse;
 import cn.iocoder.yudao.module.temu.sdk.TemuJsonStorageService;
+import cn.iocoder.yudao.module.temu.sdk.product.CatsGetReqVO;
+import cn.iocoder.yudao.module.temu.sdk.product.dto.CatsGetCategoryDto;
 import cn.iocoder.yudao.module.temu.service.apirequestlog.TemuApiRequestLogService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
-import tools.jackson.databind.JsonNode;
 
-import java.util.LinkedHashMap;
 import java.util.Locale;
-import java.util.Map;
+import java.util.List;
 
 /**
  * Add Products 商品发布相关业务 Service 实现。
@@ -39,11 +40,11 @@ public class AddProductsServiceImpl implements AddProductsService {
      * @return Temu 官方分类查询响应
      */
     @Override
-    public JsonNode getCategories(AddProductsCatsReqVO request) {
-        Map<String, Object> params = new LinkedHashMap<>();
-        params.put("language", request.getLanguage());
-        params.put("parentCatId", request.getParentCatId());
-        return createClient(request.getSite(), request.getAccessToken()).getProduct().catsGet(params);
+    public TemuApiResponse<List<CatsGetCategoryDto>> getCategories(AddProductsCatsReqVO request) {
+        CatsGetReqVO catsRequest = new CatsGetReqVO();
+        catsRequest.setLanguage(request.getLanguage());
+        catsRequest.setParentCatId(request.getParentCatId());
+        return createClient(request.getSite(), request.getAccessToken()).getProduct().catsGet(catsRequest);
     }
 
     /**

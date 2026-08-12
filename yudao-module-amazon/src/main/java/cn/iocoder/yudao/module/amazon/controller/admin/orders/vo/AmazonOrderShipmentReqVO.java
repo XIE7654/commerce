@@ -15,6 +15,10 @@ import java.util.Map;
 @EqualsAndHashCode(callSuper = true)
 public class AmazonOrderShipmentReqVO extends AmazonOrderGetReqVO {
 
+    @Schema(description = "写入目标站点国家代码", requiredMode = Schema.RequiredMode.REQUIRED, example = "US")
+    @NotBlank(message = "国家代码不能为空")
+    private String countryCode;
+
     @Schema(description = "发货状态", requiredMode = Schema.RequiredMode.REQUIRED, example = "PickedUp")
     @NotBlank(message = "发货状态不能为空")
     private String shipmentStatus;
