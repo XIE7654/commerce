@@ -75,18 +75,22 @@ public class TemuOrderShippingInfoDO extends BaseDO {
     /**
      * 一级行政区名称，例如国家
      */
+    @TableField("region_name_1")
     private String regionName1;
     /**
      * 二级行政区名称，例如州省
      */
+    @TableField("region_name_2")
     private String regionName2;
     /**
      * 三级行政区名称，例如城市
      */
+    @TableField("region_name_3")
     private String regionName3;
     /**
      * 四级行政区名称
      */
+    @TableField("region_name_4")
     private String regionName4;
     /**
      * 邮政编码
@@ -95,14 +99,17 @@ public class TemuOrderShippingInfoDO extends BaseDO {
     /**
      * 地址第一行
      */
+    @TableField("address_line_1")
     private String addressLine1;
     /**
      * 地址第二行
      */
+    @TableField("address_line_2")
     private String addressLine2;
     /**
      * 地址第三行
      */
+    @TableField("address_line_3")
     private String addressLine3;
     /**
      * 完整收货地址

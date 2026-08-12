@@ -39,9 +39,7 @@ public class TemuOrderDO extends BaseDO {
      * 关联 temu_shop.id
      */
     private Long shopId;
-    /**
-     * 关联 temu_seller.id，由店铺授权关系确定
-     */
+
     /**
      * Temu 父订单号
      */

@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.temu.service.ordermanagement;
 
 import cn.iocoder.yudao.module.temu.controller.admin.ordermanagement.vo.OrderManagementCustomOrderReqVO;
 import cn.iocoder.yudao.module.temu.controller.admin.ordermanagement.vo.OrderManagementOrderListReqVO;
+import cn.iocoder.yudao.module.temu.controller.admin.ordermanagement.vo.OrderManagementOrderSyncReqVO;
 import cn.iocoder.yudao.module.temu.controller.admin.ordermanagement.vo.OrderManagementParentOrderReqVO;
 import cn.iocoder.yudao.module.temu.controller.admin.ordermanagement.vo.TemuOrderPageReqVO;
 import cn.iocoder.yudao.module.temu.dal.dataobject.order.TemuOrderDO;
@@ -60,10 +61,18 @@ public interface OrderManagementService {
     /**
      * 查询 Temu 父订单详情。
      *
-     * @param request 父订单查询参数
+     * @param request 本地订单主键参数
      * @return Temu 官方订单详情响应
      */
     TemuApiResponse<OrderDetailDto> getOrderDetail(OrderManagementParentOrderReqVO request);
+
+    /**
+     * 查询 Temu 父订单详情并同步保存到本地详情表。
+     *
+     * @param request 父订单查询参数
+     * @return Temu 官方订单详情响应
+     */
+    TemuApiResponse<OrderDetailDto> syncOrderDetail(OrderManagementOrderSyncReqVO request);
 
     /**
      * 查询 Temu 子订单的定制信息。
@@ -76,9 +85,17 @@ public interface OrderManagementService {
     /**
      * 查询 Temu 父订单的收货信息。
      *
-     * @param request 父订单查询参数
+     * @param request 本地订单主键参数
      * @return Temu 官方收货信息响应
      */
     TemuApiResponse<ShippingInfoDto> getOrderShippingInfo(OrderManagementParentOrderReqVO request);
+
+    /**
+     * 查询 Temu 父订单收货信息并同步保存到本地收货信息表。
+     *
+     * @param request 父订单查询参数
+     * @return Temu 官方收货信息响应
+     */
+    TemuApiResponse<ShippingInfoDto> syncOrderShippingInfo(OrderManagementOrderSyncReqVO request);
 
 }

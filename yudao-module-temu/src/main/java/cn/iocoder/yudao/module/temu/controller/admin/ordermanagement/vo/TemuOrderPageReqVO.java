@@ -19,9 +19,7 @@ public class TemuOrderPageReqVO extends PageParam {
     /** 店铺编号。 */
     @Schema(description = "关联 temu_shop.id", example = "1")
     private Long shopId;
-    /** 卖家编号。 */
-    @Schema(description = "关联 temu_seller.id", example = "1")
-    private Long sellerId;
+
     /** 父订单号。 */
     @Schema(description = "Temu 父订单号", example = "PO-211-18671748222072338")
     private String parentOrderSn;
