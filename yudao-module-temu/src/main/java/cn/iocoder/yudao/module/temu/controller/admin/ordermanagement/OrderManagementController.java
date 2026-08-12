@@ -8,6 +8,11 @@ import cn.iocoder.yudao.module.temu.controller.admin.ordermanagement.vo.TemuOrde
 import cn.iocoder.yudao.module.temu.controller.admin.ordermanagement.vo.TemuOrderRespVO;
 import cn.iocoder.yudao.module.temu.dal.dataobject.order.TemuOrderDO;
 import cn.iocoder.yudao.module.temu.service.ordermanagement.OrderManagementService;
+import cn.iocoder.yudao.module.temu.framework.client.TemuApiResponse;
+import cn.iocoder.yudao.module.temu.framework.client.order.CustomizationOrderListDto;
+import cn.iocoder.yudao.module.temu.framework.client.order.OrderDetailDto;
+import cn.iocoder.yudao.module.temu.framework.client.order.OrderListDto;
+import cn.iocoder.yudao.module.temu.framework.client.order.ShippingInfoDto;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
@@ -47,7 +52,7 @@ public class OrderManagementController {
     @PostMapping("/orders/list")
     @Operation(summary = "查询 Temu 订单列表")
     @PreAuthorize("@ss.hasPermission('temu:order-management:query')")
-    public JsonNode getOrderList(@Valid @RequestBody OrderManagementOrderListReqVO request) {
+    public TemuApiResponse<OrderListDto> getOrderList(@Valid @RequestBody OrderManagementOrderListReqVO request) {
         return orderManagementService.getOrderList(request);
     }
 
@@ -74,7 +79,7 @@ public class OrderManagementController {
     @PostMapping("/orders/detail")
     @Operation(summary = "查询 Temu 父订单详情")
     @PreAuthorize("@ss.hasPermission('temu:order-management:query')")
-    public JsonNode getOrderDetail(@Valid @RequestBody OrderManagementParentOrderReqVO request) {
+    public TemuApiResponse<OrderDetailDto> getOrderDetail(@Valid @RequestBody OrderManagementParentOrderReqVO request) {
         return orderManagementService.getOrderDetail(request);
     }
 
@@ -87,7 +92,7 @@ public class OrderManagementController {
     @PostMapping("/orders/customization/detail")
     @Operation(summary = "查询 Temu 定制订单详情")
     @PreAuthorize("@ss.hasPermission('temu:order-management:query')")
-    public JsonNode getCustomOrderDetail(@Valid @RequestBody OrderManagementCustomOrderReqVO request) {
+    public TemuApiResponse<CustomizationOrderListDto> getCustomOrderDetail(@Valid @RequestBody OrderManagementCustomOrderReqVO request) {
         return orderManagementService.getCustomOrderDetail(request);
     }
 
@@ -100,7 +105,7 @@ public class OrderManagementController {
     @PostMapping("/orders/shipping-info")
     @Operation(summary = "查询 Temu 订单收货信息")
     @PreAuthorize("@ss.hasPermission('temu:order-management:query')")
-    public JsonNode getOrderShippingInfo(@Valid @RequestBody OrderManagementParentOrderReqVO request) {
+    public TemuApiResponse<ShippingInfoDto> getOrderShippingInfo(@Valid @RequestBody OrderManagementParentOrderReqVO request) {
         return orderManagementService.getOrderShippingInfo(request);
     }
 

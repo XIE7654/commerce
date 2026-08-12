@@ -16,11 +16,23 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.enums.CommonStatusEnum;
 import cn.iocoder.yudao.module.temu.enums.TemuSiteRegionEnum;
 import cn.iocoder.yudao.module.temu.framework.config.TemuProperties;
+import cn.iocoder.yudao.module.temu.framework.client.TemuApiResponse;
+import cn.iocoder.yudao.module.temu.framework.client.order.ChildOrderDto;
+import cn.iocoder.yudao.module.temu.framework.client.order.CustomizationOrderReqVO;
+import cn.iocoder.yudao.module.temu.framework.client.order.CustomizationOrderListDto;
+import cn.iocoder.yudao.module.temu.framework.client.order.OrderDetailDto;
+import cn.iocoder.yudao.module.temu.framework.client.order.OrderListReqVO;
+import cn.iocoder.yudao.module.temu.framework.client.order.OrderListDto;
+import cn.iocoder.yudao.module.temu.framework.client.order.OrderPageItemDto;
+import cn.iocoder.yudao.module.temu.framework.client.order.ParentOrderDto;
+import cn.iocoder.yudao.module.temu.framework.client.order.ParentOrderReqVO;
+import cn.iocoder.yudao.module.temu.framework.client.order.ShippingInfoDto;
 import cn.iocoder.yudao.module.temu.sdk.TemuClient;
 import cn.iocoder.yudao.module.temu.sdk.TemuJsonStorageService;
 import cn.iocoder.yudao.module.temu.service.apirequestlog.TemuApiRequestLogService;
 import cn.iocoder.yudao.module.temu.mq.TemuOrderSyncMessage;
 import cn.iocoder.yudao.module.temu.mq.TemuOrderSyncRabbitMQConfig;
+import cn.hutool.json.JSONUtil;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -29,9 +41,9 @@ import org.springframework.validation.annotation.Validated;
 import lombok.extern.slf4j.Slf4j;
 import tools.jackson.databind.JsonNode;
 
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.List;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -77,7 +89,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
      * @return Temu 官方订单列表响应
      */
     @Override
-    public JsonNode getOrderList(OrderManagementOrderListReqVO request) {
+    public TemuApiResponse<OrderListDto> getOrderList(OrderManagementOrderListReqVO request) {
         return queryOrderList(request);
     }
 
@@ -88,13 +100,13 @@ public class OrderManagementServiceImpl implements OrderManagementService {
      * @return Temu 官方订单列表响应
      */
     @Override
-    public JsonNode syncOrderList(OrderManagementOrderListReqVO request) {
+    public TemuApiResponse<OrderListDto> syncOrderList(OrderManagementOrderListReqVO request) {
         TemuSellerDO seller = validateOrderOwner(request.getShopId());
-        JsonNode response = queryOrderList(request);
-        if (response != null && response.path("success").asBoolean(false)) {
+        TemuApiResponse<OrderListDto> response = queryOrderList(request);
+        if (Boolean.TRUE.equals(response.getSuccess())) {
             // 外部接口调用完成后才开启事务，避免网络耗时长期占用数据库连接和事务资源。
             transactionTemplate.executeWithoutResult(status ->
-                    syncOrderList(response.path("result").path("pageItems"), request.getShopId()));
+                    syncOrderList(response.getResult().getPageItems(), request.getShopId()));
         }
         return response;
     }
@@ -122,10 +134,13 @@ public class OrderManagementServiceImpl implements OrderManagementService {
      * @param request 订单状态、区域和分页查询参数
      * @return Temu 官方订单列表响应
      */
-    private JsonNode queryOrderList(OrderManagementOrderListReqVO request) {
-        return createFrameworkClient(request).getOrder().listOrdersV2(Map.of(
-                "parentOrderStatus", request.getParentOrderStatus(), "regionId", request.getRegionId(),
-                "pageNumber", request.getPageNumber(), "pageSize", request.getPageSize()));
+    private TemuApiResponse<OrderListDto> queryOrderList(OrderManagementOrderListReqVO request) {
+        OrderListReqVO orderRequest = new OrderListReqVO();
+        orderRequest.setParentOrderStatus(request.getParentOrderStatus());
+        orderRequest.setRegionId(request.getRegionId());
+        orderRequest.setPageNumber(request.getPageNumber());
+        orderRequest.setPageSize(request.getPageSize());
+        return createFrameworkClient(request).getOrder().listOrdersV2(orderRequest);
     }
 
     /**
@@ -153,14 +168,14 @@ public class OrderManagementServiceImpl implements OrderManagementService {
         LocalDateTime latestUpdateTime = orderMapper.selectLatestTemuUpdateTimeByShopId(shop.getId());
         int pageNumber = 1;
         while (true) {
-            JsonNode response = client.getOrder().listOrdersV2(buildAutoSyncParams(seller.getRegionId(), pageNumber,
-                    latestUpdateTime));
-            if (response == null || !response.path("success").asBoolean(false)) {
+            TemuApiResponse<OrderListDto> response = client.getOrder().listOrdersV2(
+                    buildAutoSyncRequest(seller.getRegionId(), pageNumber, latestUpdateTime));
+            if (!Boolean.TRUE.equals(response.getSuccess())) {
                 throw new IllegalStateException("Temu 订单列表接口返回失败: " + response);
             }
-            JsonNode pageItems = response.path("result").path("pageItems");
+            List<OrderPageItemDto> pageItems = response.getResult().getPageItems();
             transactionTemplate.executeWithoutResult(status -> syncOrderList(pageItems, shop.getId()));
-            if (!pageItems.isArray() || pageItems.size() < SYNC_PAGE_SIZE) {
+            if (pageItems == null || pageItems.size() < SYNC_PAGE_SIZE) {
                 return;
             }
             pageNumber++;
@@ -175,17 +190,17 @@ public class OrderManagementServiceImpl implements OrderManagementService {
      * @param latestUpdateTime 本地最新 Temu 更新时间；首次同步时为空
      * @return Temu 订单列表请求参数
      */
-    private Map<String, Object> buildAutoSyncParams(Integer regionId, int pageNumber, LocalDateTime latestUpdateTime) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("parentOrderStatus", ALL_PARENT_ORDER_STATUS);
-        params.put("regionId", regionId);
-        params.put("pageNumber", pageNumber);
-        params.put("pageSize", SYNC_PAGE_SIZE);
+    private OrderListReqVO buildAutoSyncRequest(Integer regionId, int pageNumber, LocalDateTime latestUpdateTime) {
+        OrderListReqVO request = new OrderListReqVO();
+        request.setParentOrderStatus(ALL_PARENT_ORDER_STATUS);
+        request.setRegionId(regionId.longValue());
+        request.setPageNumber(pageNumber);
+        request.setPageSize(SYNC_PAGE_SIZE);
         // 首次同步无需传递更新时间，避免错误地筛掉历史订单。
         if (latestUpdateTime != null) {
-            params.put("updateTime", latestUpdateTime.atZone(ZoneId.systemDefault()).toEpochSecond());
+            request.setUpdateTime(latestUpdateTime.atZone(ZoneId.systemDefault()).toEpochSecond());
         }
-        return params;
+        return request;
     }
 
     /**
@@ -206,8 +221,8 @@ public class OrderManagementServiceImpl implements OrderManagementService {
      * @return Temu 官方订单详情响应
      */
     @Override
-    public JsonNode getOrderDetail(OrderManagementParentOrderReqVO request) {
-        return createFrameworkClient(request).getOrder().detailOrderV2(Map.of("parentOrderSn", request.getParentOrderSn()));
+    public TemuApiResponse<OrderDetailDto> getOrderDetail(OrderManagementParentOrderReqVO request) {
+        return createFrameworkClient(request).getOrder().detailOrderV2(parentOrderRequest(request.getParentOrderSn()));
     }
 
     /**
@@ -217,8 +232,10 @@ public class OrderManagementServiceImpl implements OrderManagementService {
      * @return Temu 官方定制订单详情响应
      */
     @Override
-    public JsonNode getCustomOrderDetail(OrderManagementCustomOrderReqVO request) {
-        return createFrameworkClient(request).getOrder().customizationOrder(Map.of("orderSnList", request.getOrderSnList()));
+    public TemuApiResponse<CustomizationOrderListDto> getCustomOrderDetail(OrderManagementCustomOrderReqVO request) {
+        CustomizationOrderReqVO orderRequest = new CustomizationOrderReqVO();
+        orderRequest.setOrderSnList(request.getOrderSnList());
+        return createFrameworkClient(request).getOrder().customizationOrder(orderRequest);
     }
 
     /**
@@ -228,8 +245,8 @@ public class OrderManagementServiceImpl implements OrderManagementService {
      * @return Temu 官方收货信息响应
      */
     @Override
-    public JsonNode getOrderShippingInfo(OrderManagementParentOrderReqVO request) {
-        return createFrameworkClient(request).getOrder().shippinginfoOrderV2(Map.of("parentOrderSn", request.getParentOrderSn()));
+    public TemuApiResponse<ShippingInfoDto> getOrderShippingInfo(OrderManagementParentOrderReqVO request) {
+        return createFrameworkClient(request).getOrder().shippinginfoOrderV2(parentOrderRequest(request.getParentOrderSn()));
     }
 
     /**
@@ -319,18 +336,17 @@ public class OrderManagementServiceImpl implements OrderManagementService {
      * @param pageItems Temu 返回的父订单数组
      * @param shopId 归属店铺编号
      */
-    private void syncOrderList(JsonNode pageItems, Long shopId) {
-        if (!pageItems.isArray()) {
+    private void syncOrderList(List<OrderPageItemDto> pageItems, Long shopId) {
+        if (pageItems == null || pageItems.isEmpty()) {
             return;
         }
-        for (JsonNode pageItem : pageItems) {
-            JsonNode parent = pageItem.path("parentOrderMap");
-            JsonNode orderList = pageItem.path("orderList");
-            if (!orderList.isArray()) {
+        for (OrderPageItemDto pageItem : pageItems) {
+            ParentOrderDto parent = pageItem.getParentOrderMap();
+            if (parent == null || pageItem.getOrderList() == null) {
                 continue;
             }
-            for (JsonNode child : orderList) {
-                String orderSn = text(child, "orderSn");
+            for (ChildOrderDto child : pageItem.getOrderList()) {
+                String orderSn = child.getOrderSn();
                 if (isBlank(orderSn)) {
                     continue;
                 }
@@ -349,87 +365,68 @@ public class OrderManagementServiceImpl implements OrderManagementService {
     /**
      * 合并父订单和子订单字段，生成本地子订单记录。
      *
-     * @param parent Temu 父订单节点
-     * @param child Temu 子订单节点
+     * @param parent Temu 父订单 DTO
+     * @param child Temu 子订单 DTO
      * @param shopId 归属店铺编号
      * @return 可持久化的订单记录
      */
-    private TemuOrderDO buildOrder(JsonNode parent, JsonNode child, Long shopId) {
+    private TemuOrderDO buildOrder(ParentOrderDto parent, ChildOrderDto child, Long shopId) {
         TemuOrderDO order = new TemuOrderDO();
         order.setShopId(shopId);
-        order.setParentOrderSn(text(parent, "parentOrderSn"));
-        order.setOrderSn(text(child, "orderSn"));
-        order.setSiteId(integer(parent, "siteId"));
-        order.setRegionId(longValue(parent, "regionId"));
-        order.setParentOrderStatus(integer(parent, "parentOrderStatus"));
-        order.setOrderStatus(integer(child, "orderStatus"));
-        order.setParentOrderPaymentType(text(parent, "orderPaymentType"));
-        order.setOrderPaymentType(text(child, "orderPaymentType"));
-        order.setFulfillmentType(text(child, "fulfillmentType"));
-        order.setGoodsId(longValue(child, "goodsId"));
-        order.setSkuId(longValue(child, "skuId"));
-        order.setGoodsName(text(child, "goodsName"));
-        order.setOriginalGoodsName(text(child, "originalGoodsName"));
-        order.setSpec(text(child, "spec"));
-        order.setOriginalSpecName(text(child, "originalSpecName"));
-        order.setThumbUrl(text(child, "thumbUrl"));
-        order.setQuantity(integer(child, "quantity"));
-        order.setCanceledQuantityBeforeShipment(integer(child, "canceledQuantityBeforeShipment"));
-        order.setOriginalOrderQuantity(integer(child, "originalOrderQuantity"));
-        order.setShippingMethod(integer(parent, "shippingMethod"));
-        order.setShipmentConsolidatedByMainMall(bool(parent, "isShipmentConsolidatedByMainMall"));
-        order.setHasShippingFee(bool(parent, "hasShippingFee"));
-        order.setParentOrderTime(epochSecond(parent, "parentOrderTime"));
-        order.setParentConfirmTime(epochSecond(parent, "parentConfirmTime"));
-        order.setOrderCreateTime(epochSecond(child, "orderCreateTime"));
-        order.setOrderShippingTime(epochSecond(child, "orderShippingTime"));
-        order.setExpectShipLatestTime(epochSecond(parent, "expectShipLatestTime"));
-        order.setLatestDeliveryTime(epochSecond(parent, "latestDeliveryTime"));
-        order.setTemuUpdateTime(epochSecond(parent, "updateTime"));
-        order.setParentOrderLabels(json(parent, "parentOrderLabel"));
-        order.setOrderLabels(json(child, "orderLabel"));
-        order.setParentFulfillmentWarnings(json(parent, "fulfillmentWarning"));
-        order.setFulfillmentWarnings(json(child, "fulfillmentWarning"));
-        order.setPackageAbnormalTypes(json(child, "packageAbnormalTypeList"));
-        order.setProductList(json(child, "productList"));
+        order.setParentOrderSn(parent.getParentOrderSn());
+        order.setOrderSn(child.getOrderSn());
+        order.setSiteId(parent.getSiteId());
+        order.setRegionId(parent.getRegionId());
+        order.setParentOrderStatus(parent.getParentOrderStatus());
+        order.setOrderStatus(child.getOrderStatus());
+        order.setParentOrderPaymentType(parent.getOrderPaymentType());
+        order.setOrderPaymentType(child.getOrderPaymentType());
+        order.setFulfillmentType(child.getFulfillmentType());
+        order.setGoodsId(child.getGoodsId());
+        order.setSkuId(child.getSkuId());
+        order.setGoodsName(child.getGoodsName());
+        order.setOriginalGoodsName(child.getOriginalGoodsName());
+        order.setSpec(child.getSpec());
+        order.setOriginalSpecName(child.getOriginalSpecName());
+        order.setThumbUrl(child.getThumbUrl());
+        order.setQuantity(child.getQuantity());
+        order.setCanceledQuantityBeforeShipment(child.getCanceledQuantityBeforeShipment());
+        order.setOriginalOrderQuantity(child.getOriginalOrderQuantity());
+        order.setShippingMethod(parent.getShippingMethod());
+        order.setShipmentConsolidatedByMainMall(parent.getIsShipmentConsolidatedByMainMall());
+        order.setHasShippingFee(parent.getHasShippingFee());
+        order.setParentOrderTime(epochSecond(parent.getParentOrderTime()));
+        order.setParentConfirmTime(epochSecond(parent.getParentConfirmTime()));
+        order.setOrderCreateTime(epochSecond(child.getOrderCreateTime()));
+        order.setOrderShippingTime(epochSecond(child.getOrderShippingTime()));
+        order.setExpectShipLatestTime(epochSecond(parent.getExpectShipLatestTime()));
+        order.setLatestDeliveryTime(epochSecond(parent.getLatestDeliveryTime()));
+        order.setTemuUpdateTime(epochSecond(parent.getUpdateTime()));
+        order.setParentOrderLabels(json(parent.getParentOrderLabel()));
+        order.setOrderLabels(json(child.getOrderLabel()));
+        order.setParentFulfillmentWarnings(json(parent.getFulfillmentWarning()));
+        order.setFulfillmentWarnings(json(child.getFulfillmentWarning()));
+        order.setPackageAbnormalTypes(json(child.getPackageAbnormalTypeList()));
+        order.setProductList(json(child.getProductList()));
         order.setLastSyncTime(LocalDateTime.now());
         return order;
     }
 
-    /** 从响应节点读取可空文本字段。 */
-    private String text(JsonNode node, String field) {
-        JsonNode value = node.get(field);
-        return value == null || value.isNull() ? null : value.asText();
-    }
-
-    /** 从响应节点读取可空整数型字段。 */
-    private Integer integer(JsonNode node, String field) {
-        JsonNode value = node.get(field);
-        return value == null || value.isNull() ? null : value.asInt();
-    }
-
-    /** 从响应节点读取可空长整数型字段。 */
-    private Long longValue(JsonNode node, String field) {
-        JsonNode value = node.get(field);
-        return value == null || value.isNull() ? null : value.asLong();
-    }
-
-    /** 从响应节点读取可空布尔字段。 */
-    private Boolean bool(JsonNode node, String field) {
-        JsonNode value = node.get(field);
-        return value == null || value.isNull() ? null : value.asBoolean();
-    }
-
     /** 将响应中的数组或对象字段序列化为数据库 JSON 文本。 */
-    private String json(JsonNode node, String field) {
-        JsonNode value = node.get(field);
-        return value == null || value.isNull() ? null : value.toString();
+    private String json(Object value) {
+        return value == null ? null : JSONUtil.toJsonStr(value);
     }
 
     /** 将 Temu Unix 秒级时间戳转换为本地时间。 */
-    private LocalDateTime epochSecond(JsonNode node, String field) {
-        Long value = longValue(node, field);
+    private LocalDateTime epochSecond(Long value) {
         return value == null ? null : Instant.ofEpochSecond(value).atZone(ZoneId.systemDefault()).toLocalDateTime();
+    }
+
+    /** 根据父订单号构造新版订单查询请求。 */
+    private ParentOrderReqVO parentOrderRequest(String parentOrderSn) {
+        ParentOrderReqVO request = new ParentOrderReqVO();
+        request.setParentOrderSn(parentOrderSn);
+        return request;
     }
 
     /**

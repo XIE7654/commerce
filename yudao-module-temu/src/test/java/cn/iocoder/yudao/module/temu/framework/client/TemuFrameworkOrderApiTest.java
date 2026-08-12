@@ -8,8 +8,6 @@ import org.springframework.web.client.RestTemplate;
 import tools.jackson.databind.ObjectMapper;
 
 import java.net.URI;
-import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -20,7 +18,7 @@ import static org.mockito.Mockito.when;
 /** 新版 Temu Order API 测试。 */
 class TemuFrameworkOrderApiTest {
 
-    /** 验证订单列表请求通过新版 client 发送并保留原始 JSON 响应。 */
+    /** 验证订单列表请求 VO 会映射为 Temu 参数，并转换为强类型响应 DTO。 */
     @Test
     void shouldRequestOrderList() {
         RestTemplate restTemplate = mock(RestTemplate.class);
@@ -31,10 +29,15 @@ class TemuFrameworkOrderApiTest {
         TemuClient client = new TemuClient("app-key", "app-secret", "access-token", "US",
                 restTemplate, new ObjectMapper());
 
-        var response = client.getOrder().listOrdersV2(Map.of("regionId", 1, "pageNumber", 1, "pageSize", 100));
+        var request = new cn.iocoder.yudao.module.temu.framework.client.order.OrderListReqVO();
+        request.setParentOrderStatus(4);
+        request.setRegionId(1L);
+        request.setPageNumber(1);
+        request.setPageSize(100);
+        var response = client.getOrder().listOrdersV2(request);
 
-        assertTrue(response.path("success").asBoolean());
-        assertEquals("order-request-1", response.path("requestId").asText());
-        assertTrue(response.path("result").path("pageItems").isArray());
+        assertTrue(response.getSuccess());
+        assertEquals("order-request-1", response.getRequestId());
+        assertTrue(response.getResult().getPageItems().isEmpty());
     }
 }

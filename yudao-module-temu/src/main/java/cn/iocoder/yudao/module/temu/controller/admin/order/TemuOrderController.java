@@ -28,9 +28,10 @@ import static cn.iocoder.yudao.framework.apilog.core.enums.OperateTypeEnum.*;
 import cn.iocoder.yudao.module.temu.controller.admin.order.vo.*;
 import cn.iocoder.yudao.module.temu.controller.admin.ordermanagement.vo.OrderManagementOrderListReqVO;
 import cn.iocoder.yudao.module.temu.dal.dataobject.order.TemuOrderDO;
+import cn.iocoder.yudao.module.temu.framework.client.TemuApiResponse;
+import cn.iocoder.yudao.module.temu.framework.client.order.OrderListDto;
 import cn.iocoder.yudao.module.temu.service.ordermanagement.OrderManagementService;
 import cn.iocoder.yudao.module.temu.service.order.TemuOrderService;
-import tools.jackson.databind.JsonNode;
 
 @Tag(name = "管理后台 - Temu 订单")
 @RestController
@@ -53,7 +54,7 @@ public class TemuOrderController {
     @PostMapping("/sync")
     @Operation(summary = "同步 Temu 订单")
     @PreAuthorize("@ss.hasPermission('temu:order:update')")
-    public JsonNode syncOrder(@Valid @RequestBody OrderManagementOrderListReqVO request) {
+    public TemuApiResponse<OrderListDto> syncOrder(@Valid @RequestBody OrderManagementOrderListReqVO request) {
         return orderManagementService.syncOrderList(request);
     }
 
