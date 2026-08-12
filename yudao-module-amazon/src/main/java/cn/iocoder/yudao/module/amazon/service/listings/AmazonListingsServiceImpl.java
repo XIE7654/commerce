@@ -34,6 +34,9 @@ public class AmazonListingsServiceImpl implements AmazonListingsService {
     public ItemSearchResults searchListingsItems(AmazonListingsSearchReqVO request) throws ApiException, LWAException {
         AmazonShopDO shop = requireShop(request.getShopId());
         List<AmazonMarketplaceEnum> marketplaces = requireSearchMarketplaces(shop.getId());
+        System.out.println(marketplaces);
+        System.out.println("marketplaces");
+        System.out.println(marketplaces.stream().map(AmazonMarketplaceEnum::getMarketplaceId).toList());
         return listingsApi(shop, marketplaces.getFirst()).searchListingsItems(requireSellerId(shop.getSellerId()),
                 marketplaces.stream().map(AmazonMarketplaceEnum::getMarketplaceId).toList(), request.getIssueLocale(),
                 request.getIncludedData(), request.getIdentifiers(), request.getIdentifiersType(), request.getVariationParentSku(),
