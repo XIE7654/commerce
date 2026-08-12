@@ -123,7 +123,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
      * @return Temu 官方订单列表响应
      */
     private JsonNode queryOrderList(OrderManagementOrderListReqVO request) {
-        return createClient(request).getOrder().listOrdersV2(Map.of(
+        return createFrameworkClient(request).getOrder().listOrdersV2(Map.of(
                 "parentOrderStatus", request.getParentOrderStatus(), "regionId", request.getRegionId(),
                 "pageNumber", request.getPageNumber(), "pageSize", request.getPageSize()));
     }
@@ -149,7 +149,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
             log.warn("[syncShopOrders][shopId({})] 店铺缺少卖家或区域授权信息，跳过订单同步", shop.getId());
             return;
         }
-        TemuClient client = createClient(shop);
+        cn.iocoder.yudao.module.temu.framework.client.TemuClient client = createFrameworkClient(shop);
         LocalDateTime latestUpdateTime = orderMapper.selectLatestTemuUpdateTimeByShopId(shop.getId());
         int pageNumber = 1;
         while (true) {
@@ -207,7 +207,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
      */
     @Override
     public JsonNode getOrderDetail(OrderManagementParentOrderReqVO request) {
-        return createClient(request).getOrder().detailOrderV2(Map.of("parentOrderSn", request.getParentOrderSn()));
+        return createFrameworkClient(request).getOrder().detailOrderV2(Map.of("parentOrderSn", request.getParentOrderSn()));
     }
 
     /**
@@ -218,7 +218,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
      */
     @Override
     public JsonNode getCustomOrderDetail(OrderManagementCustomOrderReqVO request) {
-        return createClient(request).getOrder().customizationOrder(Map.of("orderSnList", request.getOrderSnList()));
+        return createFrameworkClient(request).getOrder().customizationOrder(Map.of("orderSnList", request.getOrderSnList()));
     }
 
     /**
@@ -229,7 +229,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
      */
     @Override
     public JsonNode getOrderShippingInfo(OrderManagementParentOrderReqVO request) {
-        return createClient(request).getOrder().shippinginfoOrderV2(Map.of("parentOrderSn", request.getParentOrderSn()));
+        return createFrameworkClient(request).getOrder().shippinginfoOrderV2(Map.of("parentOrderSn", request.getParentOrderSn()));
     }
 
     /**
@@ -262,19 +262,35 @@ public class OrderManagementServiceImpl implements OrderManagementService {
     }
 
     /**
-     * 按店铺保存的站点和授权 Token 创建 Temu SDK 客户端。
+     * 按请求站点创建新版 Temu 客户端，供已迁移的订单接口使用。
+     *
+     * @param request 包含站点与授权 Token 的订单管理请求
+     * @return 已按区域配置初始化的新版 Temu 客户端
+     */
+    private cn.iocoder.yudao.module.temu.framework.client.TemuClient createFrameworkClient(OrderManagementBaseReqVO request) {
+        TemuSiteRegionEnum site = TemuSiteRegionEnum.valueOf(request.getSite().trim().toUpperCase(Locale.ROOT));
+        TemuProperties.RegionProperties region = temuProperties.getRegion(site);
+        if (region == null || isBlank(region.getAppKey()) || isBlank(region.getAppSecret())) {
+            throw new IllegalArgumentException("Temu 站点未配置 appKey 或 appSecret: " + site.name());
+        }
+        return new cn.iocoder.yudao.module.temu.framework.client.TemuClient(
+                region.getAppKey(), region.getAppSecret(), request.getAccessToken(), site.name());
+    }
+
+    /**
+     * 按店铺保存的站点和授权 Token 创建新版 Temu 客户端，用于异步订单同步。
      *
      * @param shop 已启用的 Temu 店铺
-     * @return 已初始化的 Temu SDK 客户端
+     * @return 已初始化的新版 Temu 客户端
      */
-    private TemuClient createClient(TemuShopDO shop) {
+    private cn.iocoder.yudao.module.temu.framework.client.TemuClient createFrameworkClient(TemuShopDO shop) {
         TemuSiteRegionEnum site = TemuSiteRegionEnum.valueOf(shop.getSite().trim().toUpperCase(Locale.ROOT));
         TemuProperties.RegionProperties region = temuProperties.getRegion(site);
         if (region == null || isBlank(region.getAppKey()) || isBlank(region.getAppSecret())) {
             throw new IllegalArgumentException("Temu 站点未配置 appKey 或 appSecret: " + site.name());
         }
-        return new TemuClient(region.getAppKey(), region.getAppSecret(), shop.getAuthToken(), site.getEndpoint(),
-                temuJsonStorageService, site.name(), temuApiRequestLogService, shop.getId());
+        return new cn.iocoder.yudao.module.temu.framework.client.TemuClient(
+                region.getAppKey(), region.getAppSecret(), shop.getAuthToken(), site.name());
     }
 
     /**

@@ -90,10 +90,6 @@ public class AmazonListingMarketplaceServiceImpl implements AmazonListingMarketp
             AmazonShopDO shop = shopWithMarketplaces.getShop();
             List<AmazonShopMarketplaceDO> participations = shopWithMarketplaces.getParticipations();
             List<MarketplaceTarget> targets = resolveMarketplaceTargets(shop, participations, result);
-            if (targets.isEmpty() && participations.isEmpty()) {
-                syncDefaultMarketplace(shop, result);
-                continue;
-            }
             if (!targets.isEmpty()) {
                 syncMarketplaces(shop, targets, result);
             }
@@ -176,21 +172,6 @@ public class AmazonListingMarketplaceServiceImpl implements AmazonListingMarketp
     @Override
     public PageResult<AmazonListingMarketplaceDO> getListingMarketplacePage(AmazonListingMarketplacePageReqVO pageReqVO) {
         return listingMarketplaceMapper.selectPage(pageReqVO);
-    }
-
-    /**
-     * 在店铺尚未同步参与站点时，使用默认 Marketplace 同步 Listings，保证启用店铺不会被跳过。
-     *
-     * @param shop 启用的 Amazon 店铺
-     * @param result 用于累计同步统计与失败信息
-     */
-    private void syncDefaultMarketplace(AmazonShopDO shop, AmazonListingMarketplaceSyncRespVO result) {
-        AmazonMarketplaceEnum marketplace = AmazonMarketplaceEnum.fromMarketplaceId(shop.getMarketplaceId());
-        if (marketplace == null) {
-            result.getFailures().add("店铺 " + shop.getId() + " 缺少有效的默认 Marketplace 配置");
-            return;
-        }
-        syncMarketplaces(shop, List.of(new MarketplaceTarget(marketplace.getMarketplaceId(), marketplace.getCountryCode())), result);
     }
 
     /**

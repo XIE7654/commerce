@@ -1,7 +1,6 @@
 CREATE TABLE IF NOT EXISTS amazon_shop (
     id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键编号',
     seller_id VARCHAR(64) NULL COMMENT 'Amazon sellerId',
-    marketplace_id VARCHAR(64) NULL COMMENT '默认 marketplaceId',
     shop_name VARCHAR(128) NOT NULL COMMENT '店铺名称',
     region VARCHAR(32) NOT NULL DEFAULT 'NA' COMMENT 'Amazon 区域：NA、EU、FE',
     authorize_time DATETIME NULL COMMENT '授权时间',

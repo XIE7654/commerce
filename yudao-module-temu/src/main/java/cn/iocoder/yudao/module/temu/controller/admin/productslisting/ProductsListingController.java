@@ -10,8 +10,8 @@ import cn.iocoder.yudao.module.temu.controller.admin.productslisting.vo.Products
 import cn.iocoder.yudao.module.temu.controller.admin.productslisting.vo.ProductsListingPropertyRecommendReqVO;
 import cn.iocoder.yudao.module.temu.controller.admin.productslisting.vo.ProductsListingSpecIdReqVO;
 import cn.iocoder.yudao.module.temu.service.productslisting.ProductsListingService;
-import cn.iocoder.yudao.module.temu.sdk.TemuApiResponse;
-import cn.iocoder.yudao.module.temu.sdk.product.dto.CatsGetCategoryDto;
+import cn.iocoder.yudao.module.temu.framework.client.TemuApiResponse;
+import cn.iocoder.yudao.module.temu.framework.client.product.CatsGetCategoryResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -47,7 +47,7 @@ public class ProductsListingController {
     @PostMapping("/goods/categories")
     @Operation(summary = "查询 Temu 商品分类")
     @PreAuthorize("@ss.hasPermission('temu:products-listing:query')")
-    public TemuApiResponse<List<CatsGetCategoryDto>> getGoodsCategories(@Valid @RequestBody ProductsListingCategoryReqVO request) {
+    public TemuApiResponse<List<CatsGetCategoryResult>> getGoodsCategories(@Valid @RequestBody ProductsListingCategoryReqVO request) {
         return productsListingService.getGoodsCategories(request);
     }
 

@@ -38,10 +38,6 @@ public class AmazonShopDO extends BaseDO {
      */
     private String sellerId;
     /**
-     * 默认 marketplaceId
-     */
-    private String marketplaceId;
-    /**
      * 店铺名称
      */
     private String shopName;

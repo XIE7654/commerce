@@ -3,12 +3,10 @@ package cn.iocoder.yudao.module.temu.service.addproducts;
 import cn.iocoder.yudao.module.temu.controller.admin.addproducts.vo.AddProductsCatsReqVO;
 import cn.iocoder.yudao.module.temu.enums.TemuSiteRegionEnum;
 import cn.iocoder.yudao.module.temu.framework.config.TemuProperties;
-import cn.iocoder.yudao.module.temu.sdk.TemuClient;
-import cn.iocoder.yudao.module.temu.sdk.TemuApiResponse;
-import cn.iocoder.yudao.module.temu.sdk.TemuJsonStorageService;
-import cn.iocoder.yudao.module.temu.sdk.product.CatsGetReqVO;
-import cn.iocoder.yudao.module.temu.sdk.product.dto.CatsGetCategoryDto;
-import cn.iocoder.yudao.module.temu.service.apirequestlog.TemuApiRequestLogService;
+import cn.iocoder.yudao.module.temu.framework.client.TemuApiResponse;
+import cn.iocoder.yudao.module.temu.framework.client.TemuClient;
+import cn.iocoder.yudao.module.temu.framework.client.product.CatsGetCategoryResult;
+import cn.iocoder.yudao.module.temu.framework.client.product.CatsGetRequest;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -25,10 +23,6 @@ public class AddProductsServiceImpl implements AddProductsService {
 
     @Resource
     private TemuProperties temuProperties;
-    @Resource
-    private TemuJsonStorageService temuJsonStorageService;
-    @Resource
-    private TemuApiRequestLogService temuApiRequestLogService;
 
     /**
      * 查询 Temu 商品分类。
@@ -40,28 +34,27 @@ public class AddProductsServiceImpl implements AddProductsService {
      * @return Temu 官方分类查询响应
      */
     @Override
-    public TemuApiResponse<List<CatsGetCategoryDto>> getCategories(AddProductsCatsReqVO request) {
-        CatsGetReqVO catsRequest = new CatsGetReqVO();
+    public TemuApiResponse<List<CatsGetCategoryResult>> getCategories(AddProductsCatsReqVO request) {
+        CatsGetRequest catsRequest = new CatsGetRequest();
         catsRequest.setLanguage(request.getLanguage());
         catsRequest.setParentCatId(request.getParentCatId());
-        return createClient(request.getSite(), request.getAccessToken()).getProduct().catsGet(catsRequest);
+        return createFrameworkClient(request.getSite(), request.getAccessToken()).getProduct().catsGet(catsRequest);
     }
 
     /**
-     * 按站点区域配置创建 Temu SDK 客户端，避免客户端请求方传入应用密钥。
+     * 按站点区域配置创建新版 Temu 客户端，分类接口不再依赖旧 SDK。
      *
      * @param siteCode Temu 站点代码
      * @param accessToken Temu 授权 Token
-     * @return 已配置的 Temu SDK 客户端
+     * @return 已配置的新版 Temu 客户端
      */
-    private TemuClient createClient(String siteCode, String accessToken) {
+    private TemuClient createFrameworkClient(String siteCode, String accessToken) {
         TemuSiteRegionEnum site = TemuSiteRegionEnum.valueOf(siteCode.trim().toUpperCase(Locale.ROOT));
         TemuProperties.RegionProperties region = temuProperties.getRegion(site);
         if (region == null || isBlank(region.getAppKey()) || isBlank(region.getAppSecret())) {
             throw new IllegalArgumentException("Temu 站点未配置 appKey 或 appSecret: " + site.name());
         }
-        return new TemuClient(region.getAppKey(), region.getAppSecret(), accessToken, site.getEndpoint(),
-                temuJsonStorageService, site.name(), temuApiRequestLogService, null);
+        return new TemuClient(region.getAppKey(), region.getAppSecret(), accessToken, site.name());
     }
 
     /**

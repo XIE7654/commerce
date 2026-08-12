@@ -20,10 +20,6 @@ public class AmazonShopRespVO {
     @ExcelProperty("Amazon sellerId")
     private String sellerId;
 
-    @Schema(description = "默认 marketplaceId", example = "29401")
-    @ExcelProperty("默认 marketplaceId")
-    private String marketplaceId;
-
     @Schema(description = "店铺名称", requiredMode = Schema.RequiredMode.REQUIRED, example = "张三")
     @ExcelProperty("店铺名称")
     private String shopName;

@@ -11,11 +11,10 @@ import cn.iocoder.yudao.module.temu.controller.admin.productslisting.vo.Products
 import cn.iocoder.yudao.module.temu.controller.admin.productslisting.vo.ProductsListingSpecIdReqVO;
 import cn.iocoder.yudao.module.temu.enums.TemuSiteRegionEnum;
 import cn.iocoder.yudao.module.temu.framework.config.TemuProperties;
+import cn.iocoder.yudao.module.temu.framework.client.product.CatsGetCategoryResult;
+import cn.iocoder.yudao.module.temu.framework.client.product.CatsGetRequest;
 import cn.iocoder.yudao.module.temu.sdk.TemuClient;
-import cn.iocoder.yudao.module.temu.sdk.TemuApiResponse;
 import cn.iocoder.yudao.module.temu.sdk.TemuJsonStorageService;
-import cn.iocoder.yudao.module.temu.sdk.product.CatsGetReqVO;
-import cn.iocoder.yudao.module.temu.sdk.product.dto.CatsGetCategoryDto;
 import cn.iocoder.yudao.module.temu.service.apirequestlog.TemuApiRequestLogService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -48,10 +47,26 @@ public class ProductsListingServiceImpl implements ProductsListingService {
      * @return Temu 官方分类响应
      */
     @Override
-    public TemuApiResponse<List<CatsGetCategoryDto>> getGoodsCategories(ProductsListingCategoryReqVO request) {
-        CatsGetReqVO catsRequest = new CatsGetReqVO();
+    public cn.iocoder.yudao.module.temu.framework.client.TemuApiResponse<List<CatsGetCategoryResult>> getGoodsCategories(ProductsListingCategoryReqVO request) {
+        CatsGetRequest catsRequest = new CatsGetRequest();
         catsRequest.setParentCatId(request.getParentCatId());
-        return createClient(request).getProduct().catsGet(catsRequest);
+        return createFrameworkClient(request).getProduct().catsGet(catsRequest);
+    }
+
+    /**
+     * 根据请求站点创建新版 Temu 客户端，供已迁移的分类接口使用。
+     *
+     * @param request 包含站点和授权 Token 的请求参数
+     * @return 已配置的新版 Temu 客户端
+     */
+    private cn.iocoder.yudao.module.temu.framework.client.TemuClient createFrameworkClient(ProductsListingBaseReqVO request) {
+        TemuSiteRegionEnum site = TemuSiteRegionEnum.valueOf(request.getSite().trim().toUpperCase(Locale.ROOT));
+        TemuProperties.RegionProperties region = temuProperties.getRegion(site);
+        if (region == null || isBlank(region.getAppKey()) || isBlank(region.getAppSecret())) {
+            throw new IllegalArgumentException("Temu 站点未配置 appKey 或 appSecret: " + site.name());
+        }
+        return new cn.iocoder.yudao.module.temu.framework.client.TemuClient(
+                region.getAppKey(), region.getAppSecret(), request.getAccessToken(), site.name());
     }
 
     /**
