@@ -7,10 +7,8 @@ import cn.iocoder.yudao.module.temu.controller.admin.ordermanagement.vo.OrderMan
 import cn.iocoder.yudao.module.temu.controller.admin.ordermanagement.vo.OrderManagementShippingCompaniesReqVO;
 import cn.iocoder.yudao.module.temu.controller.admin.ordermanagement.vo.TemuOrderPageReqVO;
 import cn.iocoder.yudao.module.temu.dal.dataobject.order.TemuOrderDO;
-import cn.iocoder.yudao.module.temu.dal.dataobject.seller.TemuSellerDO;
 import cn.iocoder.yudao.module.temu.dal.dataobject.shop.TemuShopDO;
 import cn.iocoder.yudao.module.temu.dal.mysql.order.TemuOrderMapper;
-import cn.iocoder.yudao.module.temu.dal.mysql.seller.TemuSellerMapper;
 import cn.iocoder.yudao.module.temu.dal.mysql.shop.TemuShopMapper;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.enums.CommonStatusEnum;
@@ -74,8 +72,6 @@ public class OrderManagementServiceImpl implements OrderManagementService {
     @Resource
     private TemuShopMapper shopMapper;
     @Resource
-    private TemuSellerMapper sellerMapper;
-    @Resource
     private TemuOrderMapper orderMapper;
     @Resource
     private TransactionTemplate transactionTemplate;
@@ -101,7 +97,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
      */
     @Override
     public TemuApiResponse<OrderListDto> syncOrderList(OrderManagementOrderListReqVO request) {
-        TemuSellerDO seller = validateOrderOwner(request.getShopId());
+        validateOrderOwner(request.getShopId());
         TemuApiResponse<OrderListDto> response = queryOrderList(request);
         if (Boolean.TRUE.equals(response.getSuccess())) {
             // 外部接口调用完成后才开启事务，避免网络耗时长期占用数据库连接和事务资源。
@@ -159,9 +155,8 @@ public class OrderManagementServiceImpl implements OrderManagementService {
             log.warn("[syncShopOrders][shopId({})] 店铺未配置授权 Token，跳过订单同步", shopId);
             return;
         }
-        TemuSellerDO seller = sellerMapper.selectByShopId(shop.getId());
-        if (seller == null || seller.getRegionId() == null) {
-            log.warn("[syncShopOrders][shopId({})] 店铺缺少卖家或区域授权信息，跳过订单同步", shop.getId());
+        if (shop.getRegionId() == null) {
+            log.warn("[syncShopOrders][shopId({})] 店铺缺少区域授权信息，跳过订单同步", shop.getId());
             return;
         }
         cn.iocoder.yudao.module.temu.framework.client.TemuClient client = createFrameworkClient(shop);
@@ -169,7 +164,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
         int pageNumber = 1;
         while (true) {
             TemuApiResponse<OrderListDto> response = client.getOrder().listOrdersV2(
-                    buildAutoSyncRequest(seller.getRegionId(), pageNumber, latestUpdateTime));
+                    buildAutoSyncRequest(shop.getRegionId(), pageNumber, latestUpdateTime));
             if (!Boolean.TRUE.equals(response.getSuccess())) {
                 throw new IllegalStateException("Temu 订单列表接口返回失败: " + response);
             }
@@ -318,16 +313,15 @@ public class OrderManagementServiceImpl implements OrderManagementService {
      * @param shopId 本地 Temu 店铺编号
      * @return 该店铺的卖家授权信息
      */
-    private TemuSellerDO validateOrderOwner(Long shopId) {
+    private TemuShopDO validateOrderOwner(Long shopId) {
         TemuShopDO shop = shopMapper.selectById(shopId);
         if (shop == null) {
             throw exception(SHOP_NOT_EXISTS);
         }
-        TemuSellerDO seller = sellerMapper.selectByShopId(shopId);
-        if (seller == null) {
+        if (shop.getMallId() == null) {
             throw exception(SELLER_NOT_EXISTS);
         }
-        return seller;
+        return shop;
     }
 
     /**

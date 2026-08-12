@@ -7,7 +7,6 @@ import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.framework.mybatis.core.query.MPJLambdaWrapperX;
 import cn.iocoder.yudao.module.temu.dal.dataobject.seller.TemuSellerDO;
-import cn.iocoder.yudao.module.temu.dal.dataobject.shop.TemuShopDO;
 import org.apache.ibatis.annotations.Mapper;
 import cn.iocoder.yudao.module.temu.controller.admin.seller.vo.*;
 
@@ -26,16 +25,11 @@ public interface TemuSellerMapper extends BaseMapperX<TemuSellerDO> {
      * @return 卖家授权记录；不存在时返回 null
      */
     default TemuSellerDO selectByShopId(Long shopId) {
-        return selectOne(new LambdaQueryWrapperX<TemuSellerDO>()
-                .eq(TemuSellerDO::getShopId, shopId));
+        return selectById(shopId);
     }
 
     default PageResult<TemuSellerDO> selectPage(TemuSellerPageReqVO reqVO) {
-        MPJLambdaWrapperX<TemuSellerDO> query = new MPJLambdaWrapperX<TemuSellerDO>()
-                .selectAll(TemuSellerDO.class)
-                .selectAs(TemuShopDO::getShopName, TemuSellerDO::getShopName)
-                .leftJoin(TemuShopDO.class, TemuShopDO::getId, TemuSellerDO::getShopId)
-                .eqIfPresent(TemuSellerDO::getShopId, reqVO.getShopId())
+        LambdaQueryWrapperX<TemuSellerDO> query = new LambdaQueryWrapperX<TemuSellerDO>()
                 .eqIfPresent(TemuSellerDO::getRegionId, reqVO.getRegionId())
                 .eqIfPresent(TemuSellerDO::getMallId, reqVO.getMallId())
                 .eqIfPresent(TemuSellerDO::getAppSubscribeStatus, reqVO.getAppSubscribeStatus())
@@ -46,7 +40,7 @@ public interface TemuSellerMapper extends BaseMapperX<TemuSellerDO> {
                 .betweenIfPresent(TemuSellerDO::getLastSyncTime, reqVO.getLastSyncTime())
                 .betweenIfPresent(TemuSellerDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(TemuSellerDO::getId);
-        return selectJoinPage(reqVO, TemuSellerDO.class, query);
+        return selectPage(reqVO, query);
     }
 
 }

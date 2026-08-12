@@ -1,6 +1,0 @@
-### 查询 Listings Restrictions
-POST {{baseUrl}}/amazon/listings-restrictions/get
-Authorization: Bearer {{token}}
-Content-Type: application/json
-tenant-id: {{adminTenantId}}
-{"shopId":1,"countryCode":"US","asin":"B000000000"}

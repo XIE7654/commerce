@@ -1,6 +1,0 @@
-### SKU 费用预估
-POST {{baseUrl}}/amazon/product-fees/by-sku
-Authorization: Bearer {{token}}
-Content-Type: application/json
-tenant-id: {{adminTenantId}}
-{"shopId":1,"countryCode":"US","body":{}}

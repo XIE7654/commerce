@@ -11,10 +11,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import cn.iocoder.yudao.module.amazon.sdk.AmazonApiResponse;
-import cn.iocoder.yudao.module.amazon.sdk.sellers.dto.AccountDto;
-import cn.iocoder.yudao.module.amazon.sdk.sellers.dto.MarketplaceParticipationDto;
-import java.util.List;
+import com.amazon.SellingPartnerAPIAA.LWAException;
+import software.amazon.spapi.ApiException;
+import software.amazon.spapi.models.sellers.v1.GetAccountResponse;
+import software.amazon.spapi.models.sellers.v1.GetMarketplaceParticipationsResponse;
 
 /**
  * Amazon Sellers 管理接口。
@@ -33,23 +33,8 @@ public class AmazonSellersController {
     @PostMapping("/marketplace-participations")
     @Operation(summary = "查询卖家站点参与状态")
     @PreAuthorize("@ss.hasPermission('amazon:sellers:query')")
-    public CommonResult<AmazonApiResponse<List<MarketplaceParticipationDto>>> getMarketplaceParticipations(@Valid @RequestBody AmazonSellersReqVO request) {
+    public CommonResult<GetMarketplaceParticipationsResponse> getMarketplaceParticipations(@Valid @RequestBody AmazonSellersReqVO request) throws ApiException, LWAException {
         return CommonResult.success(amazonSellersService.getMarketplaceParticipations(request));
-    }
-
-    /**
-     * 同步卖家在各 Amazon 站点的参与状态。
-     *
-     * <p>同步结果会写入 {@code amazon_shop_marketplace}，供后续站点维度业务使用。</p>
-     *
-     * @param request 店铺参数
-     * @return Amazon 返回的站点参与状态
-     */
-    @PostMapping("/marketplace-participations/sync")
-    @Operation(summary = "同步卖家站点参与状态")
-    @PreAuthorize("@ss.hasPermission('amazon:sellers:update')")
-    public CommonResult<AmazonApiResponse<List<MarketplaceParticipationDto>>> syncMarketplaceParticipations(@Valid @RequestBody AmazonSellersReqVO request) {
-        return CommonResult.success(amazonSellersService.syncMarketplaceParticipations(request));
     }
 
     /**
@@ -58,17 +43,8 @@ public class AmazonSellersController {
     @PostMapping("/account")
     @Operation(summary = "查询 Amazon 卖家账户")
     @PreAuthorize("@ss.hasPermission('amazon:sellers:query')")
-    public CommonResult<AmazonApiResponse<AccountDto>> getAccount(@Valid @RequestBody AmazonSellersReqVO request) {
+    public CommonResult<GetAccountResponse> getAccount(@Valid @RequestBody AmazonSellersReqVO request) throws ApiException, LWAException {
         return CommonResult.success(amazonSellersService.getAccount(request));
     }
 
-    /**
-     * 同步 Amazon 卖家账户及店铺 Marketplace 参与状态。
-     */
-    @PostMapping("/account/sync")
-    @Operation(summary = "同步 Amazon 卖家账户及站点参与状态")
-    @PreAuthorize("@ss.hasPermission('amazon:sellers:update')")
-    public CommonResult<AmazonApiResponse<AccountDto>> syncAccount(@Valid @RequestBody AmazonSellersReqVO request) {
-        return CommonResult.success(amazonSellersService.syncAccount(request));
-    }
 }

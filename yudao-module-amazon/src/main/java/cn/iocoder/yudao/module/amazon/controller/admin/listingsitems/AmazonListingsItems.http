@@ -1,6 +1,0 @@
-### 搜索 Listings Items
-POST {{baseUrl}}/amazon/listings-items/search
-Authorization: Bearer {{token}}
-Content-Type: application/json
-tenant-id: {{adminTenantId}}
-{"shopId":1,"countryCode":"US"}

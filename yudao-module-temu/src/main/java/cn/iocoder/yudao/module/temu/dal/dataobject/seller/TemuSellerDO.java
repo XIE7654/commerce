@@ -14,7 +14,7 @@ import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
  *
  * @author 自达源码
  */
-@TableName("temu_seller")
+@TableName("temu_shop")
 @KeySequence("temu_seller_seq") // 用于 Oracle、PostgreSQL、Kingbase、DB2、H2 数据库的主键自增。如果是 MySQL 等数据库，可不写。
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -32,6 +32,7 @@ public class TemuSellerDO extends BaseDO {
     /**
      * 关联 temu_shop.id
      */
+    @TableField(exist = false)
     private Long shopId;
     /**
      * 店铺名称
@@ -90,6 +91,12 @@ public class TemuSellerDO extends BaseDO {
      * 最近一次同步授权信息时间
      */
     private LocalDateTime lastSyncTime;
+
+    /** 合并表查询兼容字段。 */
+    private String site;
+    private String shopType;
+    private String authToken;
+    private Integer status;
 
 
 }

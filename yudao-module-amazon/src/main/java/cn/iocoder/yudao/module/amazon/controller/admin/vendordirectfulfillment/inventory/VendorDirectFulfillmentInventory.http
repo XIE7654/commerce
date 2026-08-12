@@ -1,7 +1,0 @@
-### 提交库存更新
-POST {{baseUrl}}/amazon/vendor-direct-fulfillment/inventory/v1/updates
-Authorization: Bearer {{token}}
-tenant-id: {{adminTenantId}}
-Content-Type: application/json
-
-{"shopId":1,"countryCode":"US","pathParams":{"warehouseId":"WAREHOUSE-1"},"body":{"inventory":{"sellingParty":{"partyId":"VENDOR-1"},"shipFromParty":{"partyId":"WAREHOUSE-1"},"items":[]}}}

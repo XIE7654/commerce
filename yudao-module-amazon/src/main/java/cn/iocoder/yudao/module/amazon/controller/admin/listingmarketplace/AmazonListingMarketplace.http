@@ -1,5 +1,0 @@
-### 同步所有启用店铺参与站点的 Amazon Listings
-POST {{baseUrl}}/amazon/listing-marketplace/sync
-Authorization: Bearer {{token}}
-Content-Type: application/json
-tenant-id: {{adminTenantId}}
