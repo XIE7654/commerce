@@ -3,12 +3,16 @@ package cn.iocoder.yudao.module.temu.service.ordermanagement;
 import cn.iocoder.yudao.module.temu.controller.admin.ordermanagement.vo.OrderManagementBaseReqVO;
 import cn.iocoder.yudao.module.temu.controller.admin.ordermanagement.vo.OrderManagementCustomOrderReqVO;
 import cn.iocoder.yudao.module.temu.controller.admin.ordermanagement.vo.OrderManagementOrderListReqVO;
+import cn.iocoder.yudao.module.temu.controller.admin.ordermanagement.vo.OrderManagementOrderSyncReqVO;
 import cn.iocoder.yudao.module.temu.controller.admin.ordermanagement.vo.OrderManagementParentOrderReqVO;
-import cn.iocoder.yudao.module.temu.controller.admin.ordermanagement.vo.OrderManagementShippingCompaniesReqVO;
 import cn.iocoder.yudao.module.temu.controller.admin.ordermanagement.vo.TemuOrderPageReqVO;
 import cn.iocoder.yudao.module.temu.dal.dataobject.order.TemuOrderDO;
+import cn.iocoder.yudao.module.temu.dal.dataobject.orderdetail.TemuOrderDetailDO;
+import cn.iocoder.yudao.module.temu.dal.dataobject.ordershippinginfo.TemuOrderShippingInfoDO;
 import cn.iocoder.yudao.module.temu.dal.dataobject.shop.TemuShopDO;
 import cn.iocoder.yudao.module.temu.dal.mysql.order.TemuOrderMapper;
+import cn.iocoder.yudao.module.temu.dal.mysql.orderdetail.TemuOrderDetailMapper;
+import cn.iocoder.yudao.module.temu.dal.mysql.ordershippinginfo.TemuOrderShippingInfoMapper;
 import cn.iocoder.yudao.module.temu.dal.mysql.shop.TemuShopMapper;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.enums.CommonStatusEnum;
@@ -25,9 +29,6 @@ import cn.iocoder.yudao.module.temu.framework.client.order.OrderPageItemDto;
 import cn.iocoder.yudao.module.temu.framework.client.order.ParentOrderDto;
 import cn.iocoder.yudao.module.temu.framework.client.order.ParentOrderReqVO;
 import cn.iocoder.yudao.module.temu.framework.client.order.ShippingInfoDto;
-import cn.iocoder.yudao.module.temu.sdk.TemuClient;
-import cn.iocoder.yudao.module.temu.sdk.TemuJsonStorageService;
-import cn.iocoder.yudao.module.temu.service.apirequestlog.TemuApiRequestLogService;
 import cn.iocoder.yudao.module.temu.mq.TemuOrderSyncMessage;
 import cn.iocoder.yudao.module.temu.mq.TemuOrderSyncRabbitMQConfig;
 import cn.hutool.json.JSONUtil;
@@ -40,13 +41,13 @@ import lombok.extern.slf4j.Slf4j;
 import tools.jackson.databind.JsonNode;
 
 import java.util.Locale;
-import java.util.Map;
 import java.util.List;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static cn.iocoder.yudao.module.temu.enums.ErrorCodeConstants.ORDER_NOT_EXISTS;
 import static cn.iocoder.yudao.module.temu.enums.ErrorCodeConstants.SELLER_NOT_EXISTS;
 import static cn.iocoder.yudao.module.temu.enums.ErrorCodeConstants.SHOP_NOT_EXISTS;
 
@@ -66,13 +67,13 @@ public class OrderManagementServiceImpl implements OrderManagementService {
     @Resource
     private TemuProperties temuProperties;
     @Resource
-    private TemuJsonStorageService temuJsonStorageService;
-    @Resource
-    private TemuApiRequestLogService temuApiRequestLogService;
-    @Resource
     private TemuShopMapper shopMapper;
     @Resource
     private TemuOrderMapper orderMapper;
+    @Resource
+    private TemuOrderDetailMapper orderDetailMapper;
+    @Resource
+    private TemuOrderShippingInfoMapper orderShippingInfoMapper;
     @Resource
     private TransactionTemplate transactionTemplate;
     @Resource
@@ -221,6 +222,26 @@ public class OrderManagementServiceImpl implements OrderManagementService {
     }
 
     /**
+     * 拉取 Temu 父订单详情，并在调用成功后幂等保存完整详情。
+     *
+     * @param request 本地订单主键参数
+     * @return Temu 官方订单详情响应
+     */
+    @Override
+    public TemuApiResponse<OrderDetailDto> syncOrderDetail(OrderManagementOrderSyncReqVO request) {
+        TemuOrderDO order = validateOrderExists(request.getOrderId());
+        TemuShopDO shop = validateOrderOwner(order.getShopId());
+        TemuApiResponse<OrderDetailDto> response = createFrameworkClient(shop).getOrder()
+                .detailOrderV2(parentOrderRequest(order.getParentOrderSn()));
+        if (Boolean.TRUE.equals(response.getSuccess()) && response.getResult() != null) {
+            // 第三方请求完成后再开启事务，避免网络延迟占用数据库事务。
+            transactionTemplate.executeWithoutResult(status -> syncOrderDetail(response.getResult(), shop.getId(),
+                    order.getParentOrderSn()));
+        }
+        return response;
+    }
+
+    /**
      * 调用 Temu 定制订单详情查询接口。
      *
      * @param request 子订单编号列表查询参数
@@ -245,32 +266,23 @@ public class OrderManagementServiceImpl implements OrderManagementService {
     }
 
     /**
-     * 调用 Temu 区域承运商查询接口。
+     * 拉取 Temu 父订单收货信息，并在调用成功后幂等保存。
      *
-     * @param request 区域查询参数
-     * @return Temu 官方承运商列表响应
+     * @param request 本地订单主键参数
+     * @return Temu 官方收货信息响应
      */
     @Override
-    public JsonNode getOrderShippingCompanies(OrderManagementShippingCompaniesReqVO request) {
-        return createClient(request).getLogistics().companies(Map.of("regionId", request.getRegionId()));
-    }
-
-    /**
-     * 按请求站点创建 Temu SDK 客户端。
-     *
-     * <p>应用密钥仅从服务端区域配置读取，避免管理端请求泄露敏感应用配置。</p>
-     *
-     * @param request 包含站点与授权 Token 的订单管理请求
-     * @return 已按区域配置初始化的 Temu SDK 客户端
-     */
-    private TemuClient createClient(OrderManagementBaseReqVO request) {
-        TemuSiteRegionEnum site = TemuSiteRegionEnum.valueOf(request.getSite().trim().toUpperCase(Locale.ROOT));
-        TemuProperties.RegionProperties region = temuProperties.getRegion(site);
-        if (region == null || isBlank(region.getAppKey()) || isBlank(region.getAppSecret())) {
-            throw new IllegalArgumentException("Temu 站点未配置 appKey 或 appSecret: " + site.name());
+    public TemuApiResponse<ShippingInfoDto> syncOrderShippingInfo(OrderManagementOrderSyncReqVO request) {
+        TemuOrderDO order = validateOrderExists(request.getOrderId());
+        TemuShopDO shop = validateOrderOwner(order.getShopId());
+        TemuApiResponse<ShippingInfoDto> response = createFrameworkClient(shop).getOrder()
+                .shippinginfoOrderV2(parentOrderRequest(order.getParentOrderSn()));
+        if (Boolean.TRUE.equals(response.getSuccess()) && response.getResult() != null) {
+            // 同步接口只在外部调用成功时覆盖本地地址，防止失败响应误清空已保存数据。
+            transactionTemplate.executeWithoutResult(status -> syncOrderShippingInfo(response.getResult(), shop.getId(),
+                    order.getParentOrderSn()));
         }
-        return new TemuClient(region.getAppKey(), region.getAppSecret(), request.getAccessToken(), site.getEndpoint(),
-                temuJsonStorageService, site.name(), temuApiRequestLogService, request.getShopId());
+        return response;
     }
 
     /**
@@ -322,6 +334,20 @@ public class OrderManagementServiceImpl implements OrderManagementService {
             throw exception(SELLER_NOT_EXISTS);
         }
         return shop;
+    }
+
+    /**
+     * 校验本地订单存在，确保同步使用订单自身关联的店铺和父订单号。
+     *
+     * @param orderId 本地 Temu 订单主键编号
+     * @return 已存在的本地 Temu 订单
+     */
+    private TemuOrderDO validateOrderExists(Long orderId) {
+        TemuOrderDO order = orderMapper.selectById(orderId);
+        if (order == null) {
+            throw exception(ORDER_NOT_EXISTS);
+        }
+        return order;
     }
 
     /**
@@ -404,6 +430,83 @@ public class OrderManagementServiceImpl implements OrderManagementService {
         order.setProductList(json(child.getProductList()));
         order.setLastSyncTime(LocalDateTime.now());
         return order;
+    }
+
+    /**
+     * 将 Temu 订单详情转换为本地详情记录并按店铺、父订单号幂等保存。
+     *
+     * @param detail Temu 父订单详情
+     * @param shopId 归属店铺编号
+     * @param requestedParentOrderSn 请求的父订单号，用于兼容 Temu 响应缺少父订单信息的情况
+     */
+    private void syncOrderDetail(OrderDetailDto detail, Long shopId, String requestedParentOrderSn) {
+        ParentOrderDto parent = detail.getParentOrderMap();
+        String parentOrderSn = parent == null || isBlank(parent.getParentOrderSn())
+                ? requestedParentOrderSn : parent.getParentOrderSn();
+        TemuOrderDetailDO orderDetail = new TemuOrderDetailDO();
+        orderDetail.setShopId(shopId);
+        orderDetail.setParentOrderSn(parentOrderSn);
+        if (parent != null) {
+            orderDetail.setParentOrderStatus(parent.getParentOrderStatus());
+            orderDetail.setRegionName1(parent.getRegionName1());
+            orderDetail.setRegionName2(parent.getRegionName2());
+            orderDetail.setRegionName3(parent.getRegionName3());
+            orderDetail.setSiteId(parent.getSiteId() == null ? null : parent.getSiteId().longValue());
+            orderDetail.setRegionId(parent.getRegionId());
+            orderDetail.setOrderPaymentType(parent.getOrderPaymentType());
+            orderDetail.setShippingMethod(parent.getShippingMethod());
+            orderDetail.setShipmentConsolidatedByMainMall(parent.getIsShipmentConsolidatedByMainMall());
+            orderDetail.setHasShippingFee(parent.getHasShippingFee());
+            orderDetail.setParentOrderTime(epochSecond(parent.getParentOrderTime()));
+            orderDetail.setExpectShipLatestTime(epochSecond(parent.getExpectShipLatestTime()));
+            orderDetail.setParentOrderPendingFinishTime(epochSecond(parent.getParentOrderPendingFinishTime()));
+            orderDetail.setLatestDeliveryTime(epochSecond(parent.getLatestDeliveryTime()));
+            orderDetail.setParentShippingTime(epochSecond(parent.getParentShippingTime()));
+            orderDetail.setParentConfirmTime(epochSecond(parent.getParentConfirmTime()));
+            orderDetail.setParentOrderLabels(json(parent.getParentOrderLabel()));
+            orderDetail.setFulfillmentWarnings(json(parent.getFulfillmentWarning()));
+            orderDetail.setBatchOrderNumberList(json(parent.getBatchOrderNumberList()));
+        }
+        orderDetail.setOrderList(json(detail.getOrderList()));
+        orderDetail.setLastSyncTime(LocalDateTime.now());
+        TemuOrderDetailDO existing = orderDetailMapper.selectByShopIdAndParentOrderSn(shopId, parentOrderSn);
+        if (existing == null) {
+            orderDetailMapper.insert(orderDetail);
+        } else {
+            orderDetail.setId(existing.getId());
+            orderDetailMapper.updateById(orderDetail);
+        }
+    }
+
+    /**
+     * 将 Temu 收货信息转换为本地记录并按店铺、父订单号幂等保存。
+     *
+     * @param shippingInfo Temu 收货信息
+     * @param shopId 归属店铺编号
+     * @param requestedParentOrderSn 请求的父订单号，用于兼容 Temu 响应未回传父订单号的情况
+     */
+    private void syncOrderShippingInfo(ShippingInfoDto shippingInfo, Long shopId, String requestedParentOrderSn) {
+        String parentOrderSn = isBlank(shippingInfo.getParentOrderSn())
+                ? requestedParentOrderSn : shippingInfo.getParentOrderSn();
+        TemuOrderShippingInfoDO orderShippingInfo = new TemuOrderShippingInfoDO();
+        orderShippingInfo.setShopId(shopId);
+        orderShippingInfo.setParentOrderSn(parentOrderSn);
+        orderShippingInfo.setReceiptName(shippingInfo.getReceiverName());
+        orderShippingInfo.setMobile(shippingInfo.getReceiverPhone());
+        orderShippingInfo.setRegionName1(shippingInfo.getCountry());
+        orderShippingInfo.setRegionName2(shippingInfo.getProvince());
+        orderShippingInfo.setRegionName3(shippingInfo.getCity());
+        orderShippingInfo.setRegionName4(shippingInfo.getDistrict());
+        orderShippingInfo.setAddressLineAll(shippingInfo.getAddress());
+        orderShippingInfo.setPostCode(shippingInfo.getPostalCode());
+        orderShippingInfo.setLastSyncTime(LocalDateTime.now());
+        TemuOrderShippingInfoDO existing = orderShippingInfoMapper.selectByShopIdAndParentOrderSn(shopId, parentOrderSn);
+        if (existing == null) {
+            orderShippingInfoMapper.insert(orderShippingInfo);
+        } else {
+            orderShippingInfo.setId(existing.getId());
+            orderShippingInfoMapper.updateById(orderShippingInfo);
+        }
     }
 
     /** 将响应中的数组或对象字段序列化为数据库 JSON 文本。 */

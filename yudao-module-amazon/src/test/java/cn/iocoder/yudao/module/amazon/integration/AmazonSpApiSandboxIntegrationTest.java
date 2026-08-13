@@ -8,11 +8,13 @@ import software.amazon.spapi.api.listings.items.v2021_08_01.ListingsApi;
 import software.amazon.spapi.api.orders.v0.OrdersV0Api;
 import software.amazon.spapi.api.sellers.v1.SellersApi;
 import software.amazon.spapi.models.listings.items.v2021_08_01.Item;
+import software.amazon.spapi.models.listings.items.v2021_08_01.ItemSearchResults;
 import software.amazon.spapi.models.orders.v0.GetOrdersResponse;
 import software.amazon.spapi.models.sellers.v1.GetMarketplaceParticipationsResponse;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -71,6 +73,33 @@ class AmazonSpApiSandboxIntegrationTest {
     }
 
     /**
+     * 调用 Listings Items 沙盒搜索接口，使用 Amazon 文档定义的静态请求参数验证搜索请求链路。
+     *
+     * @throws ApiException Amazon 沙盒返回非成功响应时抛出
+     * @throws LWAException LWA 授权失败时抛出
+     */
+    @Test
+    void shouldSearchListingsItemsInSandbox() throws ApiException, LWAException {
+        String sellerId = "test";
+        ListingsApi listingsApi = new ListingsApi.Builder()
+                .lwaAuthorizationCredentials(credentials())
+                .endpoint(SANDBOX_ENDPOINT)
+                .build();
+
+        ItemSearchResults response = listingsApi.searchListingsItems(sellerId,
+                List.of(SANDBOX_MARKETPLACE_ID, "A2EUQ1WTGCTBG2"), "en_US",
+                List.of("summaries", "offers", "fulfillmentAvailability", "issues"),
+                List.of(SANDBOX_LISTING_SKU, "HW-ZDPI-9B4E", "TC-ZDPI-9B4E"), "SKU", null, null,
+                null, null, null, null, null, null, null,
+                null, null, 1, null);
+        System.out.println("searchListingsItems response: " + response);
+
+        assertNotNull(response, "沙盒 Listings Items 搜索 API 应返回响应");
+        assertNotNull(response.getItems(), "沙盒 Listings Items 搜索响应应包含商品列表");
+        assertEquals(3, response.getNumberOfResults(), "沙盒静态响应应返回三个商品");
+    }
+
+    /**
      * 调用 Orders v0 沙盒订单列表接口，使用 Amazon 约定的测试时间值获取静态响应。
      *
      * @throws ApiException Amazon 沙盒返回非成功响应时抛出
@@ -82,7 +111,7 @@ class AmazonSpApiSandboxIntegrationTest {
                 .lwaAuthorizationCredentials(credentials())
                 .endpoint(SANDBOX_ENDPOINT)
                 .build();
-        GetOrdersResponse response = ordersApi.getOrders(List.of(SANDBOX_MARKETPLACE_ID), "TEST_CASE_200",
+        GetOrdersResponse response = ordersApi.getOrders(List.of("ATVPDKIKX0DER"), "TEST_CASE_200",
                 null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
                 null, null, null, null, null);
         System.out.println("getOrders response: " + response);

@@ -2,6 +2,8 @@ package cn.iocoder.yudao.module.temu.controller.admin.authorization;
 
 import cn.iocoder.yudao.module.temu.controller.admin.authorization.vo.AuthorizationAccessTokenCreateReqVO;
 import cn.iocoder.yudao.module.temu.controller.admin.authorization.vo.AuthorizationAccessTokenInfoReqVO;
+import cn.iocoder.yudao.module.temu.framework.client.auth.AccessTokenCreateResult;
+import cn.iocoder.yudao.module.temu.framework.client.auth.AccessTokenInfoResult;
 import cn.iocoder.yudao.module.temu.service.authorization.AuthorizationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -13,7 +15,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import tools.jackson.databind.JsonNode;
 
 /**
  * 管理后台 Temu Authorization 接口。
@@ -36,7 +37,7 @@ public class AuthorizationController {
     @PostMapping("/access-token/info")
     @Operation(summary = "查询 Temu access_token 授权信息")
     @PreAuthorize("@ss.hasPermission('temu:authorization:query')")
-    public JsonNode getAccessTokenInfo(@Valid @RequestBody AuthorizationAccessTokenInfoReqVO request) {
+    public AccessTokenInfoResult getAccessTokenInfo(@Valid @RequestBody AuthorizationAccessTokenInfoReqVO request) {
         return authorizationService.getAccessTokenInfo(request);
     }
 
@@ -49,7 +50,7 @@ public class AuthorizationController {
     @PostMapping("/access-token/create")
     @Operation(summary = "创建 Temu access_token")
     @PreAuthorize("@ss.hasPermission('temu:authorization:create')")
-    public JsonNode createAccessToken(@Valid @RequestBody AuthorizationAccessTokenCreateReqVO request) {
+    public AccessTokenCreateResult createAccessToken(@Valid @RequestBody AuthorizationAccessTokenCreateReqVO request) {
         return authorizationService.createAccessToken(request);
     }
 

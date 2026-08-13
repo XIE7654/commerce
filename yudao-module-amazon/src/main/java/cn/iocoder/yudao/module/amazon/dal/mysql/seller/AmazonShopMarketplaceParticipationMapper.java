@@ -24,6 +24,18 @@ public interface AmazonShopMarketplaceParticipationMapper extends BaseMapperX<Am
     }
 
     /**
+     * 查询店铺当前参与销售的 Marketplace ID 列表。
+     *
+     * @param shopId 店铺编号
+     * @return 参与销售的 Marketplace ID 列表
+     */
+    default List<String> selectMarketplaceIdsByShopId(Long shopId) {
+        return selectParticipatingByShopId(shopId).stream()
+                .map(AmazonShopMarketplaceDO::getMarketplaceId)
+                .toList();
+    }
+
+    /**
      * 查询当前租户下店铺指定站点的参与状态。
      *
      * @param shopId 店铺编号

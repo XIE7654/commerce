@@ -3,6 +3,9 @@ package cn.iocoder.yudao.module.amazon.enums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Amazon Marketplace、SP-API Endpoint 和 AWS Region 配置。
  *
@@ -106,7 +109,8 @@ public enum AmazonMarketplaceEnum {
     /**
      * 根据销售区域获取用于访问该区域 SP-API 的 Marketplace 配置。
      *
-     * <p>仅需要区域端点的 API 不依赖具体站点，返回该区域中的任一 Marketplace 配置即可。</p>
+     * <p>仅保存销售区域的历史店铺未指定具体站点。NA 使用 US 作为默认站点，确保端点选择保持确定性；
+     * 需要查询区域全部站点时应使用 {@link #getMarketplaceIdsBySalesRegion(String)}。</p>
      *
      * @param value Amazon 销售区域，例如 NA、EU 或 FE
      * @return 区域对应的 Marketplace 配置；输入为空或不存在时返回 {@code null}
@@ -115,12 +119,34 @@ public enum AmazonMarketplaceEnum {
         if (value == null || value.trim().isEmpty()) {
             return null;
         }
+        if ("NA".equalsIgnoreCase(value.trim())) {
+            return US;
+        }
         for (AmazonMarketplaceEnum marketplace : values()) {
             if (marketplace.salesRegion.equalsIgnoreCase(value.trim())) {
                 return marketplace;
             }
         }
         return null;
+    }
+
+    /**
+     * 根据销售区域获取该区域全部 Marketplace ID。
+     *
+     * <p>Orders API 支持一次传入同一区域的多个站点。销售区域与端点一一对应，不能混合不同区域的
+     * Marketplace ID，否则请求签名对应的区域端点无法匹配。</p>
+     *
+     * @param salesRegion Amazon 销售区域，例如 NA、EU 或 FE
+     * @return 区域内全部 Marketplace ID；输入为空或不存在时返回空列表
+     */
+    public static List<String> getMarketplaceIdsBySalesRegion(String salesRegion) {
+        if (salesRegion == null || salesRegion.trim().isEmpty()) {
+            return List.of();
+        }
+        return Arrays.stream(values())
+                .filter(marketplace -> marketplace.salesRegion.equalsIgnoreCase(salesRegion.trim()))
+                .map(AmazonMarketplaceEnum::getMarketplaceId)
+                .toList();
     }
 
     /**

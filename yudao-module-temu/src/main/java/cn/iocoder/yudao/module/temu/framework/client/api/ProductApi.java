@@ -17,6 +17,9 @@ import java.util.Map;
 public class ProductApi {
 
     private static final String CATS_GET_API_TYPE = "bg.local.goods.cats.get";
+    private static final String TEMPLATE_GET_API_TYPE = "bg.local.goods.template.get";
+    private static final String SPEC_ID_GET_API_TYPE = "bg.local.goods.spec.id.get";
+    private static final String SIZE_ELEMENT_GET_API_TYPE = "bg.local.goods.size.element.get";
 
     private final TemuClient client;
 
@@ -44,6 +47,47 @@ public class ProductApi {
         params.put("parentCatId", request.getParentCatId());
         JsonNode raw = client.request(CATS_GET_API_TYPE, HttpMethod.POST, params);
         return toResponse(raw);
+    }
+
+    /**
+     * 查询指定 Temu 分类对应的商品属性和变体模板。
+     *
+     * @param params Temu 模板查询参数，字段名使用 Temu API 的 camelCase 名称
+     * @return Temu 原始模板响应
+     */
+    public JsonNode templateGet(Map<String, Object> params) {
+        return request(TEMPLATE_GET_API_TYPE, params);
+    }
+
+    /**
+     * 生成自定义变体规格 ID。
+     *
+     * @param params Temu 规格 ID 生成参数，字段名使用 Temu API 的 camelCase 名称
+     * @return Temu 原始规格 ID 响应
+     */
+    public JsonNode specIdGet(Map<String, Object> params) {
+        return request(SPEC_ID_GET_API_TYPE, params);
+    }
+
+    /**
+     * 查询分类是否需要填写尺码表及其填写要求。
+     *
+     * @param params Temu 尺码元素查询参数，字段名使用 Temu API 的 camelCase 名称
+     * @return Temu 原始尺码元素响应
+     */
+    public JsonNode sizeElementGet(Map<String, Object> params) {
+        return request(SIZE_ELEMENT_GET_API_TYPE, params);
+    }
+
+    /**
+     * 使用 Temu Router 调用商品接口。
+     *
+     * @param apiType Temu API type
+     * @param params 业务参数；为 {@code null} 时按空参数请求
+     * @return Temu Router 原始响应
+     */
+    private JsonNode request(String apiType, Map<String, Object> params) {
+        return client.request(apiType, HttpMethod.POST, params == null ? Map.of() : params);
     }
 
     /**

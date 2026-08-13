@@ -2,8 +2,8 @@ package cn.iocoder.yudao.module.temu.controller.admin.ordermanagement;
 
 import cn.iocoder.yudao.module.temu.controller.admin.ordermanagement.vo.OrderManagementCustomOrderReqVO;
 import cn.iocoder.yudao.module.temu.controller.admin.ordermanagement.vo.OrderManagementOrderListReqVO;
+import cn.iocoder.yudao.module.temu.controller.admin.ordermanagement.vo.OrderManagementOrderSyncReqVO;
 import cn.iocoder.yudao.module.temu.controller.admin.ordermanagement.vo.OrderManagementParentOrderReqVO;
-import cn.iocoder.yudao.module.temu.controller.admin.ordermanagement.vo.OrderManagementShippingCompaniesReqVO;
 import cn.iocoder.yudao.module.temu.controller.admin.ordermanagement.vo.TemuOrderPageReqVO;
 import cn.iocoder.yudao.module.temu.controller.admin.ordermanagement.vo.TemuOrderRespVO;
 import cn.iocoder.yudao.module.temu.dal.dataobject.order.TemuOrderDO;
@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import tools.jackson.databind.JsonNode;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 
@@ -84,6 +83,19 @@ public class OrderManagementController {
     }
 
     /**
+     * 拉取 Temu 父订单详情并保存到本地。
+     *
+     * @param request 父订单查询参数
+     * @return Temu 官方订单详情响应
+     */
+    @PostMapping("/orders/detail/sync")
+    @Operation(summary = "同步 Temu 父订单详情")
+    @PreAuthorize("@ss.hasPermission('temu:order-management:update')")
+    public TemuApiResponse<OrderDetailDto> syncOrderDetail(@Valid @RequestBody OrderManagementOrderSyncReqVO request) {
+        return orderManagementService.syncOrderDetail(request);
+    }
+
+    /**
      * 查询 Temu 定制订单详情。
      *
      * @param request 子订单编号列表查询参数
@@ -110,15 +122,16 @@ public class OrderManagementController {
     }
 
     /**
-     * 查询 Temu 指定区域的承运商列表。
+     * 拉取 Temu 父订单收货信息并保存到本地。
      *
-     * @param request 区域查询参数
-     * @return Temu 官方承运商列表响应
+     * @param request 父订单查询参数
+     * @return Temu 官方收货信息响应
      */
-    @PostMapping("/shipping-companies/list")
-    @Operation(summary = "查询 Temu 订单承运商列表")
-    @PreAuthorize("@ss.hasPermission('temu:order-management:query')")
-    public JsonNode getOrderShippingCompanies(@Valid @RequestBody OrderManagementShippingCompaniesReqVO request) {
-        return orderManagementService.getOrderShippingCompanies(request);
+    @PostMapping("/orders/shipping-info/sync")
+    @Operation(summary = "同步 Temu 订单收货信息")
+    @PreAuthorize("@ss.hasPermission('temu:order-management:update')")
+    public TemuApiResponse<ShippingInfoDto> syncOrderShippingInfo(@Valid @RequestBody OrderManagementOrderSyncReqVO request) {
+        return orderManagementService.syncOrderShippingInfo(request);
     }
+
 }

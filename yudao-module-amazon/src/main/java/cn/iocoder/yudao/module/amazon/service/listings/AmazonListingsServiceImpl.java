@@ -2,16 +2,16 @@ package cn.iocoder.yudao.module.amazon.service.listings;
 
 import cn.iocoder.yudao.module.amazon.controller.admin.listings.vo.AmazonListingsItemGetReqVO;
 import cn.iocoder.yudao.module.amazon.controller.admin.listings.vo.AmazonListingsSearchReqVO;
+import cn.iocoder.yudao.module.amazon.dal.dataobject.seller.AmazonShopMarketplaceDO;
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
+import cn.iocoder.yudao.module.amazon.dal.mysql.seller.AmazonShopMarketplaceParticipationMapper;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
-import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.service.spapi.AmazonSpApiSdkFactory;
 import com.amazon.SellingPartnerAPIAA.LWAException;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import software.amazon.spapi.ApiException;
-import software.amazon.spapi.api.listings.items.v2021_08_01.ListingsApi;
 import software.amazon.spapi.models.listings.items.v2021_08_01.Item;
 import software.amazon.spapi.models.listings.items.v2021_08_01.ItemSearchResults;
 
@@ -22,16 +22,19 @@ import java.util.List;
 /** Amazon Listings Items 官方 SDK 服务实现。 */
 @Service
 public class AmazonListingsServiceImpl implements AmazonListingsService {
-    @Resource private AmazonMarketplaceProvider amazonMarketplaceProvider;
+    @Resource private AmazonShopMarketplaceParticipationMapper amazonShopMarketplaceParticipationMapper;
     @Resource private AmazonShopMapper amazonShopMapper;
     @Resource private AmazonSpApiSdkFactory amazonSpApiSdkFactory;
 
     /** {@inheritDoc} */
     @Override
     public ItemSearchResults searchListingsItems(AmazonListingsSearchReqVO request) throws ApiException, LWAException {
-        List<AmazonMarketplaceEnum> marketplaces = requireSearchMarketplaces(request.getCountryCode(), request.getCountryCodes());
         AmazonShopDO shop = requireShop(request.getShopId());
-        return listingsApi(shop, marketplaces.getFirst()).searchListingsItems(requireSellerId(shop.getSellerId()),
+        List<AmazonMarketplaceEnum> marketplaces = requireSearchMarketplaces(shop.getId());
+        System.out.println(marketplaces);
+        System.out.println("marketplaces");
+        System.out.println(marketplaces.stream().map(AmazonMarketplaceEnum::getMarketplaceId).toList());
+        return amazonSpApiSdkFactory.createListingsApi(shop.getId()).searchListingsItems(requireSellerId(shop.getSellerId()),
                 marketplaces.stream().map(AmazonMarketplaceEnum::getMarketplaceId).toList(), request.getIssueLocale(),
                 request.getIncludedData(), request.getIdentifiers(), request.getIdentifiersType(), request.getVariationParentSku(),
                 request.getPackageHierarchySku(), parseDateTime(request.getCreatedAfter()), parseDateTime(request.getCreatedBefore()),
@@ -45,16 +48,8 @@ public class AmazonListingsServiceImpl implements AmazonListingsService {
     public Item getListingsItem(AmazonListingsItemGetReqVO request) throws ApiException, LWAException {
         AmazonShopDO shop = requireShop(request.getShopId());
         AmazonMarketplaceEnum marketplace = requireMarketplace(request.getCountryCode());
-        return listingsApi(shop, marketplace).getListingsItem(requireSellerId(shop.getSellerId()), request.getSku(),
+        return amazonSpApiSdkFactory.createListingsApi(shop.getId()).getListingsItem(requireSellerId(shop.getSellerId()), request.getSku(),
                 List.of(marketplace.getMarketplaceId()), request.getIssueLocale(), request.getIncludedData());
-    }
-
-    /** 构造指定店铺和区域的官方 Listings SDK 客户端。 */
-    private ListingsApi listingsApi(AmazonShopDO shop, AmazonMarketplaceEnum marketplace) {
-        return new ListingsApi.Builder()
-                .lwaAuthorizationCredentials(amazonSpApiSdkFactory.credentials(shop.getSellerRefreshToken()))
-                .endpoint(amazonMarketplaceProvider.getEndpoint(marketplace))
-                .build();
     }
 
     /** 将 ISO 8601 时间字符串转换为 SDK 所需时间类型。 */
@@ -82,23 +77,31 @@ public class AmazonListingsServiceImpl implements AmazonListingsService {
         return marketplace;
     }
 
-    /** 解析搜索站点并限制其必须使用同一 SP-API 区域端点。 */
-    private List<AmazonMarketplaceEnum> requireSearchMarketplaces(String countryCode, List<String> countryCodes) {
-        if (countryCode != null && !countryCode.isBlank() && countryCodes != null && !countryCodes.isEmpty()) {
-            throw new IllegalArgumentException("countryCode 与 countryCodes 不能同时传入");
+    /**
+     * 从当前店铺已同步的 Marketplace 参与状态解析搜索 Marketplace，并限制其使用同一 SP-API 区域端点。
+     *
+     * @param shopId 店铺编号
+     * @return 可用于 Listings 搜索的 Marketplace 列表
+     */
+    private List<AmazonMarketplaceEnum> requireSearchMarketplaces(Long shopId) {
+        List<AmazonShopMarketplaceDO> shopMarketplaces = amazonShopMarketplaceParticipationMapper.selectParticipatingByShopId(shopId);
+        if (shopMarketplaces.isEmpty()) {
+            throw new IllegalArgumentException("店铺不存在已参与销售的 Amazon Marketplace: " + shopId);
         }
-        List<String> codes = countryCodes == null || countryCodes.isEmpty()
-                ? (countryCode == null || countryCode.isBlank() ? List.of() : List.of(countryCode)) : countryCodes;
-        if (codes.isEmpty()) throw new IllegalArgumentException("countryCode 或 countryCodes 至少传入一个");
         List<AmazonMarketplaceEnum> marketplaces = new ArrayList<>();
         String region = null;
-        for (String code : codes) {
-            AmazonMarketplaceEnum marketplace = requireMarketplace(code);
+        for (AmazonShopMarketplaceDO shopMarketplace : shopMarketplaces) {
+            AmazonMarketplaceEnum marketplace = AmazonMarketplaceEnum.fromMarketplaceId(shopMarketplace.getMarketplaceId());
+            if (marketplace == null) {
+                throw new IllegalArgumentException("不支持的 Amazon Marketplace ID: " + shopMarketplace.getMarketplaceId());
+            }
             if (region != null && !region.equals(marketplace.getSalesRegion())) {
                 throw new IllegalArgumentException("Listings 搜索的多个站点必须属于同一销售区域");
             }
             region = marketplace.getSalesRegion();
-            marketplaces.add(marketplace);
+            if (!marketplaces.contains(marketplace)) {
+                marketplaces.add(marketplace);
+            }
         }
         return marketplaces;
     }

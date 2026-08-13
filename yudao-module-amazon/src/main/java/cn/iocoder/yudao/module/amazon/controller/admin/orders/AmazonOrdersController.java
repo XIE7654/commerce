@@ -52,4 +52,12 @@ public class AmazonOrdersController {
     public CommonResult<GetOrderItemsResponse> getOrderItems(@Valid @RequestBody AmazonOrderItemsReqVO request) throws ApiException, LWAException {
         return CommonResult.success(amazonOrdersService.getOrderItems(request));
     }
+
+    /** 同步全部启用 Amazon 店铺的订单至本地订单表。 */
+    @PostMapping("/sync-all")
+    @Operation(summary = "同步全部 Amazon 店铺订单")
+    @PreAuthorize("@ss.hasPermission('amazon:orders:sync')")
+    public CommonResult<Integer> syncAllOrders() {
+        return CommonResult.success(amazonOrdersService.syncAllOrders());
+    }
 }

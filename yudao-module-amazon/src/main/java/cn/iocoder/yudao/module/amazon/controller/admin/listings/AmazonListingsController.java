@@ -27,7 +27,7 @@ import software.amazon.spapi.models.listings.items.v2021_08_01.ItemSearchResults
 public class AmazonListingsController {
     @Resource private AmazonListingsService amazonListingsService;
 
-    /** 查询指定店铺在目标国家站点的 Listings Items。 */
+    /** 查询指定店铺已同步站点的 Listings Items。 */
     @PostMapping("/search")
     @Operation(summary = "查询 Amazon Listings Items")
     @PreAuthorize("@ss.hasPermission('amazon:listings:query')")

@@ -6,7 +6,6 @@ tenant-id: {{adminTenantId}}
 
 {
   "shopId": 2,
-  "countryCode": "US",
   "sortBy": "lastUpdatedDate",
   "sortOrder": "DESC",
   "pageSize": 10
@@ -20,7 +19,6 @@ tenant-id: {{adminTenantId}}
 
 {
   "shopId": 2,
-  "countryCodes": ["US", "CA"],
   "identifiers": ["GM-ZDPI-9B4E", "HW-ZDPI-9B4E", "TC-ZDPI-9B4E"],
   "identifiersType": "SKU",
   "includedData": ["summaries", "offers", "fulfillmentAvailability", "issues"],
@@ -114,7 +112,6 @@ tenant-id: {{adminTenantId}}
 
 {
   "shopId": 1,
-  "countryCode": "US",
   "identifiers": ["SKU-001"],
   "identifiersType": "SKU",
   "includedData": ["summaries", "attributes", "issues"],
