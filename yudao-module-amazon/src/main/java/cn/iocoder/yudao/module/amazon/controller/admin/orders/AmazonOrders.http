@@ -11,6 +11,11 @@ tenant-id: {{adminTenantId}}
   "orderStatuses": ["Unshipped", "PartiallyShipped"]
 }
 
+### 同步全部启用 Amazon 店铺订单
+POST {{baseUrl}}/amazon/orders/sync-all
+Authorization: Bearer {{token}}
+tenant-id: {{adminTenantId}}
+
 ### 查询 Amazon 订单详情
 POST {{baseUrl}}/amazon/orders/detail
 Authorization: Bearer {{token}}
