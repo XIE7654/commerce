@@ -7,13 +7,11 @@ import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.seller.AmazonShopMarketplaceParticipationMapper;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
 import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
-import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.service.spapi.AmazonSpApiSdkFactory;
 import com.amazon.SellingPartnerAPIAA.LWAException;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import software.amazon.spapi.ApiException;
-import software.amazon.spapi.api.listings.items.v2021_08_01.ListingsApi;
 import software.amazon.spapi.models.listings.items.v2021_08_01.Item;
 import software.amazon.spapi.models.listings.items.v2021_08_01.ItemSearchResults;
 
@@ -24,7 +22,6 @@ import java.util.List;
 /** Amazon Listings Items 官方 SDK 服务实现。 */
 @Service
 public class AmazonListingsServiceImpl implements AmazonListingsService {
-    @Resource private AmazonMarketplaceProvider amazonMarketplaceProvider;
     @Resource private AmazonShopMarketplaceParticipationMapper amazonShopMarketplaceParticipationMapper;
     @Resource private AmazonShopMapper amazonShopMapper;
     @Resource private AmazonSpApiSdkFactory amazonSpApiSdkFactory;
@@ -37,7 +34,7 @@ public class AmazonListingsServiceImpl implements AmazonListingsService {
         System.out.println(marketplaces);
         System.out.println("marketplaces");
         System.out.println(marketplaces.stream().map(AmazonMarketplaceEnum::getMarketplaceId).toList());
-        return listingsApi(shop, marketplaces.getFirst()).searchListingsItems(requireSellerId(shop.getSellerId()),
+        return amazonSpApiSdkFactory.createListingsApi(shop.getId()).searchListingsItems(requireSellerId(shop.getSellerId()),
                 marketplaces.stream().map(AmazonMarketplaceEnum::getMarketplaceId).toList(), request.getIssueLocale(),
                 request.getIncludedData(), request.getIdentifiers(), request.getIdentifiersType(), request.getVariationParentSku(),
                 request.getPackageHierarchySku(), parseDateTime(request.getCreatedAfter()), parseDateTime(request.getCreatedBefore()),
@@ -51,16 +48,8 @@ public class AmazonListingsServiceImpl implements AmazonListingsService {
     public Item getListingsItem(AmazonListingsItemGetReqVO request) throws ApiException, LWAException {
         AmazonShopDO shop = requireShop(request.getShopId());
         AmazonMarketplaceEnum marketplace = requireMarketplace(request.getCountryCode());
-        return listingsApi(shop, marketplace).getListingsItem(requireSellerId(shop.getSellerId()), request.getSku(),
+        return amazonSpApiSdkFactory.createListingsApi(shop.getId()).getListingsItem(requireSellerId(shop.getSellerId()), request.getSku(),
                 List.of(marketplace.getMarketplaceId()), request.getIssueLocale(), request.getIncludedData());
-    }
-
-    /** 构造指定店铺和区域的官方 Listings SDK 客户端。 */
-    private ListingsApi listingsApi(AmazonShopDO shop, AmazonMarketplaceEnum marketplace) {
-        return new ListingsApi.Builder()
-                .lwaAuthorizationCredentials(amazonSpApiSdkFactory.credentials(shop.getSellerRefreshToken()))
-                .endpoint(amazonMarketplaceProvider.getEndpoint(marketplace))
-                .build();
     }
 
     /** 将 ISO 8601 时间字符串转换为 SDK 所需时间类型。 */

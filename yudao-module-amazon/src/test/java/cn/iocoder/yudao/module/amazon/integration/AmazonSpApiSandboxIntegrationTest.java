@@ -111,7 +111,7 @@ class AmazonSpApiSandboxIntegrationTest {
                 .lwaAuthorizationCredentials(credentials())
                 .endpoint(SANDBOX_ENDPOINT)
                 .build();
-        GetOrdersResponse response = ordersApi.getOrders(List.of(SANDBOX_MARKETPLACE_ID), "TEST_CASE_200",
+        GetOrdersResponse response = ordersApi.getOrders(List.of("ATVPDKIKX0DER"), "TEST_CASE_200",
                 null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
                 null, null, null, null, null);
         System.out.println("getOrders response: " + response);

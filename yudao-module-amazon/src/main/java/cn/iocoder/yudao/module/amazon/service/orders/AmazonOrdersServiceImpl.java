@@ -7,9 +7,8 @@ import cn.iocoder.yudao.module.amazon.controller.admin.orders.vo.AmazonOrdersLis
 import cn.iocoder.yudao.module.amazon.dal.dataobject.order.AmazonOrderDO;
 import cn.iocoder.yudao.module.amazon.dal.dataobject.shop.AmazonShopDO;
 import cn.iocoder.yudao.module.amazon.dal.mysql.order.AmazonOrderMapper;
+import cn.iocoder.yudao.module.amazon.dal.mysql.seller.AmazonShopMarketplaceParticipationMapper;
 import cn.iocoder.yudao.module.amazon.dal.mysql.shop.AmazonShopMapper;
-import cn.iocoder.yudao.module.amazon.enums.AmazonMarketplaceEnum;
-import cn.iocoder.yudao.module.amazon.service.spapi.AmazonMarketplaceProvider;
 import cn.iocoder.yudao.module.amazon.service.spapi.AmazonSpApiSdkFactory;
 import com.amazon.SellingPartnerAPIAA.LWAException;
 import jakarta.annotation.Resource;
@@ -34,8 +33,8 @@ import java.util.List;
 @Service
 @Slf4j
 public class AmazonOrdersServiceImpl implements AmazonOrdersService {
-    @Resource private AmazonMarketplaceProvider amazonMarketplaceProvider;
     @Resource private AmazonOrderMapper amazonOrderMapper;
+    @Resource private AmazonShopMarketplaceParticipationMapper amazonShopMarketplaceParticipationMapper;
     @Resource private AmazonShopMapper amazonShopMapper;
     @Resource private AmazonSpApiSdkFactory amazonSpApiSdkFactory;
 
@@ -43,8 +42,7 @@ public class AmazonOrdersServiceImpl implements AmazonOrdersService {
     @Override
     public GetOrdersResponse getOrders(AmazonOrdersListReqVO request) throws ApiException, LWAException {
         AmazonShopDO shop = requireShop(request.getShopId());
-        AmazonMarketplaceEnum marketplace = requireMarketplace(shop.getRegion());
-        return ordersApi(shop, marketplace).getOrders(List.of(marketplace.getMarketplaceId()), request.getCreatedAfter(),
+        return amazonSpApiSdkFactory.createOrdersApi(shop.getId()).getOrders(requireMarketplaceIds(shop), request.getCreatedAfter(),
                 request.getCreatedBefore(), request.getLastUpdatedAfter(), request.getLastUpdatedBefore(), request.getOrderStatuses(),
                 request.getFulfillmentChannels(), request.getPaymentMethods(), request.getBuyerEmail(), request.getSellerOrderId(),
                 request.getMaxResultsPerPage(), request.getEasyShipShipmentStatuses(), request.getElectronicInvoiceStatuses(), request.getNextToken(),
@@ -57,16 +55,14 @@ public class AmazonOrdersServiceImpl implements AmazonOrdersService {
     @Override
     public GetOrderResponse getOrder(AmazonOrderGetReqVO request) throws ApiException, LWAException {
         AmazonShopDO shop = requireShop(request.getShopId());
-        AmazonMarketplaceEnum marketplace = requireMarketplace(shop.getRegion());
-        return ordersApi(shop, marketplace).getOrder(request.getOrderId());
+        return amazonSpApiSdkFactory.createOrdersApi(shop.getId()).getOrder(request.getOrderId());
     }
 
     /** {@inheritDoc} */
     @Override
     public GetOrderItemsResponse getOrderItems(AmazonOrderItemsReqVO request) throws ApiException, LWAException {
         AmazonShopDO shop = requireShop(request.getShopId());
-        AmazonMarketplaceEnum marketplace = requireMarketplace(shop.getRegion());
-        return ordersApi(shop, marketplace).getOrderItems(request.getOrderId(), request.getNextToken());
+        return amazonSpApiSdkFactory.createOrdersApi(shop.getId()).getOrderItems(request.getOrderId(), request.getNextToken());
     }
 
     /** {@inheritDoc} */
@@ -91,8 +87,7 @@ public class AmazonOrdersServiceImpl implements AmazonOrdersService {
      * @return 成功写入的订单数量
      */
     private int syncShopOrders(AmazonShopDO shop) throws ApiException, LWAException {
-        AmazonMarketplaceEnum marketplace = requireMarketplace(shop.getRegion());
-        OrdersV0Api ordersApi = ordersApi(shop, marketplace);
+        OrdersV0Api ordersApi = amazonSpApiSdkFactory.createOrdersApi(shop.getId());
         LocalDateTime lastSyncTime = amazonOrderMapper.selectLatestSyncTimeByShopId(shop.getId());
         // Orders v0 要求 CreatedAfter 或 LastUpdatedAfter，首次同步仅回溯 Amazon 可查询的最近两年数据。
         String lastUpdatedAfter = (lastSyncTime == null
@@ -101,8 +96,8 @@ public class AmazonOrdersServiceImpl implements AmazonOrdersService {
         String nextToken = null;
         int syncedCount = 0;
         do {
-            GetOrdersResponse response = ordersApi.getOrders(List.of(marketplace.getMarketplaceId()), null, null,
-                    lastUpdatedAfter, null, null, null, null, null, null, 100, null, null, nextToken,
+            GetOrdersResponse response = ordersApi.getOrders(requireMarketplaceIds(shop), "TEST_CASE_200", null,
+                    null, null, null, null, null, null, null, null, null, null, null,
                     null, null, null, null, null, null, null, null, null);
             OrdersList payload = response.getPayload();
             for (Order order : payload == null || payload.getOrders() == null
@@ -177,14 +172,6 @@ public class AmazonOrdersServiceImpl implements AmazonOrdersService {
         return value == null ? null : value.toString();
     }
 
-    /** 构造官方 Orders SDK 客户端。 */
-    private OrdersV0Api ordersApi(AmazonShopDO shop, AmazonMarketplaceEnum marketplace) {
-        return new OrdersV0Api.Builder()
-                .lwaAuthorizationCredentials(amazonSpApiSdkFactory.credentials(shop.getSellerRefreshToken()))
-                .endpoint(amazonMarketplaceProvider.getEndpoint(marketplace))
-                .build();
-    }
-
     /** 查询店铺。 */
     private AmazonShopDO requireShop(Long shopId) {
         AmazonShopDO shop = amazonShopMapper.selectById(shopId);
@@ -192,10 +179,17 @@ public class AmazonOrdersServiceImpl implements AmazonOrdersService {
         return shop;
     }
 
-    /** 解析订单请求的 Marketplace。 */
-    private AmazonMarketplaceEnum requireMarketplace(String countryCode) {
-        AmazonMarketplaceEnum marketplace = AmazonMarketplaceEnum.fromCountryCode(countryCode);
-        if (marketplace == null) throw new IllegalArgumentException("不支持的 Amazon 国家代码: " + countryCode);
-        return marketplace;
+    /**
+     * 查询店铺实际参与销售的 Marketplace，确保订单请求不会携带未授权站点。
+     *
+     * @param shop 店铺信息
+     * @return 可用于 Orders API 的 Marketplace ID 列表
+     */
+    private List<String> requireMarketplaceIds(AmazonShopDO shop) {
+        List<String> marketplaceIds = amazonShopMarketplaceParticipationMapper.selectMarketplaceIdsByShopId(shop.getId());
+        if (marketplaceIds.isEmpty()) {
+            throw new IllegalArgumentException("店铺不存在已参与销售的 Amazon Marketplace: " + shop.getId());
+        }
+        return marketplaceIds;
     }
 }
