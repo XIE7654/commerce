@@ -118,6 +118,11 @@
             <groupId>org.dromara.hutool</groupId>
             <artifactId>hutool-extra</artifactId> <!-- 邮件 -->
         </dependency>
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>core</artifactId>
+            <version>3.3.1</version> <!-- TOTP 认证器二维码 -->
+        </dependency>
 
     </dependencies>
 

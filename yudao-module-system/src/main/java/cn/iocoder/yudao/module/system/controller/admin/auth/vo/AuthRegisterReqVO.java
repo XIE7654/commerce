@@ -24,6 +24,7 @@ public class AuthRegisterReqVO extends CaptchaVerificationReqVO {
 
     @Schema(description = "密码", requiredMode = Schema.RequiredMode.REQUIRED, example = "123456")
     @NotEmpty(message = "密码不能为空")
-    @Length(min = 4, max = 16, message = "密码长度为 4-16 位")
+    @Length(min = 12, max = 128, message = "密码至少 12 个字符且必须包含特殊字符")
+    @Pattern(regexp = "^(?=.*[^A-Za-z0-9]).+$", message = "密码至少 12 个字符且必须包含特殊字符")
     private String password;
 }

@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.system.controller.admin.auth.vo;
 import cn.iocoder.yudao.framework.common.validation.Mobile;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,7 +19,8 @@ public class AuthResetPasswordReqVO {
 
     @Schema(description = "密码", requiredMode = Schema.RequiredMode.REQUIRED, example = "1234")
     @NotEmpty(message = "密码不能为空")
-    @Length(min = 4, max = 16, message = "密码长度为 4-16 位")
+    @Length(min = 12, max = 128, message = "密码至少 12 个字符且必须包含特殊字符")
+    @Pattern(regexp = "^(?=.*[^A-Za-z0-9]).+$", message = "密码至少 12 个字符且必须包含特殊字符")
     private String password;
 
     @Schema(description = "手机号", requiredMode = Schema.RequiredMode.REQUIRED, example = "13312341234")

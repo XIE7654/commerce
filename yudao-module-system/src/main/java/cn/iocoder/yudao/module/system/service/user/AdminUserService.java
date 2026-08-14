@@ -82,6 +82,14 @@ public interface AdminUserService {
     void updateUserPassword(Long id, String password);
 
     /**
+     * 确认启用用户的 TOTP 多重身份验证。
+     *
+     * @param id 用户编号
+     * @param secret 已由认证器验证码确认的 Base32 密钥
+     */
+    void enableUserTotp(Long id, String secret);
+
+    /**
      * 修改状态
      *
      * @param id     用户编号

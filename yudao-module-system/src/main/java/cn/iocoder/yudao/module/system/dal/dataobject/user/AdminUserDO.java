@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.system.dal.dataobject.user;
 
 import cn.iocoder.yudao.framework.common.enums.CommonStatusEnum;
+import cn.iocoder.yudao.framework.mybatis.core.type.EncryptTypeHandler;
 import cn.iocoder.yudao.framework.tenant.core.db.TenantBaseDO;
 import cn.iocoder.yudao.module.system.enums.common.SexEnum;
 import com.baomidou.mybatisplus.annotation.KeySequence;
@@ -43,6 +44,19 @@ public class AdminUserDO extends TenantBaseDO {
      * 因为目前使用 {@link BCryptPasswordEncoder} 加密器，所以无需自己处理 salt 盐
      */
     private String password;
+    /**
+     * 密码最近一次设置时间，用于强制年度轮换。
+     */
+    private LocalDateTime passwordUpdateTime;
+    /**
+     * 加密保存的 TOTP Base32 密钥，禁止返回给前端。
+     */
+    @TableField(typeHandler = EncryptTypeHandler.class)
+    private String totpSecret;
+    /**
+     * TOTP 确认绑定时间；为空时禁止使用该账号登录。
+     */
+    private LocalDateTime totpEnabledTime;
     /**
      * 用户昵称
      */

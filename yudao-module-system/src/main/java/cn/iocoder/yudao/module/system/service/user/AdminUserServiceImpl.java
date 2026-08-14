@@ -111,6 +111,7 @@ public class AdminUserServiceImpl implements AdminUserService {
         AdminUserDO user = BeanUtils.toBean(createReqVO, AdminUserDO.class);
         user.setStatus(CommonStatusEnum.ENABLE.getStatus()); // 默认开启
         user.setPassword(encodePassword(createReqVO.getPassword())); // 加密密码
+        user.setPasswordUpdateTime(LocalDateTime.now());
         userMapper.insert(user);
         // 2.2 插入关联岗位
         if (CollectionUtil.isNotEmpty(user.getPostIds())) {
@@ -143,6 +144,7 @@ public class AdminUserServiceImpl implements AdminUserService {
         AdminUserDO user = BeanUtils.toBean(registerReqVO, AdminUserDO.class);
         user.setStatus(CommonStatusEnum.ENABLE.getStatus()); // 默认开启
         user.setPassword(encodePassword(registerReqVO.getPassword())); // 加密密码
+        user.setPasswordUpdateTime(LocalDateTime.now());
         userMapper.insert(user);
         return user;
     }
@@ -227,6 +229,7 @@ public class AdminUserServiceImpl implements AdminUserService {
         // 执行更新
         AdminUserDO updateObj = new AdminUserDO().setId(id);
         updateObj.setPassword(encodePassword(reqVO.getNewPassword())); // 加密密码
+        updateObj.setPasswordUpdateTime(LocalDateTime.now());
         userMapper.updateById(updateObj);
     }
 
@@ -241,11 +244,19 @@ public class AdminUserServiceImpl implements AdminUserService {
         AdminUserDO updateObj = new AdminUserDO();
         updateObj.setId(id);
         updateObj.setPassword(encodePassword(password)); // 加密密码
+        updateObj.setPasswordUpdateTime(LocalDateTime.now());
         userMapper.updateById(updateObj);
 
         // 3. 记录操作日志上下文
         LogRecordContext.putVariable("user", user);
         LogRecordContext.putVariable("newPassword", updateObj.getPassword());
+    }
+
+    @Override
+    public void enableUserTotp(Long id, String secret) {
+        validateUserExists(id);
+        userMapper.updateById(new AdminUserDO().setId(id).setTotpSecret(secret)
+                .setTotpEnabledTime(LocalDateTime.now()));
     }
 
     @Override

@@ -32,6 +32,21 @@ public interface AdminAuthService {
     AuthLoginRespVO login(@Valid AuthLoginReqVO reqVO);
 
     /**
+     * 生成认证器绑定信息。
+     *
+     * @param reqVO 账号密码
+     * @return Base32 密钥与二维码
+     */
+    AuthTotpSetupRespVO setupTotp(@Valid AuthTotpSetupReqVO reqVO);
+
+    /**
+     * 验证认证器动态码并启用 TOTP。
+     *
+     * @param reqVO 账号密码、密钥与动态码
+     */
+    void confirmTotp(@Valid AuthTotpConfirmReqVO reqVO);
+
+    /**
      * 基于 token 退出登录
      *
      * @param token token

@@ -70,6 +70,21 @@ public class AuthController {
         return success(authService.login(reqVO));
     }
 
+    @PostMapping("/totp/setup")
+    @PermitAll
+    @Operation(summary = "初始化 TOTP 多重身份验证")
+    public CommonResult<AuthTotpSetupRespVO> setupTotp(@RequestBody @Valid AuthTotpSetupReqVO reqVO) {
+        return success(authService.setupTotp(reqVO));
+    }
+
+    @PostMapping("/totp/confirm")
+    @PermitAll
+    @Operation(summary = "确认绑定 TOTP 多重身份验证")
+    public CommonResult<Boolean> confirmTotp(@RequestBody @Valid AuthTotpConfirmReqVO reqVO) {
+        authService.confirmTotp(reqVO);
+        return success(true);
+    }
+
     @PostMapping("/logout")
     @PermitAll
     @Operation(summary = "登出系统")

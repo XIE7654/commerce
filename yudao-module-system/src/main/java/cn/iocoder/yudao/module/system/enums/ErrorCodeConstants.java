@@ -16,6 +16,11 @@ public interface ErrorCodeConstants {
     ErrorCode AUTH_THIRD_LOGIN_NOT_BIND = new ErrorCode(1_002_000_005, "未绑定账号，需要进行绑定");
     ErrorCode AUTH_MOBILE_NOT_EXISTS = new ErrorCode(1_002_000_007, "手机号不存在");
     ErrorCode AUTH_REGISTER_CAPTCHA_CODE_ERROR = new ErrorCode(1_002_000_008, "验证码不正确，原因：{}");
+    ErrorCode AUTH_LOGIN_MFA_MOBILE_NOT_BOUND = new ErrorCode(1_002_000_009, "登录失败，账号未绑定多重身份验证手机号");
+    ErrorCode AUTH_LOGIN_PASSWORD_EXPIRED = new ErrorCode(1_002_000_010, "登录失败，密码已超过 365 天未更新，请重置密码");
+    ErrorCode AUTH_LOGIN_MFA_LOGIN_REQUIRED = new ErrorCode(1_002_000_011, "登录失败，请使用账号密码和多重身份验证码登录");
+    ErrorCode AUTH_LOGIN_TOTP_NOT_ENABLED = new ErrorCode(1_002_000_012, "登录失败，请先绑定 TOTP 多重身份验证器");
+    ErrorCode AUTH_LOGIN_TOTP_CODE_INVALID = new ErrorCode(1_002_000_013, "登录失败，TOTP 动态码不正确");
 
     // ========== 菜单模块 1-002-001-000 ==========
     ErrorCode MENU_NAME_DUPLICATE = new ErrorCode(1_002_001_000, "已经存在该名字的菜单");

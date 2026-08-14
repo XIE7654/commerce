@@ -1,6 +1,9 @@
 package cn.iocoder.yudao.module.system.service.auth;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.extra.qrcode.QrCodeUtil;
+import cn.hutool.extra.qrcode.QrConfig;
 import cn.iocoder.yudao.framework.common.enums.CommonStatusEnum;
 import cn.iocoder.yudao.framework.common.enums.UserTypeEnum;
 import cn.iocoder.yudao.framework.common.util.monitor.TracerUtils;
@@ -38,6 +41,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
@@ -77,6 +83,9 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     @Setter // 为了单测：开启或者关闭验证码
     private Boolean captchaEnable;
 
+    @Value("${yudao.security.totp.issuer:Temu Commerce}")
+    private String totpIssuer;
+
     @Override
     public AdminUserDO authenticate(String username, String password) {
         final LoginLogTypeEnum logTypeEnum = LoginLogTypeEnum.LOGIN_USERNAME;
@@ -103,6 +112,8 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 
         // 使用账号密码，进行登录
         AdminUserDO user = authenticate(reqVO.getUsername(), reqVO.getPassword());
+        validatePasswordExpiration(user);
+        validateTotpCode(user, reqVO.getMfaCode());
 
         // 如果 socialType 非空，说明需要绑定社交用户
         if (reqVO.getSocialType() != null) {
@@ -111,6 +122,26 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         }
         // 创建 Token 令牌，记录登录日志
         return createTokenAfterLoginSuccess(user, reqVO.getUsername(), LoginLogTypeEnum.LOGIN_USERNAME);
+    }
+
+    @Override
+    @DataPermission(enable = false)
+    public AuthTotpSetupRespVO setupTotp(AuthTotpSetupReqVO reqVO) {
+        AdminUserDO user = authenticate(reqVO.getUsername(), reqVO.getPassword());
+        String secret = TotpUtils.generateSecret();
+        String uri = buildTotpUri(user.getUsername(), secret);
+        return AuthTotpSetupRespVO.builder().secret(secret).otpauthUri(uri)
+                .qrCode(QrCodeUtil.generateAsBase64(uri, new QrConfig(240, 240), "png")).build();
+    }
+
+    @Override
+    @DataPermission(enable = false)
+    public void confirmTotp(AuthTotpConfirmReqVO reqVO) {
+        AdminUserDO user = authenticate(reqVO.getUsername(), reqVO.getPassword());
+        if (!TotpUtils.validateCode(reqVO.getSecret(), reqVO.getCode())) {
+            throw exception(AUTH_LOGIN_TOTP_CODE_INVALID);
+        }
+        userService.enableUserTotp(user.getId(), reqVO.getSecret());
     }
 
     @Override
@@ -133,17 +164,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 
     @Override
     public AuthLoginRespVO smsLogin(AuthSmsLoginReqVO reqVO) {
-        // 校验验证码
-        smsCodeApi.useSmsCode(AuthConvert.INSTANCE.convert(reqVO, SmsSceneEnum.ADMIN_MEMBER_LOGIN.getScene(), getClientIP()));
-
-        // 获得用户信息
-        AdminUserDO user = userService.getUserByMobile(reqVO.getMobile());
-        if (user == null) {
-            throw exception(USER_NOT_EXISTS);
-        }
-
-        // 创建 Token 令牌，记录登录日志
-        return createTokenAfterLoginSuccess(user, reqVO.getMobile(), LoginLogTypeEnum.LOGIN_MOBILE);
+        throw exception(AUTH_LOGIN_MFA_LOGIN_REQUIRED);
     }
 
     private void createLoginLog(Long userId, String username,
@@ -167,21 +188,8 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 
     @Override
     public AuthLoginRespVO socialLogin(AuthSocialLoginReqVO reqVO) {
-        // 使用 code 授权码，进行登录。然后，获得到绑定的用户编号
-        SocialUserRespDTO socialUser = socialUserService.getSocialUserByCode(UserTypeEnum.ADMIN.getValue(), reqVO.getType(),
-                reqVO.getCode(), reqVO.getState());
-        if (socialUser == null || socialUser.getUserId() == null) {
-            throw exception(AUTH_THIRD_LOGIN_NOT_BIND);
-        }
-
-        // 获得用户
-        AdminUserDO user = userService.getUser(socialUser.getUserId());
-        if (user == null) {
-            throw exception(USER_NOT_EXISTS);
-        }
-
-        // 创建 Token 令牌，记录登录日志
-        return createTokenAfterLoginSuccess(user, user.getUsername(), LoginLogTypeEnum.LOGIN_SOCIAL);
+        // 社交授权本身不能同时证明账号密码和持有的 MFA 设备，因此不允许用于后台登录。
+        throw exception(AUTH_LOGIN_MFA_LOGIN_REQUIRED);
     }
 
     @VisibleForTesting
@@ -217,6 +225,38 @@ public class AdminAuthServiceImpl implements AdminAuthService {
                 OAuth2ClientConstants.CLIENT_ID_DEFAULT, null);
         // 构建返回结果
         return BeanUtils.toBean(accessTokenDO, AuthLoginRespVO.class);
+    }
+
+    /**
+     * 验证已确认绑定的 TOTP 动态码，任何未启用 TOTP 的账号均不可获取令牌。
+     */
+    private void validateTotpCode(AdminUserDO user, String mfaCode) {
+        if (StrUtil.isBlank(user.getTotpSecret()) || user.getTotpEnabledTime() == null) {
+            throw exception(AUTH_LOGIN_TOTP_NOT_ENABLED);
+        }
+        if (!TotpUtils.validateCode(user.getTotpSecret(), mfaCode)) {
+            throw exception(AUTH_LOGIN_TOTP_CODE_INVALID);
+        }
+    }
+
+    /** 构造遵循 Google Authenticator Key URI Format 的认证器配置。 */
+    private String buildTotpUri(String username, String secret) {
+        String issuer = URLEncoder.encode(totpIssuer, StandardCharsets.UTF_8);
+        String account = URLEncoder.encode(totpIssuer + ":" + username, StandardCharsets.UTF_8);
+        return "otpauth://totp/" + account + "?secret=" + secret + "&issuer=" + issuer
+                + "&algorithm=SHA1&digits=6&period=30";
+    }
+
+    /**
+     * 阻止使用超过 365 天未变更的密码获取新的会话令牌。
+     *
+     * @param user 已完成账号密码校验的用户
+     */
+    private void validatePasswordExpiration(AdminUserDO user) {
+        if (user.getPasswordUpdateTime() == null
+                || !user.getPasswordUpdateTime().isAfter(LocalDateTime.now().minusDays(365))) {
+            throw exception(AUTH_LOGIN_PASSWORD_EXPIRED);
+        }
     }
 
     private void validateUserStatus(AdminUserDO user, String username, LoginLogTypeEnum logType) {
@@ -274,14 +314,8 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 
     @Override
     public AuthLoginRespVO register(AuthRegisterReqVO registerReqVO) {
-        // 1. 校验验证码
-        validateCaptcha(registerReqVO);
-
-        // 2. 校验用户名是否已存在
-        AdminUserDO user = userService.registerUser(registerReqVO);
-
-        // 3. 创建 Token 令牌，记录登录日志
-        return createTokenAfterLoginSuccess(user, registerReqVO.getUsername(), LoginLogTypeEnum.LOGIN_USERNAME);
+        // 自助注册不能保证已绑定第二因子，后台账号只能由管理员创建并绑定手机后登录。
+        throw exception(AUTH_LOGIN_MFA_LOGIN_REQUIRED);
     }
 
     @VisibleForTesting
